@@ -1,0 +1,5 @@
+/* src/netlify.toml — Redirige todo al index.html para React Router */
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

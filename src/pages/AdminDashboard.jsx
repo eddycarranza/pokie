@@ -1,0 +1,309 @@
+// src/pages/AdminDashboard.jsx
+import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { useProducts, useOrders } from "../hooks/useFirestore";
+import Logo from "../components/Logo";
+
+const CATS = ["Tops", "Pantalones", "Vestidos", "Conjuntos", "Accesorios"];
+const STATUSES = ["pendiente", "enviado", "entregado", "cancelado"];
+
+function TagInput({ tags, onChange, placeholder }) {
+  const [val, setVal] = useState("");
+  const add = (e) => { if (e.key === "Enter" && val.trim()) { e.preventDefault(); onChange([...tags, val.trim()]); setVal(""); } };
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, padding: 8, border: "1.5px solid var(--border)", borderRadius: 10, minHeight: 44, background: "white" }}>
+      {tags.map((t, i) => (
+        <span key={i} style={{ background: "var(--dark)", color: "white", padding: "3px 10px", borderRadius: 999, fontSize: "0.8rem", display: "flex", alignItems: "center", gap: 4 }}>
+          {t}
+          <button onClick={() => onChange(tags.filter((_, j) => j !== i))} style={{ background: "none", border: "none", color: "rgba(255,255,255,.7)", cursor: "pointer", fontSize: "0.85rem" }}>✕</button>
+        </span>
+      ))}
+      <input value={val} onChange={e => setVal(e.target.value)} onKeyDown={add}
+        placeholder={tags.length ? "" : placeholder}
+        style={{ border: "none", outline: "none", fontSize: "0.85rem", flex: 1, minWidth: 80, fontFamily: "'DM Sans',sans-serif" }} />
+    </div>
+  );
+}
+
+function ProductForm({ initial, onSave, onCancel }) {
+  const [form, setForm] = useState(initial || { name: "", cat: "", price: "", salePrice: "", desc: "", emoji: "", badge: "", sizes: [], colors: [] });
+  const [saving, setSaving] = useState(false);
+
+  const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
+
+  const handleSave = async () => {
+    if (!form.name || !form.cat || !form.price) return alert("Nombre, categoría y precio son obligatorios");
+    setSaving(true);
+    await onSave({
+      ...form,
+      price: parseFloat(form.price),
+      salePrice: form.salePrice ? parseFloat(form.salePrice) : null,
+    });
+    setSaving(false);
+  };
+
+  return (
+    <div className="card">
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+        <div className="form-group" style={{ gridColumn: "1/-1" }}>
+          <label className="form-label">Nombre del producto *</label>
+          <input className="form-input" value={form.name} onChange={e => set("name", e.target.value)} placeholder="Ej: Vestido Floral Rosa" />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Categoría *</label>
+          <select className="form-input" value={form.cat} onChange={e => set("cat", e.target.value)}>
+            <option value="">Seleccionar...</option>
+            {CATS.map(c => <option key={c}>{c}</option>)}
+          </select>
+        </div>
+        <div className="form-group">
+          <label className="form-label">Emoji / ícono</label>
+          <input className="form-input" value={form.emoji} onChange={e => set("emoji", e.target.value)} placeholder="👗 🩱 👚 👜" />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Precio (S/) *</label>
+          <input className="form-input" type="number" step="0.01" value={form.price} onChange={e => set("price", e.target.value)} placeholder="89.90" />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Precio con oferta (S/)</label>
+          <input className="form-input" type="number" step="0.01" value={form.salePrice} onChange={e => set("salePrice", e.target.value)} placeholder="Dejar vacío si no hay" />
+        </div>
+        <div className="form-group" style={{ gridColumn: "1/-1" }}>
+          <label className="form-label">Descripción</label>
+          <textarea className="form-input" value={form.desc} onChange={e => set("desc", e.target.value)} rows={3} placeholder="Material, cuidados, detalles..." />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Tallas (Enter para agregar)</label>
+          <TagInput tags={form.sizes} onChange={v => set("sizes", v)} placeholder="XS, S, M, L, XL..." />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Colores (Enter para agregar)</label>
+          <TagInput tags={form.colors} onChange={v => set("colors", v)} placeholder="Rosa, Negro, Beige..." />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Etiqueta</label>
+          <select className="form-input" value={form.badge} onChange={e => set("badge", e.target.value)}>
+            <option value="">Sin etiqueta</option>
+            <option value="new">Nuevo</option>
+            <option value="sale">Oferta</option>
+          </select>
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: "0.75rem", marginTop: "1.5rem" }}>
+        <button className="btn btn-dark" onClick={handleSave} disabled={saving}>{saving ? "Guardando..." : "Guardar producto"}</button>
+        <button className="btn btn-outline" onClick={onCancel}>Cancelar</button>
+      </div>
+    </div>
+  );
+}
+
+export default function AdminDashboard() {
+  const { user, logout } = useAuth();
+  const nav = useNavigate();
+  const { products, addProduct, updateProduct, deleteProduct } = useProducts();
+  const { orders, updateOrder } = useOrders();
+  const [panel, setPanel] = useState("dashboard");
+  const [editing, setEditing] = useState(null); // null | "new" | product obj
+  const [toast, setToast] = useState("");
+
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(""), 3000); };
+
+  const handleLogout = async () => { await logout(); nav("/admin"); };
+
+  const revenue = orders.reduce((s, o) => s + (o.total || 0), 0);
+  const pending = orders.filter(o => o.status === "pendiente").length;
+
+  const handleSaveProduct = async (data) => {
+    if (editing && editing !== "new") { await updateProduct(editing.id, data); showToast("Producto actualizado ✓"); }
+    else { await addProduct(data); showToast("Producto agregado ✓"); }
+    setEditing(null); setPanel("productos");
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("¿Eliminar este producto?")) return;
+    await deleteProduct(id); showToast("Producto eliminado");
+  };
+
+  const handleStatusChange = async (id, status) => {
+    await updateOrder(id, { status }); showToast(`Pedido → ${status}`);
+  };
+
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "220px 1fr", minHeight: "100vh" }}>
+      {/* Sidebar */}
+      <aside style={{ background: "var(--dark)", color: "white", padding: "1.5rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "2rem" }}>
+          <Logo size={30} />
+          <span className="serif" style={{ fontSize: "1.1rem" }}>PookieCat</span>
+        </div>
+        {[
+          { key: "dashboard", icon: "📊", label: "Dashboard" },
+          { key: "productos", icon: "👗", label: "Productos" },
+          { key: "pedidos", icon: "📦", label: "Pedidos" },
+        ].map(item => (
+          <button key={item.key} onClick={() => { setPanel(item.key); setEditing(null); }} style={{
+            display: "flex", alignItems: "center", gap: 10, background: panel === item.key ? "rgba(255,255,255,.12)" : "none",
+            border: "none", color: panel === item.key ? "white" : "rgba(255,255,255,.55)",
+            padding: "10px 12px", borderRadius: 8, cursor: "pointer", fontSize: "0.88rem", width: "100%", textAlign: "left"
+          }}>{item.icon} {item.label}</button>
+        ))}
+        <div style={{ flex: 1 }} />
+        <button onClick={() => nav("/")} style={{ display: "flex", alignItems: "center", gap: 10, background: "none", border: "none", color: "rgba(255,255,255,.55)", padding: "10px 12px", borderRadius: 8, cursor: "pointer", fontSize: "0.88rem", width: "100%", textAlign: "left" }}>
+          🏠 Ver tienda
+        </button>
+        <button onClick={handleLogout} style={{ display: "flex", alignItems: "center", gap: 10, background: "none", border: "none", color: "rgba(255,255,255,.4)", padding: "10px 12px", borderRadius: 8, cursor: "pointer", fontSize: "0.85rem", width: "100%", textAlign: "left" }}>
+          ← Cerrar sesión
+        </button>
+      </aside>
+
+      {/* Content */}
+      <main style={{ padding: "2rem", background: "#f8f6f3", overflowY: "auto" }}>
+
+        {/* Dashboard */}
+        {panel === "dashboard" && (
+          <>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+              <h2 className="serif" style={{ fontSize: "1.7rem" }}>Dashboard</h2>
+              <span style={{ fontSize: "0.82rem", color: "var(--gray)" }}>{new Date().toLocaleDateString("es-PE", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</span>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))", gap: "1rem", marginBottom: "2rem" }}>
+              {[
+                { label: "Productos", value: products.length, sub: "en catálogo" },
+                { label: "Pedidos", value: orders.length, sub: "total" },
+                { label: "Pendientes", value: pending, sub: "por atender", color: pending > 0 ? "var(--warning)" : undefined },
+                { label: "Ingresos", value: `S/ ${revenue.toFixed(2)}`, sub: "estimado" },
+              ].map(s => (
+                <div key={s.label} style={{ background: "white", borderRadius: 12, padding: "1.1rem", border: "1px solid var(--border)" }}>
+                  <div style={{ fontSize: "0.8rem", color: "var(--gray)", marginBottom: 4 }}>{s.label}</div>
+                  <div style={{ fontSize: "1.7rem", fontWeight: 500, color: s.color || "var(--dark)" }}>{s.value}</div>
+                  <div style={{ fontSize: "0.75rem", color: "var(--success)", marginTop: 2 }}>↑ {s.sub}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ background: "white", borderRadius: 12, border: "1px solid var(--border)", overflow: "hidden" }}>
+              <div style={{ padding: "1rem 1.25rem", borderBottom: "1px solid var(--border)", fontWeight: 500 }}>Últimos pedidos</div>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr>{["Pedido", "Cliente", "Total", "Estado"].map(h => (
+                    <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: ".06em", color: "var(--gray)", background: "#f8f6f3", borderBottom: "1px solid var(--border)" }}>{h}</th>
+                  ))}</tr>
+                </thead>
+                <tbody>
+                  {orders.slice(0, 6).map(o => (
+                    <tr key={o.id}>
+                      <td style={{ padding: "11px 14px", fontSize: "0.88rem", fontWeight: 500 }}>#{o.id?.slice(-6)}</td>
+                      <td style={{ padding: "11px 14px", fontSize: "0.88rem" }}>{o.client}</td>
+                      <td style={{ padding: "11px 14px", fontSize: "0.88rem" }}>S/ {o.total?.toFixed(2)}</td>
+                      <td style={{ padding: "11px 14px" }}><span className={`badge-status badge-${o.status}`}>{o.status}</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+
+        {/* Productos */}
+        {panel === "productos" && !editing && (
+          <>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+              <h2 className="serif" style={{ fontSize: "1.7rem" }}>Productos</h2>
+              <button className="btn btn-dark btn-sm" onClick={() => setEditing("new")}>+ Nuevo producto</button>
+            </div>
+            <div style={{ background: "white", borderRadius: 12, border: "1px solid var(--border)", overflow: "hidden" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr>{["Producto", "Categoría", "Precio", "Tallas", "Etiqueta", "Acciones"].map(h => (
+                    <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: ".06em", color: "var(--gray)", background: "#f8f6f3", borderBottom: "1px solid var(--border)" }}>{h}</th>
+                  ))}</tr>
+                </thead>
+                <tbody>
+                  {products.map(p => (
+                    <tr key={p.id} style={{ borderBottom: "1px solid var(--border)" }}>
+                      <td style={{ padding: "11px 14px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <div style={{ width: 42, height: 48, background: "var(--pink-light)", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.4rem" }}>{p.emoji || "👗"}</div>
+                          <span style={{ fontSize: "0.88rem", fontWeight: 500 }}>{p.name}</span>
+                        </div>
+                      </td>
+                      <td style={{ padding: "11px 14px", fontSize: "0.88rem" }}>{p.cat}</td>
+                      <td style={{ padding: "11px 14px", fontSize: "0.88rem" }}>
+                        S/ {p.price?.toFixed(2)}
+                        {p.salePrice && <div style={{ color: "var(--danger)", fontSize: "0.78rem" }}>→ S/ {p.salePrice.toFixed(2)}</div>}
+                      </td>
+                      <td style={{ padding: "11px 14px", fontSize: "0.82rem", color: "var(--gray)" }}>{p.sizes?.join(", ") || "—"}</td>
+                      <td style={{ padding: "11px 14px" }}>{p.badge ? <span className={`badge-status badge-${p.badge}`}>{p.badge}</span> : "—"}</td>
+                      <td style={{ padding: "11px 14px" }}>
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <button className="btn btn-outline btn-sm" onClick={() => { setEditing(p); setPanel("productos"); }}>✏ Editar</button>
+                          <button className="btn btn-sm" style={{ border: "1px solid var(--danger)", color: "var(--danger)", background: "none", borderRadius: 999, padding: "5px 12px", fontSize: "0.82rem" }} onClick={() => handleDelete(p.id)}>✕</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {products.length === 0 && <div style={{ textAlign: "center", padding: "3rem", color: "var(--gray)" }}>No hay productos aún. ¡Agrega el primero!</div>}
+            </div>
+          </>
+        )}
+
+        {/* Product Form */}
+        {panel === "productos" && editing && (
+          <>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+              <h2 className="serif" style={{ fontSize: "1.7rem" }}>{editing === "new" ? "Nuevo Producto" : "Editar Producto"}</h2>
+            </div>
+            <ProductForm initial={editing !== "new" ? editing : undefined} onSave={handleSaveProduct} onCancel={() => setEditing(null)} />
+          </>
+        )}
+
+        {/* Pedidos */}
+        {panel === "pedidos" && (
+          <>
+            <div style={{ marginBottom: "1.5rem" }}>
+              <h2 className="serif" style={{ fontSize: "1.7rem" }}>Pedidos</h2>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              {orders.length === 0 && <div style={{ textAlign: "center", padding: "3rem", color: "var(--gray)", background: "white", borderRadius: 12, border: "1px solid var(--border)" }}>No hay pedidos aún.</div>}
+              {orders.map(o => (
+                <div key={o.id} style={{ background: "white", borderRadius: 12, border: "1px solid var(--border)", padding: "1.25rem" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "0.75rem" }}>
+                    <div>
+                      <div style={{ fontWeight: 500, fontSize: "0.95rem" }}>#{o.id?.slice(-6)} — {o.client}</div>
+                      <div style={{ fontSize: "0.82rem", color: "var(--gray)", marginTop: 2 }}>📱 {o.phone} · 📍 {o.address}</div>
+                      <div style={{ fontSize: "0.82rem", color: "var(--gray)" }}>💳 {o.payment}</div>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{ fontWeight: 600, fontSize: "1.05rem" }}>S/ {o.total?.toFixed(2)}</div>
+                      <span className={`badge-status badge-${o.status}`} style={{ marginTop: 4, display: "inline-block" }}>{o.status}</span>
+                    </div>
+                  </div>
+                  <div style={{ marginTop: "0.75rem", paddingTop: "0.75rem", borderTop: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem" }}>
+                    <div style={{ fontSize: "0.82rem", color: "var(--gray)" }}>
+                      {o.items?.map((i, idx) => (
+                        <span key={idx}>{i.name}{i.size ? ` (${i.size})` : ""} x{i.qty}{idx < o.items.length - 1 ? " · " : ""}</span>
+                      ))}
+                    </div>
+                    <select className="form-input" style={{ width: "auto", padding: "6px 12px", fontSize: "0.82rem" }}
+                      value={o.status} onChange={e => handleStatusChange(o.id, e.target.value)}>
+                      {STATUSES.map(s => <option key={s}>{s}</option>)}
+                    </select>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </main>
+
+      {/* Toast */}
+      {toast && (
+        <div style={{ position: "fixed", bottom: "2rem", right: "2rem", background: "var(--dark)", color: "white", padding: "12px 20px", borderRadius: 12, zIndex: 9999, fontSize: "0.88rem", animation: "slideUp .3s ease" }}>
+          {toast}
+        </div>
+      )}
+    </div>
+  );
+}
