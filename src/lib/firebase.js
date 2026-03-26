@@ -2,19 +2,16 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
-// Pega aquí el bloque que copiaste de la consola de Firebase
+// AQUÍ PEGA TUS DATOS REALES DE LA CONSOLA
 const firebaseConfig = {
-  apiKey: "AIzaSy...", 
-  authDomain: "pookiecat-xxx.firebaseapp.com",
-  projectId: "pookiecat-xxx",
-  storageBucket: "pookiecat-xxx.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abc..."
+  apiKey: "AIzaSy..." , // Tu clave real empieza con AIza...
+  authDomain: "pookiecat-36221.firebaseapp.com", // El número que viste en tu captura anterior
+  projectId: "pookiecat-36221",
+  storageBucket: "pookiecat-36221.appspot.com",
+  messagingSenderId: "9876543210",
+  appId: "1:9876543210:web:abcdef..."
 };
 
-// Inicializar Firebase
 const app = initializeApp(firebaseConfig);
-
-// Exportar los servicios para usarlos en el resto de la app
 export const db = getFirestore(app);
 export const auth = getAuth(app);
