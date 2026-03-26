@@ -1,11 +1,13 @@
 // src/pages/AdminDashboard.jsx
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useProducts, useOrders } from "../hooks/useFirestore";
 import Logo from "../components/Logo";
+import { storage } from "../lib/firebase";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
-const CATS = ["Tops", "Pantalones", "Vestidos", "Conjuntos", "Accesorios"];
+const CATS = ["Tops", "Pantalones", "Vestidos", "Conjuntos", "Accesorios", "Calzado"];
 const STATUSES = ["pendiente", "enviado", "entregado", "cancelado"];
 
 function TagInput({ tags, onChange, placeholder }) {
@@ -26,30 +28,111 @@ function TagInput({ tags, onChange, placeholder }) {
   );
 }
 
-function ProductForm({ initial, onSave, onCancel }) {
-  const [form, setForm] = useState(initial || { name: "", cat: "", price: "", salePrice: "", desc: "", emoji: "", badge: "", sizes: [], colors: [] });
-  const [saving, setSaving] = useState(false);
+const COLOR_OPTIONS = [
+  { name: "Rosa", hex: "#f2a7c3" }, { name: "Blanco", hex: "#f0f0f0" },
+  { name: "Negro", hex: "#1a1a1a" }, { name: "Beige", hex: "#d4c5a9" },
+  { name: "Lila", hex: "#c9b1e8" }, { name: "Verde", hex: "#a8d5a2" },
+  { name: "Azul denim", hex: "#7eb0d4" }, { name: "Rojo", hex: "#e05252" },
+  { name: "Nude", hex: "#e8c9b0" }, { name: "Celeste", hex: "#a8d8ea" },
+  { name: "Mostaza", hex: "#e8b84b" }, { name: "Naranja", hex: "#f0a060" },
+  { name: "Gris", hex: "#9e9e9e" }, { name: "Marrón", hex: "#8d6748" },
+  { name: "Plateado", hex: "#c0c0c0" }, { name: "Dorado", hex: "#d4a843" },
+];
 
+function ImageUploader({ imageUrl, onUploaded }) {
+  const [progress, setProgress] = useState(0);
+  const [uploading, setUploading] = useState(false);
+  const inputRef = useRef();
+
+  const handleFile = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    const storageRef = ref(storage, `products/${Date.now()}_${file.name}`);
+    const task = uploadBytesResumable(storageRef, file);
+    task.on("state_changed",
+      snap => setProgress(Math.round(snap.bytesTransferred / snap.totalBytes * 100)),
+      err => { console.error(err); setUploading(false); },
+      async () => {
+        const url = await getDownloadURL(task.snapshot.ref);
+        onUploaded(url);
+        setUploading(false);
+        setProgress(0);
+      }
+    );
+  };
+
+  return (
+    <div>
+      <div onClick={() => !uploading && inputRef.current.click()} style={{
+        border: "2px dashed var(--border)", borderRadius: 12, padding: "1rem",
+        textAlign: "center", cursor: uploading ? "default" : "pointer",
+        background: imageUrl ? "white" : "var(--pink-light)", transition: "border-color .2s", minHeight: 120,
+      }}
+        onMouseEnter={e => { if (!uploading) e.currentTarget.style.borderColor = "var(--pink-dark)"; }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border)"; }}
+      >
+        {imageUrl ? (
+          <div>
+            <img src={imageUrl} alt="preview" style={{ width: "100%", maxHeight: 220, objectFit: "cover", borderRadius: 8, display: "block" }} />
+            <div style={{ marginTop: 8, fontSize: "0.78rem", color: "var(--gray)" }}>📷 Clic para cambiar imagen</div>
+          </div>
+        ) : uploading ? (
+          <div>
+            <div style={{ fontSize: "1.5rem", marginBottom: 8 }}>⏫</div>
+            <div style={{ fontSize: "0.85rem", color: "var(--gray)", marginBottom: 8 }}>Subiendo... {progress}%</div>
+            <div style={{ height: 6, background: "var(--border)", borderRadius: 3, overflow: "hidden" }}>
+              <div style={{ height: "100%", width: `${progress}%`, background: "var(--pink-dark)", transition: "width .2s", borderRadius: 3 }} />
+            </div>
+          </div>
+        ) : (
+          <div>
+            <div style={{ fontSize: "2rem", marginBottom: 6 }}>📷</div>
+            <div style={{ fontSize: "0.85rem", color: "var(--gray)" }}>Clic para subir imagen</div>
+            <div style={{ fontSize: "0.75rem", color: "var(--gray)", marginTop: 2 }}>JPG, PNG — máx. 5MB</div>
+          </div>
+        )}
+      </div>
+      <input ref={inputRef} type="file" accept="image/*" onChange={handleFile} style={{ display: "none" }} />
+    </div>
+  );
+}
+
+function ProductForm({ initial, onSave, onCancel }) {
+  const [form, setForm] = useState(initial || {
+    name: "", cat: "", price: "", salePrice: "", desc: "",
+    emoji: "", badge: "", sizes: [], colors: [], imageUrl: ""
+  });
+  const [saving, setSaving] = useState(false);
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
+
+  const toggleColor = (colorName) => {
+    set("colors", form.colors.includes(colorName)
+      ? form.colors.filter(c => c !== colorName)
+      : [...form.colors, colorName]);
+  };
 
   const handleSave = async () => {
     if (!form.name || !form.cat || !form.price) return alert("Nombre, categoría y precio son obligatorios");
     setSaving(true);
-    await onSave({
-      ...form,
-      price: parseFloat(form.price),
-      salePrice: form.salePrice ? parseFloat(form.salePrice) : null,
-    });
+    await onSave({ ...form, price: parseFloat(form.price), salePrice: form.salePrice ? parseFloat(form.salePrice) : null });
     setSaving(false);
   };
 
   return (
     <div className="card">
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+
+        <div className="form-group" style={{ gridColumn: "1/-1" }}>
+          <label className="form-label">Imagen del producto</label>
+          <ImageUploader imageUrl={form.imageUrl} onUploaded={url => set("imageUrl", url)} />
+        </div>
+
         <div className="form-group" style={{ gridColumn: "1/-1" }}>
           <label className="form-label">Nombre del producto *</label>
           <input className="form-input" value={form.name} onChange={e => set("name", e.target.value)} placeholder="Ej: Vestido Floral Rosa" />
         </div>
+
         <div className="form-group">
           <label className="form-label">Categoría *</label>
           <select className="form-input" value={form.cat} onChange={e => set("cat", e.target.value)}>
@@ -57,30 +140,32 @@ function ProductForm({ initial, onSave, onCancel }) {
             {CATS.map(c => <option key={c}>{c}</option>)}
           </select>
         </div>
+
         <div className="form-group">
-          <label className="form-label">Emoji / ícono</label>
-          <input className="form-input" value={form.emoji} onChange={e => set("emoji", e.target.value)} placeholder="👗 🩱 👚 👜" />
+          <label className="form-label">Emoji / ícono (opcional)</label>
+          <input className="form-input" value={form.emoji} onChange={e => set("emoji", e.target.value)} placeholder="👗 🩱 👚 👜 👟" />
         </div>
+
         <div className="form-group">
           <label className="form-label">Precio (S/) *</label>
           <input className="form-input" type="number" step="0.01" value={form.price} onChange={e => set("price", e.target.value)} placeholder="89.90" />
         </div>
+
         <div className="form-group">
           <label className="form-label">Precio con oferta (S/)</label>
           <input className="form-input" type="number" step="0.01" value={form.salePrice} onChange={e => set("salePrice", e.target.value)} placeholder="Dejar vacío si no hay" />
         </div>
+
         <div className="form-group" style={{ gridColumn: "1/-1" }}>
           <label className="form-label">Descripción</label>
-          <textarea className="form-input" value={form.desc} onChange={e => set("desc", e.target.value)} rows={3} placeholder="Material, cuidados, detalles..." />
+          <textarea className="form-input" value={form.desc} onChange={e => set("desc", e.target.value)} rows={3} placeholder="Material, cuidados, detalles..." style={{ resize: "vertical" }} />
         </div>
+
         <div className="form-group">
           <label className="form-label">Tallas (Enter para agregar)</label>
-          <TagInput tags={form.sizes} onChange={v => set("sizes", v)} placeholder="XS, S, M, L, XL..." />
+          <TagInput tags={form.sizes} onChange={v => set("sizes", v)} placeholder="XS, S, M, 38, 39..." />
         </div>
-        <div className="form-group">
-          <label className="form-label">Colores (Enter para agregar)</label>
-          <TagInput tags={form.colors} onChange={v => set("colors", v)} placeholder="Rosa, Negro, Beige..." />
-        </div>
+
         <div className="form-group">
           <label className="form-label">Etiqueta</label>
           <select className="form-input" value={form.badge} onChange={e => set("badge", e.target.value)}>
@@ -89,6 +174,35 @@ function ProductForm({ initial, onSave, onCancel }) {
             <option value="sale">Oferta</option>
           </select>
         </div>
+
+        <div className="form-group" style={{ gridColumn: "1/-1" }}>
+          <label className="form-label">Colores disponibles — clic para seleccionar</label>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 14, padding: "14px", background: "var(--gray-light)", borderRadius: 10 }}>
+            {COLOR_OPTIONS.map(c => (
+              <div key={c.name} onClick={() => toggleColor(c.name)} title={c.name} style={{
+                display: "flex", flexDirection: "column", alignItems: "center", gap: 5,
+                cursor: "pointer",
+                opacity: form.colors.includes(c.name) ? 1 : 0.38,
+                transform: form.colors.includes(c.name) ? "scale(1.12)" : "scale(1)",
+                transition: "all .15s"
+              }}>
+                <div style={{
+                  width: 34, height: 34, borderRadius: "50%", background: c.hex,
+                  border: form.colors.includes(c.name) ? "3px solid var(--dark)" : "2px solid rgba(0,0,0,.12)",
+                  boxShadow: form.colors.includes(c.name) ? "0 0 0 2px white, 0 0 0 4px var(--dark)" : "none",
+                  transition: "all .15s"
+                }} />
+                <span style={{ fontSize: "0.66rem", color: "var(--gray)", whiteSpace: "nowrap" }}>{c.name}</span>
+              </div>
+            ))}
+          </div>
+          {form.colors.length > 0 && (
+            <div style={{ marginTop: 8, fontSize: "0.82rem", color: "var(--gray)" }}>
+              ✓ Seleccionados: <strong>{form.colors.join(", ")}</strong>
+            </div>
+          )}
+        </div>
+
       </div>
       <div style={{ display: "flex", gap: "0.75rem", marginTop: "1.5rem" }}>
         <button className="btn btn-dark" onClick={handleSave} disabled={saving}>{saving ? "Guardando..." : "Guardar producto"}</button>

@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import Logo from "./Logo";
 
-const CATS = ["Todos", "Tops", "Pantalones", "Vestidos", "Conjuntos", "Accesorios"];
+const CATS = ["Todos", "Tops", "Pantalones", "Vestidos", "Conjuntos", "Accesorios", "Calzado"];
 
 export default function Navbar({ activecat, onCatChange }) {
   const { count, setIsOpen } = useCart();

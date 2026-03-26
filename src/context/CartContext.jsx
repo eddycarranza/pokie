@@ -26,17 +26,24 @@ export function CartProvider({ children }) {
   const count = cart.reduce((s, i) => s + i.qty, 0);
 
   const sendToWhatsApp = (customerData) => {
+    const itemLines = cart.map(i =>
+      `  • ${i.name}${i.size ? ` | Talla: ${i.size}` : ""}${i.color ? ` | Color: ${i.color}` : ""}\n    Cantidad: ${i.qty} — S/ ${(i.price * i.qty).toFixed(2)}`
+    );
     const lines = [
-      `🐱 *Nuevo pedido PookieCat*`,
+      `🐱 *NUEVO PEDIDO — PookieCat*`,
+      `━━━━━━━━━━━━━━━━━━━━`,
       ``,
       `👤 *Cliente:* ${customerData.name}`,
+      `📱 *Teléfono:* ${customerData.phone}`,
       `📍 *Dirección:* ${customerData.address}`,
-      `💳 *Pago:* ${customerData.payment}`,
+      `💳 *Método de pago:* ${customerData.payment}`,
       ``,
       `🛍 *Productos:*`,
-      ...cart.map(i => `  • ${i.name}${i.size ? ` (${i.size})` : ""}${i.color ? ` - ${i.color}` : ""} x${i.qty} → S/ ${(i.price * i.qty).toFixed(2)}`),
+      ...itemLines,
       ``,
-      `💰 *Total: S/ ${total.toFixed(2)}*`,
+      `━━━━━━━━━━━━━━━━━━━━`,
+      `💰 *TOTAL: S/ ${total.toFixed(2)}*`,
+      `━━━━━━━━━━━━━━━━━━━━`,
     ];
     const msg = encodeURIComponent(lines.join("\n"));
     window.open(`https://wa.me/${WA_NUMBER}?text=${msg}`, "_blank");
