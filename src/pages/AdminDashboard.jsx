@@ -2,16 +2,16 @@
 import { useState, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { useProducts, useOrders } from "../hooks/useSupabase";
+import { useProducts, useOrders } from "../hooks/useSupabase"; // ✅ Corregido a useSupabase
 import Logo from "../components/Logo";
 
 // ============ SUPABASE CONFIG ============
-const SUPABASE_URL = "https://dsxtauxcbyeumkdbhtxj.supabase.co";           // ej: https://dsxtauxcbyeumkdbhtxj.supabase.co
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzeHRhdXhjYnlldW1rZGJodHhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjMxNzgsImV4cCI6MjA5MDEzOTE3OH0.CZPiBgf5Gmrsuq3TTzIphI5stuEVy-w4TqAIfo-QsO4"; // la Clave anónima larga
+const SUPABASE_URL = "https://dsxtauxcbyeumkdbhtxj.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzeHRhdXhjYnlldW1rZGJodHhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjMxNzgsImV4cCI6MjA5MDEzOTE3OH0.CZPiBgf5Gmrsuq3TTzIphI5stuEVy-w4TqAIfo-QsO4";
 const BUCKET = "products";
 // =========================================
 
-const CATS = ["Tops", "Pantalones", "Vestidos", "Conjuntos", "Accesorios", "Calzado"];
+const CATS = ["Tops", "Pantalones",  "Accesorios", "Calzado"];
 const STATUSES = ["pendiente", "enviado", "entregado", "cancelado"];
 const COLOR_OPTIONS = [
   { name: "Rosa", hex: "#f2a7c3" }, { name: "Blanco", hex: "#f0f0f0" },
@@ -95,6 +95,7 @@ function ImageUploader({ imageUrl, onUploaded }) {
       >
         {imageUrl ? (
           <div>
+            {/* ✅ objectFit cambiado a contain para que no se corte la imagen */}
             <img src={imageUrl} alt="preview" style={{ width: "100%", maxHeight: 220, objectFit: "contain", borderRadius: 8, display: "block" }} />
             <div style={{ marginTop: 8, fontSize: "0.78rem", color: "var(--gray)" }}>Clic para cambiar imagen</div>
           </div>
@@ -121,7 +122,8 @@ function ImageUploader({ imageUrl, onUploaded }) {
 }
 
 function ProductForm({ initial, onSave, onCancel }) {
-  const [form, setForm] = useState(initial || { name: "", cat: "", price: "", salePrice: "", desc: "", emoji: "", badge: "", sizes: [], colors: [], imageUrl: "" });
+  // ✅ description en lugar de desc
+  const [form, setForm] = useState(initial || { name: "", cat: "", price: "", salePrice: "", description: "", emoji: "", badge: "", sizes: [], colors: [], imageUrl: "" });
   const [saving, setSaving] = useState(false);
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
@@ -156,7 +158,7 @@ function ProductForm({ initial, onSave, onCancel }) {
         </div>
         <div className="form-group">
           <label className="form-label">Emoji / icono (opcional)</label>
-          <input className="form-input" value={form.emoji} onChange={e => set("emoji", e.target.value)} placeholder="👗 🩱 👚 👜 👟" />
+          
         </div>
         <div className="form-group">
           <label className="form-label">Precio (S/) *</label>
@@ -168,7 +170,8 @@ function ProductForm({ initial, onSave, onCancel }) {
         </div>
         <div className="form-group" style={{ gridColumn: "1/-1" }}>
           <label className="form-label">Descripcion</label>
-          <textarea className="form-input" value={form.desc} onChange={e => set("desc", e.target.value)} rows={3} placeholder="Material, cuidados, detalles..." style={{ resize: "vertical" }} />
+          {/* ✅ form.description en lugar de form.desc */}
+          <textarea className="form-input" value={form.description} onChange={e => set("description", e.target.value)} rows={3} placeholder="Material, cuidados, detalles..." style={{ resize: "vertical" }} />
         </div>
         <div className="form-group">
           <label className="form-label">Tallas (Enter para agregar)</label>
