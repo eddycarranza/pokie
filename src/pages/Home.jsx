@@ -4,7 +4,7 @@ import Navbar from "../components/Navbar";
 import ProductCard from "../components/ProductCard";
 import ProductModal from "../components/ProductModal";
 import CartSidebar from "../components/CartSidebar";
-import { useProducts } from "../hooks/useFirestore";
+import { useProducts, useOrders } from "../hooks/useSupabase";
 import Logo from "../components/Logo";
 
 const CATS = ["Todos", "Tops", "Pantalones", "Vestidos", "Conjuntos", "Accesorios"];
