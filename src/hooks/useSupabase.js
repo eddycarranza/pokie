@@ -18,17 +18,20 @@ export function useProducts() {
   }, []);
 
   const addProduct = async (data) => {
-    await supabase.from("products").insert(data);
+    const { error } = await supabase.from("products").insert(data);
+    if (error) alert("Error al agregar producto: " + JSON.stringify(error));
     fetchProducts();
   };
 
   const updateProduct = async (id, data) => {
-    await supabase.from("products").update(data, "id", id);
+    const { error } = await supabase.from("products").update(data, "id", id);
+    if (error) alert("Error al actualizar producto: " + JSON.stringify(error));
     fetchProducts();
   };
 
   const deleteProduct = async (id) => {
-    await supabase.from("products").delete("id", id);
+    const { error } = await supabase.from("products").delete("id", id);
+    if (error) alert("Error al eliminar producto: " + JSON.stringify(error));
     fetchProducts();
   };
 
@@ -51,12 +54,14 @@ export function useOrders() {
   }, []);
 
   const addOrder = async (data) => {
-    await supabase.from("orders").insert(data);
+    const { error } = await supabase.from("orders").insert(data);
+    if (error) alert("Error al crear pedido: " + JSON.stringify(error));
     fetchOrders();
   };
 
   const updateOrder = async (id, data) => {
-    await supabase.from("orders").update(data, "id", id);
+    const { error } = await supabase.from("orders").update(data, "id", id);
+    if (error) alert("Error al actualizar pedido: " + JSON.stringify(error));
     fetchOrders();
   };
 

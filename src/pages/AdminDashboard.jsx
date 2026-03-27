@@ -95,7 +95,7 @@ function ImageUploader({ imageUrl, onUploaded }) {
       >
         {imageUrl ? (
           <div>
-            <img src={imageUrl} alt="preview" style={{ width: "100%", maxHeight: 220, objectFit: "cover", borderRadius: 8, display: "block" }} />
+            <img src={imageUrl} alt="preview" style={{ width: "100%", maxHeight: 220, objectFit: "contain", borderRadius: 8, display: "block" }} />
             <div style={{ marginTop: 8, fontSize: "0.78rem", color: "var(--gray)" }}>Clic para cambiar imagen</div>
           </div>
         ) : uploading ? (
