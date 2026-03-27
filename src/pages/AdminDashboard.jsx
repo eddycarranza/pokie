@@ -157,7 +157,6 @@ function ProductForm({ initial, onSave, onCancel }) {
           </select>
         </div>
         <div className="form-group">
-          <label className="form-label">Emoji / icono (opcional)</label>
           
         </div>
         <div className="form-group">
