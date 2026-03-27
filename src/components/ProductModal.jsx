@@ -66,10 +66,13 @@ export default function ProductModal({ product, onClose }) {
             </div>
           </div>
 
-          {/* ESTA ES LA ÚNICA LÍNEA QUE CAMBIÓ: Ahora lee description o desc */}
-          <p style={{ color: "var(--gray)", fontSize: "0.9rem", lineHeight: 1.6 }}>
-            {product.description || product.desc || "Producto de calidad PookieCat."}
-          </p>
+          <div style={{ color: "var(--gray)", fontSize: "0.9rem", lineHeight: 1.6 }}>
+            {(product.description || product.desc || "Producto de calidad PookieCat.").split("\n").map((line, idx) =>
+              line.trim() === ""
+                ? <br key={idx} />
+                : <span key={idx} style={{ display: "block", marginBottom: 4 }}>{line}</span>
+            )}
+          </div>
 
           {/* Sizes */}
           {product.sizes?.length > 0 && (

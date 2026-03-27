@@ -11,7 +11,7 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const BUCKET = "products";
 // =========================================
 
-const CATS = ["Tops", "Pantalones",  "Accesorios", "Calzado"];
+const CATS = ["Tops", "Pantalones", "Vestidos", "Accesorios"];
 const STATUSES = ["pendiente", "enviado", "entregado", "cancelado"];
 const COLOR_OPTIONS = [
   { name: "Rosa", hex: "#f2a7c3" }, { name: "Blanco", hex: "#f0f0f0" },
@@ -232,8 +232,20 @@ export default function AdminDashboard() {
   const pending = orders.filter(o => o.status === "pendiente").length;
 
   const handleSaveProduct = async (data) => {
-    if (editing && editing !== "new") { await updateProduct(editing.id, data); showToast("Producto actualizado"); }
-    else { await addProduct(data); showToast("Producto agregado"); }
+    const supabaseData = {
+      name: data.name,
+      cat: data.cat,
+      price: data.price,
+      sale_price: data.salePrice || null,
+      description: data.description || "",
+      emoji: data.emoji || "",
+      badge: data.badge || null,
+      sizes: data.sizes || [],
+      colors: data.colors || [],
+      image_url: data.imageUrl || null,
+    };
+    if (editing && editing !== "new") { await updateProduct(editing.id, supabaseData); showToast("Producto actualizado ✓"); }
+    else { await addProduct(supabaseData); showToast("Producto agregado ✓"); }
     setEditing(null); setPanel("productos");
   };
 
@@ -320,13 +332,13 @@ export default function AdminDashboard() {
                       <td style={{ padding: "11px 14px" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                           <div style={{ width: 42, height: 48, background: "var(--pink-light)", borderRadius: 6, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.4rem", flexShrink: 0 }}>
-                            {p.imageUrl ? <img src={p.imageUrl} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : p.emoji || "👗"}
+                            {p.image_url || p.imageUrl ? <img src={p.image_url || p.imageUrl} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : p.emoji || "👗"}
                           </div>
                           <span style={{ fontSize: "0.88rem", fontWeight: 500 }}>{p.name}</span>
                         </div>
                       </td>
                       <td style={{ padding: "11px 14px", fontSize: "0.88rem" }}>{p.cat}</td>
-                      <td style={{ padding: "11px 14px", fontSize: "0.88rem" }}>S/ {p.price?.toFixed(2)}{p.salePrice && <div style={{ color: "var(--danger)", fontSize: "0.78rem" }}>S/ {p.salePrice.toFixed(2)}</div>}</td>
+                      <td style={{ padding: "11px 14px", fontSize: "0.88rem" }}>S/ {p.price?.toFixed(2)}{p.sale_price && <div style={{ color: "var(--danger)", fontSize: "0.78rem" }}>→ S/ {p.sale_price.toFixed(2)}</div>}</td>
                       <td style={{ padding: "11px 14px", fontSize: "0.82rem", color: "var(--gray)" }}>{p.sizes?.join(", ") || "-"}</td>
                       <td style={{ padding: "11px 14px" }}>{p.badge ? <span className={`badge-status badge-${p.badge}`}>{p.badge}</span> : "-"}</td>
                       <td style={{ padding: "11px 14px" }}>

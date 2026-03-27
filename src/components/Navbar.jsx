@@ -1,13 +1,12 @@
 // src/components/Navbar.jsx
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import Logo from "./Logo";
 
-const CATS = ["Todos", "Tops", "Pantalones", "Vestidos", "Conjuntos", "Accesorios", "Calzado"];
+const CATS = ["Todos", "Tops", "Pantalones", "Vestidos", "Accesorios"];
 
 export default function Navbar({ activecat, onCatChange }) {
   const { count, setIsOpen } = useCart();
-  const nav = useNavigate();
 
   return (
     <nav style={{
@@ -27,7 +26,7 @@ export default function Navbar({ activecat, onCatChange }) {
             fontSize: "0.88rem", fontWeight: c === activecat ? 500 : 400,
             color: c === activecat ? "var(--dark)" : "var(--gray)",
             borderBottom: c === activecat ? "2px solid var(--pink-dark)" : "2px solid transparent",
-            paddingBottom: 2, transition: "all .2s"
+            paddingBottom: 2, transition: "all .2s", fontFamily: "'DM Sans', sans-serif"
           }}>{c}</button>
         ))}
       </div>
@@ -36,7 +35,7 @@ export default function Navbar({ activecat, onCatChange }) {
         background: "var(--dark)", color: "white", border: "none",
         padding: "8px 20px", borderRadius: 999, cursor: "pointer",
         display: "flex", alignItems: "center", gap: 8, fontSize: "0.88rem",
-        transition: "background .2s"
+        transition: "background .2s", fontFamily: "'DM Sans', sans-serif"
       }}
         onMouseEnter={e => e.currentTarget.style.background = "var(--pink-dark)"}
         onMouseLeave={e => e.currentTarget.style.background = "var(--dark)"}
