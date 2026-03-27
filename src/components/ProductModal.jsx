@@ -66,8 +66,9 @@ export default function ProductModal({ product, onClose }) {
             </div>
           </div>
 
+          {/* ESTA ES LA ÚNICA LÍNEA QUE CAMBIÓ: Ahora lee description o desc */}
           <p style={{ color: "var(--gray)", fontSize: "0.9rem", lineHeight: 1.6 }}>
-            {product.desc || "Producto de calidad PookieCat."}
+            {product.description || product.desc || "Producto de calidad PookieCat."}
           </p>
 
           {/* Sizes */}
