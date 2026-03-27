@@ -5,44 +5,52 @@ import { useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
 
 export default function AdminLogin() {
-  const { login } = useAuth();
-  const nav = useNavigate();
   const [email, setEmail] = useState("");
-  const [pass, setPass] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError(""); setLoading(true);
+    setError("");
+    setLoading(true);
+    
     try {
-      await login(email, pass);
-      nav("/admin/dashboard");
-    } catch {
+      // Esto ahora llamará a Supabase gracias a tu nuevo AuthContext
+      await login(email, password);
+      navigate("/admin/dashboard");
+    } catch (err) {
       setError("Credenciales incorrectas. Verifica tu email y contraseña.");
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--cream)", display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}>
-      <div style={{ background: "white", borderRadius: 20, border: "1px solid var(--border)", padding: "2.5rem", width: "100%", maxWidth: 400 }}>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#fdf8fa" }}>
+      <div style={{ background: "white", padding: "3rem 2.5rem", borderRadius: 24, width: "100%", maxWidth: 400, boxShadow: "0 10px 40px rgba(0,0,0,.05)" }}>
         <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-          <Logo size={52} />
-          <h1 className="serif" style={{ fontSize: "1.6rem", marginTop: 12 }}>Panel Admin</h1>
-          <p style={{ color: "var(--gray)", fontSize: "0.88rem", marginTop: 4 }}>PookieCat — Acceso restringido</p>
+          <Logo size={48} />
+          <h1 className="serif" style={{ fontSize: "2rem", marginTop: 16 }}>Panel Admin</h1>
+          <p style={{ color: "var(--gray)", fontSize: "0.9rem", marginTop: 8 }}>PookieCat — Acceso restringido</p>
         </div>
-        <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+
+        <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
           <div className="form-group">
             <label className="form-label">Email</label>
-            <input className="form-input" type="email" placeholder="admin@pookiecat.pe" value={email} onChange={e => setEmail(e.target.value)} required />
+            <input type="email" required className="form-input" value={email} onChange={e => setEmail(e.target.value)} />
           </div>
           <div className="form-group">
             <label className="form-label">Contraseña</label>
-            <input className="form-input" type="password" placeholder="••••••••" value={pass} onChange={e => setPass(e.target.value)} required />
+            <input type="password" required className="form-input" value={password} onChange={e => setPassword(e.target.value)} />
           </div>
-          {error && <p style={{ color: "var(--danger)", fontSize: "0.85rem", textAlign: "center" }}>⚠ {error}</p>}
-          <button type="submit" className="btn btn-dark btn-full" disabled={loading} style={{ marginTop: 8 }}>
-            {loading ? "Ingresando..." : "Ingresar →"}
+
+          {error && <div style={{ color: "var(--danger)", fontSize: "0.85rem", textAlign: "center" }}>⚠ {error}</div>}
+
+          <button type="submit" disabled={loading} className="btn btn-dark btn-full" style={{ marginTop: "0.5rem" }}>
+            {loading ? "Verificando..." : "Ingresar →"}
           </button>
         </form>
       </div>

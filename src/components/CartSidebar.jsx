@@ -1,7 +1,7 @@
 // src/components/CartSidebar.jsx
 import { useState } from "react";
 import { useCart } from "../context/CartContext";
-import { useOrders } from "../hooks/useFirestore";
+import { useOrders } from "../hooks/useSupabase";
 
 export default function CartSidebar() {
   const { cart, removeFromCart, total, count, isOpen, setIsOpen, sendToWhatsApp, clearCart } = useCart();
