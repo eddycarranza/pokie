@@ -27,8 +27,9 @@ export default function ProductCard({ product, onClick }) {
         display: "flex", alignItems: "center", justifyContent: "center",
         position: "relative", fontSize: "4.5rem"
       }}>
-        {product.imageUrl
-          ? <img src={product.imageUrl} alt={product.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        {/* CORRECCIÓN AQUÍ: Soporta image_url (Supabase) o imageUrl */}
+        {product.image_url || product.imageUrl
+          ? <img src={product.image_url || product.imageUrl} alt={product.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           : product.emoji || "👗"}
         {product.badge && (
           <span className={`badge-${product.badge}`} style={{

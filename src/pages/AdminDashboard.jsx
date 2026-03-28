@@ -2,7 +2,7 @@
 import { useState, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { useProducts, useOrders } from "../hooks/useSupabase"; // ✅ Corregido a useSupabase
+import { useProducts, useOrders } from "../hooks/useSupabase";
 import Logo from "../components/Logo";
 
 // ============ SUPABASE CONFIG ============
@@ -95,7 +95,6 @@ function ImageUploader({ imageUrl, onUploaded }) {
       >
         {imageUrl ? (
           <div>
-            {/* ✅ objectFit cambiado a contain para que no se corte la imagen */}
             <img src={imageUrl} alt="preview" style={{ width: "100%", maxHeight: 220, objectFit: "contain", borderRadius: 8, display: "block" }} />
             <div style={{ marginTop: 8, fontSize: "0.78rem", color: "var(--gray)" }}>Clic para cambiar imagen</div>
           </div>
@@ -122,7 +121,6 @@ function ImageUploader({ imageUrl, onUploaded }) {
 }
 
 function ProductForm({ initial, onSave, onCancel }) {
-  // ✅ description en lugar de desc
   const [form, setForm] = useState(initial || { name: "", cat: "", price: "", salePrice: "", description: "", emoji: "", badge: "", sizes: [], colors: [], imageUrl: "" });
   const [saving, setSaving] = useState(false);
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
@@ -143,7 +141,8 @@ function ProductForm({ initial, onSave, onCancel }) {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
         <div className="form-group" style={{ gridColumn: "1/-1" }}>
           <label className="form-label">Imagen del producto</label>
-          <ImageUploader imageUrl={form.imageUrl} onUploaded={url => set("imageUrl", url)} />
+          {/* ✅ CORRECCIÓN 1: Mostrar la imagen al editar el producto leyendo de image_url si imageUrl no existe */}
+          <ImageUploader imageUrl={form.imageUrl || form.image_url} onUploaded={url => set("imageUrl", url)} />
         </div>
         <div className="form-group" style={{ gridColumn: "1/-1" }}>
           <label className="form-label">Nombre del producto *</label>
@@ -169,7 +168,6 @@ function ProductForm({ initial, onSave, onCancel }) {
         </div>
         <div className="form-group" style={{ gridColumn: "1/-1" }}>
           <label className="form-label">Descripcion</label>
-          {/* ✅ form.description en lugar de form.desc */}
           <textarea className="form-input" value={form.description} onChange={e => set("description", e.target.value)} rows={3} placeholder="Material, cuidados, detalles..." style={{ resize: "vertical" }} />
         </div>
         <div className="form-group">
@@ -242,7 +240,8 @@ export default function AdminDashboard() {
       badge: data.badge || null,
       sizes: data.sizes || [],
       colors: data.colors || [],
-      image_url: data.imageUrl || null,
+      // ✅ CORRECCIÓN 2: Conservar la imagen de la base de datos si no se seleccionó una nueva
+      image_url: data.imageUrl || data.image_url || null,
     };
     if (editing && editing !== "new") { await updateProduct(editing.id, supabaseData); showToast("Producto actualizado ✓"); }
     else { await addProduct(supabaseData); showToast("Producto agregado ✓"); }

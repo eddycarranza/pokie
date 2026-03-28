@@ -36,8 +36,9 @@ export default function ProductModal({ product, onClose }) {
           minHeight: 400, display: "flex", alignItems: "center", justifyContent: "center",
           fontSize: "7rem", position: "relative"
         }}>
-          {product.imageUrl
-            ? <img src={product.imageUrl} alt={product.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "20px 0 0 20px" }} />
+          {/* CORRECCIÓN AQUÍ: Soporta image_url (Supabase) o imageUrl */}
+          {product.image_url || product.imageUrl
+            ? <img src={product.image_url || product.imageUrl} alt={product.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "20px 0 0 20px" }} />
             : product.emoji || "👗"}
           <button onClick={onClose} style={{
             position: "absolute", top: 12, right: 12,
