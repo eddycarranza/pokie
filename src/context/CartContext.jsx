@@ -43,25 +43,34 @@ export function CartProvider({ children }) {
   };
 
   const sendToWhatsApp = (customerData) => {
-    const itemLines = cart.map(i =>
-      `  • ${i.name}${i.size ? ` | Talla: ${i.size}` : ""}${i.color ? ` | Color: ${i.color}` : ""}\n    Cantidad: ${i.qty} — S/ ${(i.price * i.qty).toFixed(2)}`
-    );
+    // Formato de productos en una sola línea limpia
+    const itemLines = cart.map(i => {
+      const details = [];
+      if (i.size) details.push(`Talla: ${i.size}`);
+      if (i.color) details.push(`Color: ${i.color}`);
+      const detailsStr = details.length > 0 ? ` (${details.join(" | ")})` : "";
+      
+      return `- ${i.name}${detailsStr} x${i.qty} - S/ ${(i.price * i.qty).toFixed(2)}`;
+    });
+
+    // Estructura idéntica a tu captura de pantalla
     const lines = [
-      `🐱 *NUEVO PEDIDO — PookieCat*`,
-      `━━━━━━━━━━━━━━━━━━━━`,
+      `NUEVO PEDIDO - POOKIECAT`,
       ``,
-      `👤 *Cliente:* ${customerData.name}`,
-      `📱 *Teléfono:* ${customerData.phone}`,
-      `📍 *Dirección:* ${customerData.address}`,
-      `💳 *Método de pago:* ${customerData.payment}`,
+      `Cliente: ${customerData.name}`,
+      `DNI: ${customerData.dni}`,
+      `Teléfono: ${customerData.phone}`,
+      `Envío: ${customerData.shipping || 'Agencia Shalom'}`,
+      `Dirección/Agencia: ${customerData.address}`,
       ``,
-      `🛍 *Productos:*`,
+      `Método de pago: ${customerData.payment}`,
+      ``,
+      `PRODUCTOS`,
       ...itemLines,
       ``,
-      `━━━━━━━━━━━━━━━━━━━━`,
-      `💰 *TOTAL: S/ ${total.toFixed(2)}*`,
-      `━━━━━━━━━━━━━━━━━━━━`,
+      `TOTAL: S/ ${total.toFixed(2)}`
     ];
+    
     const msg = encodeURIComponent(lines.join("\n"));
     window.open(`https://wa.me/${WA_NUMBER}?text=${msg}`, "_blank");
   };
