@@ -4,11 +4,17 @@ import { createPortal } from "react-dom";
 import { useCart } from "../context/CartContext";
 
 const COLOR_MAP = {
+  // Español
   "Rosa": "#f2a7c3",
   "Blanco": "#f0f0f0",
   "Negro": "#1a1a1a",
   "Azul denim": "#7eb0d4",
   "Marrón": "#8d6748",
+  // Inglés (los que tienes en el admin)
+  "Pale Pink": "hsl(337, 27%, 83%)",
+  "White": "#f0f0f0",
+  "Black": "rgb(34, 34, 34)",
+  "Light Brown": "rgba(65, 47, 37, 0.86)",
 };
 
 export default function ProductModal({ product, onClose }) {

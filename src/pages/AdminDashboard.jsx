@@ -14,10 +14,10 @@ const BUCKET = "products";
 const CATS = ["Tops", "Pantalones", "Faldas", "Accesorios"];
 const STATUSES = ["pendiente", "enviado", "entregado", "cancelado"];
 const COLOR_OPTIONS = [
-  { name: "Pale Pink", hex: "hsl(337, 27%, 83%)" }, 
+  { name: "Pale Pink", hex: "hsl(337, 27%, 83%)" },
   { name: "White", hex: "#f0f0f0" },
-  { name: "Black", hex: "rgb(34, 34, 34)" }, 
-  { name: "Azul denim", hex: "#7eb0d4" }, 
+  { name: "Black", hex: "rgb(34, 34, 34)" },
+  { name: "Azul denim", hex: "#7eb0d4" },
   { name: "Light Brown", hex: "rgba(65, 47, 37, 0.86)" },
 ];
 
