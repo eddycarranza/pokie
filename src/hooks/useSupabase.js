@@ -67,3 +67,30 @@ export function useOrders() {
 
   return { orders, loading, addOrder, updateOrder };
 }
+export function useExpenses() {
+  const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchExpenses = async () => {
+    setLoading(true);
+    const { data } = await supabase.from("expenses").select("*");
+    if (data) setExpenses(data);
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchExpenses(); }, []);
+
+  const addExpense = async (data) => {
+    const { error } = await supabase.from("expenses").insert(data);
+    if (error) alert("Error al agregar egreso: " + JSON.stringify(error));
+    fetchExpenses();
+  };
+
+  const deleteExpense = async (id) => {
+    const { error } = await supabase.from("expenses").delete("id", id);
+    if (error) alert("Error al eliminar egreso: " + JSON.stringify(error));
+    fetchExpenses();
+  };
+
+  return { expenses, loading, addExpense, deleteExpense };
+}
