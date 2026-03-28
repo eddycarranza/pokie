@@ -1,5 +1,5 @@
 /* src/index.css */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap');
+
 
 :root {
   --pink: #f2a7c3;
@@ -17,10 +17,10 @@
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--dark); }
+body { font-family: 'Courier New', Courier, monospace; background: var(--cream); color: var(--dark); }
 a { text-decoration: none; color: inherit; }
-button { font-family: 'DM Sans', sans-serif; cursor: pointer; }
-input, select, textarea { font-family: 'DM Sans', sans-serif; }
+button { font-family: 'Courier New', Courier, monospace; cursor: pointer; }
+input, select, textarea { font-family: 'Courier New', Courier, monospace; }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
@@ -28,7 +28,7 @@ input, select, textarea { font-family: 'DM Sans', sans-serif; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
 /* Utilities */
-.serif { font-family: 'Playfair Display', serif; }
+.serif { font-family: 'Courier New', Courier, monospace; font-weight: 700; }
 .text-gray { color: var(--gray); }
 .text-pink { color: var(--pink-dark); }
 .text-danger { color: var(--danger); }
@@ -99,3 +99,5 @@ input, select, textarea { font-family: 'DM Sans', sans-serif; }
 @media (max-width: 768px) {
   .hide-mobile { display: none !important; }
 }
+
+em, i { font-family: 'Courier New', Courier, monospace; font-style: italic; }

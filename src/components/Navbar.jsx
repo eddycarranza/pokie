@@ -26,7 +26,7 @@ export default function Navbar({ activecat, onCatChange }) {
             fontSize: "0.88rem", fontWeight: c === activecat ? 500 : 400,
             color: c === activecat ? "var(--dark)" : "var(--gray)",
             borderBottom: c === activecat ? "2px solid var(--pink-dark)" : "2px solid transparent",
-            paddingBottom: 2, transition: "all .2s", fontFamily: "'DM Sans', sans-serif"
+            paddingBottom: 2, transition: "all .2s", fontFamily: "'Courier New', Courier, monospace"
           }}>{c}</button>
         ))}
       </div>
@@ -35,7 +35,7 @@ export default function Navbar({ activecat, onCatChange }) {
         background: "var(--dark)", color: "white", border: "none",
         padding: "8px 20px", borderRadius: 999, cursor: "pointer",
         display: "flex", alignItems: "center", gap: 8, fontSize: "0.88rem",
-        transition: "background .2s", fontFamily: "'DM Sans', sans-serif"
+        transition: "background .2s", fontFamily: "'Courier New', Courier, monospace"
       }}
         onMouseEnter={e => e.currentTarget.style.background = "var(--pink-dark)"}
         onMouseLeave={e => e.currentTarget.style.background = "var(--dark)"}

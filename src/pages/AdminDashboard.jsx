@@ -11,17 +11,14 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const BUCKET = "products";
 // =========================================
 
-const CATS = ["Tops", "Pantalones", "Vestidos", "Accesorios"];
+const CATS = ["Tops", "Pantalones", "Faldas", "Accesorios"];
 const STATUSES = ["pendiente", "enviado", "entregado", "cancelado"];
 const COLOR_OPTIONS = [
-  { name: "Rosa", hex: "#f2a7c3" }, { name: "Blanco", hex: "#f0f0f0" },
-  { name: "Negro", hex: "#1a1a1a" }, { name: "Beige", hex: "#d4c5a9" },
-  { name: "Lila", hex: "#c9b1e8" }, { name: "Verde", hex: "#a8d5a2" },
-  { name: "Azul denim", hex: "#7eb0d4" }, { name: "Rojo", hex: "#e05252" },
-  { name: "Nude", hex: "#e8c9b0" }, { name: "Celeste", hex: "#a8d8ea" },
-  { name: "Mostaza", hex: "#e8b84b" }, { name: "Naranja", hex: "#f0a060" },
-  { name: "Gris", hex: "#9e9e9e" }, { name: "Marrón", hex: "#8d6748" },
-  { name: "Plateado", hex: "#c0c0c0" }, { name: "Dorado", hex: "#d4a843" },
+  { name: "Pale Pink", hex: "hsl(337, 27%, 83%)" }, 
+  { name: "White", hex: "#f0f0f0" },
+  { name: "Black", hex: "rgb(34, 34, 34)" }, 
+  { name: "Azul denim", hex: "#7eb0d4" }, 
+  { name: "Light Brown", hex: "rgba(65, 47, 37, 0.86)" },
 ];
 
 async function uploadToSupabase(file, onProgress) {
@@ -59,7 +56,7 @@ function TagInput({ tags, onChange, placeholder }) {
       ))}
       <input value={val} onChange={e => setVal(e.target.value)} onKeyDown={add}
         placeholder={tags.length ? "" : placeholder}
-        style={{ border: "none", outline: "none", fontSize: "0.85rem", flex: 1, minWidth: 80, fontFamily: "'DM Sans',sans-serif" }} />
+        style={{ border: "none", outline: "none", fontSize: "0.85rem", flex: 1, minWidth: 80, fontFamily: "'Courier New', Courier, monospace" }} />
     </div>
   );
 }

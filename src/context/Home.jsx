@@ -4,10 +4,10 @@ import Navbar from "../components/Navbar";
 import ProductCard from "../components/ProductCard";
 import ProductModal from "../components/ProductModal";
 import CartSidebar from "../components/CartSidebar";
-import { useProducts } from "../hooks/useFirestore";
+import { useProducts } from "../hooks/useSupabase";
 import Logo from "../components/Logo";
 
-const CATS = ["Todos", "Tops", "Pantalones", "Vestidos", "Conjuntos", "Accesorios", "Calzado"];
+const CATS = ["Todos", "Tops", "Pantalones", "Vestidos", "Accesorios"];
 
 export default function Home() {
   const { products, loading } = useProducts();
@@ -40,13 +40,10 @@ export default function Home() {
           <button className="btn btn-dark" onClick={() => document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" })}>
             Ver catálogo
           </button>
-          <button className="btn btn-outline" onClick={() => { setCat("Vestidos"); document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" }); }}>
-            Vestidos ✦
-          </button>
         </div>
       </div>
 
-      {/* Categories pills */}
+      {/* Catálogo */}
       <div id="catalog" style={{ maxWidth: 1200, margin: "0 auto", padding: "2.5rem 2rem 0" }}>
         <h2 className="serif" style={{ fontSize: "1.8rem", marginBottom: 4 }}>Catálogo</h2>
         <p style={{ color: "var(--gray)", fontSize: "0.88rem", marginBottom: "1.5rem" }}>
@@ -59,13 +56,14 @@ export default function Home() {
               border: `1px solid ${c === cat ? "var(--dark)" : "var(--border)"}`,
               background: c === cat ? "var(--dark)" : "white",
               color: c === cat ? "white" : "var(--dark)",
-              fontSize: "0.88rem", cursor: "pointer", transition: "all .2s"
+              fontSize: "0.88rem", cursor: "pointer", transition: "all .2s",
+              fontFamily: "'Courier New', Courier, monospace"
             }}>{c}</button>
           ))}
         </div>
       </div>
 
-      {/* Products grid */}
+      {/* Grid productos */}
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 2rem 3rem" }}>
         {loading ? (
           <div style={{ textAlign: "center", padding: "4rem", color: "var(--gray)" }}>

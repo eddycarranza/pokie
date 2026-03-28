@@ -183,7 +183,7 @@ export default function CartSidebar() {
                   background: "#25D366", color: "white", border: "none",
                   borderRadius: 999, padding: 13, fontSize: "0.95rem",
                   cursor: loading ? "default" : "pointer",
-                  fontFamily: "'DM Sans', sans-serif", fontWeight: 500
+                  fontFamily: "'Courier New', Courier, monospace", fontWeight: 500
                 }}
               >
                 {loading ? "Guardando..." : "📲 Enviar pedido por WhatsApp"}

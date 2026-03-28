@@ -3,9 +3,11 @@ import { useState } from "react";
 import { useCart } from "../context/CartContext";
 
 const COLOR_MAP = {
-  Rosa: "#f2a7c3", Blanco: "#f5f5f5", Negro: "#1a1a1a", Beige: "#d4c5a9",
-  Lila: "#c9b1e8", Verde: "#a8d5a2", "Azul denim": "#7eb0d4", Rojo: "#e05252",
-  Nude: "#e8c9b0", Celeste: "#a8d8ea", Mostaza: "#e8b84b", Naranja: "#f0a060"
+  "Rosa": "#f2a7c3",
+  "Blanco": "#f0f0f0",
+  "Negro": "#1a1a1a",
+  "Azul denim": "#7eb0d4",
+  "Marrón": "#8d6748",
 };
 
 export default function ProductModal({ product, onClose }) {
@@ -67,7 +69,7 @@ export default function ProductModal({ product, onClose }) {
             </div>
           </div>
 
-          <div style={{ color: "var(--gray)", fontSize: "0.9rem", lineHeight: 1.6 }}>
+          <div style={{ color: "#2a2a2a", fontSize: "0.88rem", lineHeight: 1.7, fontFamily: "'Courier New', Courier, monospace" }}>
             {(product.description || product.desc || "Producto de calidad PookieCat.").split("\n").map((line, idx) =>
               line.trim() === ""
                 ? <br key={idx} />
