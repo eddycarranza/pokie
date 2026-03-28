@@ -1,5 +1,5 @@
 // src/pages/Home.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import ProductCard from "../components/ProductCard";
 import ProductModal from "../components/ProductModal";
@@ -7,7 +7,169 @@ import CartSidebar from "../components/CartSidebar";
 import { useProducts } from "../hooks/useSupabase";
 import Logo from "../components/Logo";
 
-const CATS = ["Todos", "Tops", "Pantalones", "Vestidos", "Accesorios"];
+const CATS = ["Todos", "Tops", "Pantalones", "Faldas", "Accesorios"];
+
+// ============ HERO BANNER ============
+const SLIDES = [
+  {
+    bg: "#1a1a1a",
+    tag: "✦ Nueva colección",
+    title: "Moda que te abraza",
+    sub: "con estilo",
+    cta: "Ver colección",
+    img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1400&q=80",
+    accent: "#f2a7c3",
+    light: true,
+  },
+  {
+    bg: "#f5f0eb",
+    tag: "✦ Tops & Vestidos",
+    title: "Ropa femenina",
+    sub: "con personalidad",
+    cta: "Ver catálogo",
+    img: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=1400&q=80",
+    accent: "#c9607f",
+    light: false,
+  },
+  {
+    bg: "#1a1a1a",
+    tag: "✦ Envíos a todo el Perú",
+    title: "Calidad peruana",
+    sub: "al mejor precio",
+    cta: "Comprar ahora",
+    img: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1400&q=80",
+    accent: "#f2a7c3",
+    light: true,
+  },
+];
+
+function HeroBanner({ onShop }) {
+  const [current, setCurrent] = useState(0);
+  const [animating, setAnimating] = useState(false);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setAnimating(true);
+      setTimeout(() => {
+        setCurrent(p => (p + 1) % SLIDES.length);
+        setAnimating(false);
+      }, 400);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, []);
+
+  const goTo = (i) => {
+    if (i === current) return;
+    setAnimating(true);
+    setTimeout(() => { setCurrent(i); setAnimating(false); }, 400);
+  };
+
+  const slide = SLIDES[current];
+
+  return (
+    <div style={{
+      position: "relative", width: "100%", height: "94vh", minHeight: 560,
+      background: slide.bg, overflow: "hidden",
+      display: "flex", alignItems: "flex-end",
+    }}>
+      {/* Imagen de fondo */}
+      {slide.img && (
+        <img src={slide.img} alt="" style={{
+          position: "absolute", inset: 0, width: "100%", height: "100%",
+          objectFit: "cover", objectPosition: "center top",
+          opacity: animating ? 0 : 1,
+          transition: "opacity .5s ease",
+        }} />
+      )}
+
+      {/* Overlay gradiente bottom */}
+      <div style={{
+        position: "absolute", inset: 0,
+        background: "linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.15) 50%, transparent 100%)",
+      }} />
+
+      {/* Contenido abajo izquierda */}
+      <div style={{
+        position: "relative", zIndex: 2,
+        padding: "0 4rem 4rem",
+        opacity: animating ? 0 : 1,
+        transform: animating ? "translateY(20px)" : "translateY(0)",
+        transition: "opacity .45s ease, transform .45s ease",
+        maxWidth: 680,
+      }}>
+        <div style={{
+          display: "inline-block",
+          color: slide.accent, fontSize: "0.72rem",
+          letterSpacing: ".15em", textTransform: "uppercase",
+          marginBottom: "1rem",
+          fontFamily: "'Courier New', Courier, monospace",
+          borderBottom: `1px solid ${slide.accent}`,
+          paddingBottom: 4,
+        }}>
+          {slide.tag}
+        </div>
+
+        <h1 style={{
+          fontFamily: "'Courier New', Courier, monospace",
+          fontSize: "clamp(2.6rem, 5.5vw, 4.8rem)",
+          fontWeight: 700, lineHeight: 1.0,
+          color: "white", marginBottom: "0.3rem",
+          textShadow: "0 2px 20px rgba(0,0,0,0.3)",
+        }}>
+          {slide.title}
+        </h1>
+        <h2 style={{
+          fontFamily: "'Courier New', Courier, monospace",
+          fontSize: "clamp(2rem, 4.5vw, 3.8rem)",
+          fontWeight: 400, lineHeight: 1.1,
+          color: slide.accent, marginBottom: "2rem",
+          fontStyle: "italic",
+        }}>
+          {slide.sub}
+        </h2>
+
+        <button onClick={onShop} style={{
+          background: "white", color: "#1a1a1a", border: "none",
+          padding: "13px 30px", borderRadius: 999, cursor: "pointer",
+          fontFamily: "'Courier New', Courier, monospace",
+          fontSize: "0.88rem", letterSpacing: ".05em", fontWeight: 600,
+          transition: "all .2s",
+        }}
+          onMouseEnter={e => { e.currentTarget.style.background = slide.accent; e.currentTarget.style.color = "white"; }}
+          onMouseLeave={e => { e.currentTarget.style.background = "white"; e.currentTarget.style.color = "#1a1a1a"; }}
+        >
+          {slide.cta} →
+        </button>
+      </div>
+
+      {/* Dots abajo derecha */}
+      <div style={{
+        position: "absolute", bottom: "2.2rem", right: "3rem",
+        display: "flex", gap: 8, zIndex: 3, alignItems: "center",
+      }}>
+        {SLIDES.map((_, i) => (
+          <button key={i} onClick={() => goTo(i)} style={{
+            width: i === current ? 28 : 8, height: 8,
+            borderRadius: 999, border: "none", cursor: "pointer",
+            background: i === current ? "white" : "rgba(255,255,255,0.4)",
+            transition: "all .35s ease", padding: 0,
+          }} />
+        ))}
+      </div>
+
+      {/* Número del slide */}
+      <div style={{
+        position: "absolute", right: "3rem", top: "50%", transform: "translateY(-50%)",
+        color: "rgba(255,255,255,0.5)", fontSize: "0.75rem", letterSpacing: ".1em",
+        fontFamily: "'Courier New', Courier, monospace", zIndex: 3,
+        writingMode: "vertical-rl",
+      }}>
+        {String(current + 1).padStart(2,"0")} / {String(SLIDES.length).padStart(2,"0")}
+      </div>
+    </div>
+  );
+}
+// =====================================
 
 export default function Home() {
   const { products, loading } = useProducts();
@@ -21,27 +183,8 @@ export default function Home() {
       <Navbar activecat={cat} onCatChange={setCat} />
       <CartSidebar />
 
-      {/* Hero */}
-      <div style={{
-        background: "linear-gradient(135deg, #fce8f1 0%, #fdf8f4 55%, #f2e8ff 100%)",
-        padding: "5rem 2rem", textAlign: "center", position: "relative", overflow: "hidden"
-      }}>
-        <div style={{ position: "absolute", top: -80, right: -80, width: 300, height: 300, background: "radial-gradient(circle, #f2a7c355 0%, transparent 70%)", borderRadius: "50%" }} />
-        <div style={{ display: "inline-block", background: "var(--pink-light)", color: "var(--pink-dark)", fontSize: "0.78rem", letterSpacing: ".1em", textTransform: "uppercase", padding: "6px 18px", borderRadius: 999, marginBottom: "1.2rem" }}>
-          ✦ Nueva colección disponible
-        </div>
-        <h1 className="serif" style={{ fontSize: "clamp(2.5rem, 6vw, 4.5rem)", lineHeight: 1.1, marginBottom: "1rem" }}>
-          Moda que <em style={{ color: "var(--pink-dark)" }}>te abraza</em><br />con estilo
-        </h1>
-        <p style={{ color: "var(--gray)", fontSize: "1.05rem", maxWidth: 460, margin: "0 auto 2rem" }}>
-          Ropa femenina con personalidad. Calidad peruana, envíos a todo el país.
-        </p>
-        <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
-          <button className="btn btn-dark" onClick={() => document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" })}>
-            Ver catálogo
-          </button>
-        </div>
-      </div>
+      {/* Hero Carrusel */}
+      <HeroBanner onShop={() => document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" })} />
 
       {/* Catálogo */}
       <div id="catalog" style={{ maxWidth: 1200, margin: "0 auto", padding: "2.5rem 2rem 0" }}>
@@ -81,13 +224,43 @@ export default function Home() {
         )}
       </div>
 
-      {/* Footer */}
-      <footer style={{ background: "var(--dark)", color: "white", textAlign: "center", padding: "2rem" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 6 }}>
-          <Logo size={28} />
-          <span className="serif" style={{ fontSize: "1.2rem" }}>PookieCat</span>
+      {/* Footer con Redes Sociales */}
+      <footer style={{ background: "var(--dark)", color: "white", textAlign: "center", padding: "3rem 2rem" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: "1.5rem" }}>
+          <Logo size={32} />
+          <span className="serif" style={{ fontSize: "1.4rem" }}>PookieCat</span>
         </div>
-        <p style={{ fontSize: "0.8rem", opacity: 0.5 }}>
+        
+        {/* Enlaces de Redes Sociales */}
+        <div style={{ display: "flex", justifyContent: "center", gap: "2rem", marginBottom: "2rem", flexWrap: "wrap" }}>
+          {/* Instagram */}
+          <a href="https://www.instagram.com/pookiecat.pe/" target="_blank" rel="noreferrer" 
+            style={{ color: "white", textDecoration: "none", display: "flex", alignItems: "center", gap: 8, opacity: 0.7, transition: "opacity 0.2s" }} 
+            onMouseEnter={e => e.currentTarget.style.opacity = 1} 
+            onMouseLeave={e => e.currentTarget.style.opacity = 0.7}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+            </svg>
+            <span style={{ fontSize: "0.95rem", fontFamily: "'Courier New', Courier, monospace" }}>Instagram</span>
+          </a>
+          
+          {/* TikTok */}
+          <a href="https://www.tiktok.com/@pookiecat.pe?lang=es-419" target="_blank" rel="noreferrer" 
+            style={{ color: "white", textDecoration: "none", display: "flex", alignItems: "center", gap: 8, opacity: 0.7, transition: "opacity 0.2s" }} 
+            onMouseEnter={e => e.currentTarget.style.opacity = 1} 
+            onMouseLeave={e => e.currentTarget.style.opacity = 0.7}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path>
+            </svg>
+            <span style={{ fontSize: "0.95rem", fontFamily: "'Courier New', Courier, monospace" }}>TikTok</span>
+          </a>
+        </div>
+
+        <p style={{ fontSize: "0.85rem", opacity: 0.5, margin: 0 }}>
           Envíos a todo el Perú · WhatsApp: 948761303 · pookiecat.pe
         </p>
       </footer>

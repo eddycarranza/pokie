@@ -15,7 +15,7 @@ const SLIDES = [
   {
     bg: "#1a1a1a",
     tag: "✦ Nueva colección",
-    title: "Moda que te abraza",
+    title: "Moda porque estamos en tendencia",
     sub: "con estilo",
     cta: "Ver colección",
     img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1400&q=80",
