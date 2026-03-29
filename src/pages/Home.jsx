@@ -9,7 +9,6 @@ import Logo from "../components/Logo";
 
 const CATS = ["Todos", "Tops", "Pantalones", "Faldas", "Accesorios"];
 
-
 // ============ HERO BANNER ============
 const SLIDES = [
   {
@@ -176,6 +175,25 @@ export default function Home() {
   const { products, loading } = useProducts();
   const [cat, setCat] = useState("Todos");
   const [selected, setSelected] = useState(null);
+  
+  // Estado para controlar cuándo mostrar el botón de WhatsApp
+  const [showWsp, setShowWsp] = useState(false);
+
+  // Efecto para detectar el scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      // Si el usuario baja más de 400px (sale de la foto principal)
+      if (window.scrollY > 400) {
+        setShowWsp(true);
+      } else {
+        setShowWsp(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    handleScroll(); // Comprobar al cargar la página
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const filtered = cat === "Todos" ? products : products.filter(p => p.cat === cat);
 
@@ -238,7 +256,7 @@ export default function Home() {
 
       {selected && <ProductModal product={selected} onClose={() => setSelected(null)} />}
 
-      {/* Botón flotante WhatsApp */}
+      {/* Botón flotante WhatsApp animado */}
       <a
         href="https://wa.me/51948761303?text=Hola!%20Quisiera%20consultar%20sobre%20un%20producto%20"
         target="_blank"
@@ -248,11 +266,27 @@ export default function Home() {
           width: 58, height: 58, borderRadius: "50%",
           background: "#25D366", color: "white",
           display: "flex", alignItems: "center", justifyContent: "center",
-          boxShadow: "0 4px 20px rgba(37,211,102,.45)",
-          textDecoration: "none", transition: "transform .2s, box-shadow .2s",
+          textDecoration: "none", 
+          
+          // Lógica de aparición dinámica
+          opacity: showWsp ? 1 : 0,
+          visibility: showWsp ? "visible" : "hidden",
+          transform: showWsp ? "translateY(0) scale(1)" : "translateY(20px) scale(0.8)",
+          boxShadow: showWsp ? "0 4px 20px rgba(37,211,102,.45)" : "none",
+          transition: "all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s",
         }}
-        onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.1)"; e.currentTarget.style.boxShadow = "0 6px 28px rgba(37,211,102,.6)"; }}
-        onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(37,211,102,.45)"; }}
+        onMouseEnter={e => { 
+          if(showWsp) {
+            e.currentTarget.style.transform = "translateY(0) scale(1.1)"; 
+            e.currentTarget.style.boxShadow = "0 6px 28px rgba(37,211,102,.6)"; 
+          }
+        }}
+        onMouseLeave={e => { 
+          if(showWsp) {
+            e.currentTarget.style.transform = "translateY(0) scale(1)"; 
+            e.currentTarget.style.boxShadow = "0 4px 20px rgba(37,211,102,.45)"; 
+          }
+        }}
         title="Consultas por WhatsApp"
       >
         <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
@@ -262,5 +296,3 @@ export default function Home() {
     </>
   );
 }
-
-{}
