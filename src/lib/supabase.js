@@ -1,6 +1,8 @@
 // src/lib/supabase.js
-export const SUPABASE_URL = "https://dsxtauxcbyeumkdbhtxj.supabase.co";
-export const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzeHRhdXhjYnlldW1rZGJodHhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjMxNzgsImV4cCI6MjA5MDEzOTE3OH0.CZPiBgf5Gmrsuq3TTzIphI5stuEVy-w4TqAIfo-QsO4";
+
+// Usamos import.meta.env para Vite (estándar en Vercel)
+export const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+export const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export const supabase = {
   auth: {
@@ -50,7 +52,8 @@ export const supabase = {
         method: "DELETE",
         headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
       });
-      return { error: res.ok ? null : await res.json() };
+      const errorData = res.ok ? null : await res.json();
+      return { error: errorData };
     }
   }),
   storage: {
@@ -61,7 +64,10 @@ export const supabase = {
         headers: { Authorization: `Bearer ${SUPABASE_ANON_KEY}`, "Content-Type": file.type, "x-upsert": "true" },
         body: file,
       });
-      if (!res.ok) { const err = await res.json(); throw new Error(err.message || "Error subiendo imagen"); }
+      if (!res.ok) { 
+        const err = await res.json(); 
+        throw new Error(err.message || "Error subiendo imagen"); 
+      }
       return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${fileName}`;
     }
   }
