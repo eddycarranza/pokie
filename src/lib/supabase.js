@@ -1,15 +1,20 @@
 // src/lib/supabase.js
 
-// 1. Cargamos las variables (Vite las inyecta automáticamente)
 export const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 export const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+// Log de depuración: aparecerá en la consola del navegador (F12)
+console.log("Conexión activa a:", SUPABASE_URL ? "URL detectada" : "URL NO DETECTADA");
 
 export const supabase = {
   auth: {
     signInWithPassword: async ({ email, password }) => {
       const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
         method: "POST",
-        headers: { apikey: SUPABASE_ANON_KEY, "Content-Type": "application/json" },
+        headers: { 
+          apikey: SUPABASE_ANON_KEY, 
+          "Content-Type": "application/json" 
+        },
         body: JSON.stringify({ email, password })
       });
       const data = await res.json();
@@ -24,7 +29,10 @@ export const supabase = {
   from: (table) => ({
     select: async (cols = "*") => {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?select=${cols}&order=created_at.desc`, {
-        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
+        headers: { 
+          apikey: SUPABASE_ANON_KEY, 
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}` 
+        }
       });
       const data = await res.json();
       return { data, error: res.ok ? null : data };
@@ -32,7 +40,12 @@ export const supabase = {
     insert: async (body) => {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
         method: "POST",
-        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}`, "Content-Type": "application/json", Prefer: "return=representation" },
+        headers: { 
+          apikey: SUPABASE_ANON_KEY, 
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`, 
+          "Content-Type": "application/json", 
+          Prefer: "return=representation" 
+        },
         body: JSON.stringify(body)
       });
       const data = await res.json();
@@ -41,7 +54,12 @@ export const supabase = {
     update: async (body, matchCol, matchVal) => {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${matchCol}=eq.${matchVal}`, {
         method: "PATCH",
-        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}`, "Content-Type": "application/json", Prefer: "return=representation" },
+        headers: { 
+          apikey: SUPABASE_ANON_KEY, 
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`, 
+          "Content-Type": "application/json", 
+          Prefer: "return=representation" 
+        },
         body: JSON.stringify(body)
       });
       const data = await res.json();
@@ -50,7 +68,10 @@ export const supabase = {
     delete: async (matchCol, matchVal) => {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${matchCol}=eq.${matchVal}`, {
         method: "DELETE",
-        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
+        headers: { 
+          apikey: SUPABASE_ANON_KEY, 
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}` 
+        }
       });
       const errorData = res.ok ? null : await res.json();
       return { error: errorData };
@@ -61,7 +82,11 @@ export const supabase = {
       const fileName = `${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
       const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucket}/${fileName}`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${SUPABASE_ANON_KEY}`, "Content-Type": file.type, "x-upsert": "true" },
+        headers: { 
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`, 
+          "Content-Type": file.type, 
+          "x-upsert": "true" 
+        },
         body: file,
       });
       if (!res.ok) { 
