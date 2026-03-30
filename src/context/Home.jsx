@@ -7,8 +7,7 @@ import CartSidebar from "../components/CartSidebar";
 import { useProducts } from "../hooks/useSupabase";
 import Logo from "../components/Logo";
 
-const CATS = ["Todos", "Tops", "Pantalones", "Faldas", "Accesorios"];
-
+const CATS = ["Todos", "Tops", "Pantalones", "Vestidos", "Accesorios", "Zapatos"];
 
 // ============ HERO BANNER ============
 const SLIDES = [
@@ -69,7 +68,7 @@ function HeroBanner({ onShop }) {
 
   return (
     <div style={{
-      position: "relative", width: "100%", height: "70vh", minHeight: 420,
+      position: "relative", width: "100%", height: "94vh", minHeight: 560,
       background: slide.bg, overflow: "hidden",
       display: "flex", alignItems: "flex-end",
     }}>
@@ -92,7 +91,7 @@ function HeroBanner({ onShop }) {
       {/* Contenido abajo izquierda */}
       <div style={{
         position: "relative", zIndex: 2,
-        padding: "0 1.5rem 3rem",
+        padding: "0 4rem 4rem",
         opacity: animating ? 0 : 1,
         transform: animating ? "translateY(20px)" : "translateY(0)",
         transition: "opacity .45s ease, transform .45s ease",
@@ -145,7 +144,7 @@ function HeroBanner({ onShop }) {
 
       {/* Dots abajo derecha */}
       <div style={{
-        position: "absolute", bottom: "1.5rem", right: "1.5rem",
+        position: "absolute", bottom: "2.2rem", right: "3rem",
         display: "flex", gap: 8, zIndex: 3, alignItems: "center",
       }}>
         {SLIDES.map((_, i) => (
@@ -163,7 +162,7 @@ function HeroBanner({ onShop }) {
         position: "absolute", right: "3rem", top: "50%", transform: "translateY(-50%)",
         color: "rgba(255,255,255,0.5)", fontSize: "0.75rem", letterSpacing: ".1em",
         fontFamily: "'Courier New', Courier, monospace", zIndex: 3,
-        writingMode: "vertical-rl", display: "none",
+        writingMode: "vertical-rl",
       }}>
         {String(current + 1).padStart(2,"0")} / {String(SLIDES.length).padStart(2,"0")}
       </div>
@@ -176,6 +175,25 @@ export default function Home() {
   const { products, loading } = useProducts();
   const [cat, setCat] = useState("Todos");
   const [selected, setSelected] = useState(null);
+  
+  // Estado para controlar cuándo mostrar el botón de WhatsApp
+  const [showWsp, setShowWsp] = useState(false);
+
+  // Efecto para detectar el scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      // Si el usuario baja más de 400px (sale de la foto principal)
+      if (window.scrollY > 400) {
+        setShowWsp(true);
+      } else {
+        setShowWsp(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    handleScroll(); // Comprobar al cargar la página
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const filtered = cat === "Todos" ? products : products.filter(p => p.cat === cat);
 
@@ -188,7 +206,7 @@ export default function Home() {
       <HeroBanner onShop={() => document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" })} />
 
       {/* Catálogo */}
-      <div id="catalog" style={{ maxWidth: 1200, margin: "0 auto", padding: "1.5rem 1rem 0", boxSizing: "border-box", width: "100%" }}>
+      <div id="catalog" style={{ maxWidth: 1200, margin: "0 auto", padding: "1.5rem 1rem 0" }}>
         <h2 className="serif" style={{ fontSize: "1.8rem", marginBottom: 4 }}>Catálogo</h2>
         <p style={{ color: "var(--gray)", fontSize: "0.88rem", marginBottom: "1.5rem" }}>
           {cat === "Todos" ? "Todos los productos" : cat} — {filtered.length} producto{filtered.length !== 1 ? "s" : ""}
@@ -208,7 +226,7 @@ export default function Home() {
       </div>
 
       {/* Grid productos */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 1rem 5rem", boxSizing: "border-box", width: "100%" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 1rem 3rem" }}>
         {loading ? (
           <div style={{ textAlign: "center", padding: "4rem", color: "var(--gray)" }}>
             <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>🐱</div>
@@ -219,7 +237,7 @@ export default function Home() {
             <p>No hay productos en esta categoría aún.</p>
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "0.75rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "1rem" }}>
             {filtered.map(p => <ProductCard key={p.id} product={p} onClick={setSelected} />)}
           </div>
         )}
@@ -238,7 +256,7 @@ export default function Home() {
 
       {selected && <ProductModal product={selected} onClose={() => setSelected(null)} />}
 
-      {/* Botón flotante WhatsApp */}
+      {/* Botón flotante WhatsApp animado */}
       <a
         href="https://wa.me/51948761303?text=Hola!%20Quisiera%20consultar%20sobre%20un%20producto%20"
         target="_blank"
@@ -248,11 +266,27 @@ export default function Home() {
           width: 58, height: 58, borderRadius: "50%",
           background: "#25D366", color: "white",
           display: "flex", alignItems: "center", justifyContent: "center",
-          boxShadow: "0 4px 20px rgba(37,211,102,.45)",
-          textDecoration: "none", transition: "transform .2s, box-shadow .2s",
+          textDecoration: "none", 
+          
+          // Lógica de aparición dinámica
+          opacity: showWsp ? 1 : 0,
+          visibility: showWsp ? "visible" : "hidden",
+          transform: showWsp ? "translateY(0) scale(1)" : "translateY(20px) scale(0.8)",
+          boxShadow: showWsp ? "0 4px 20px rgba(37,211,102,.45)" : "none",
+          transition: "all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s",
         }}
-        onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.1)"; e.currentTarget.style.boxShadow = "0 6px 28px rgba(37,211,102,.6)"; }}
-        onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(37,211,102,.45)"; }}
+        onMouseEnter={e => { 
+          if(showWsp) {
+            e.currentTarget.style.transform = "translateY(0) scale(1.1)"; 
+            e.currentTarget.style.boxShadow = "0 6px 28px rgba(37,211,102,.6)"; 
+          }
+        }}
+        onMouseLeave={e => { 
+          if(showWsp) {
+            e.currentTarget.style.transform = "translateY(0) scale(1)"; 
+            e.currentTarget.style.boxShadow = "0 4px 20px rgba(37,211,102,.45)"; 
+          }
+        }}
         title="Consultas por WhatsApp"
       >
         <svg width="28" height="28" viewBox="0 0 24 24" fill="white">

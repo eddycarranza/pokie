@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import Logo from "./Logo";
 
-const CATS = ["Todos", "Tops", "Pantalones", "Vestidos", "Accesorios"];
+const CATS = ["Todos", "Tops", "Pantalones", "Vestidos", "Accesorios", "Zapatos"];
 
 // Iconos SVG simples
 const IconInstagram = () => (
@@ -203,50 +203,67 @@ export default function Navbar({ activecat, onCatChange }) {
         )}
       </div>
 
-      {/* ========================================================
-         MÓVIL: Panel del Menú Desplegable
-         ======================================================== */}
+      {/* MÓVIL: Panel del Menú Desplegable */}
       {isMobile && menuOpen && (
         <div style={{
-          position: 'absolute', top: 64, left: 0, width: '100%',
-          height: 'calc(100vh - 64px)', background: 'white',
-          borderTop: "1px solid var(--border)",
-          overflowY: 'auto', zIndex: 999, display: 'flex', flexDirection: 'column'
+          position: 'fixed', top: 64, left: 0, right: 0, bottom: 0,
+          background: 'white', borderTop: "1px solid var(--border)",
+          overflowY: 'auto', zIndex: 999, display: 'flex', flexDirection: 'column',
         }}>
-          {/* 1. Enlaces Principales */}
-          <div style={{ padding: "1rem 0" }}>
-            <button onClick={() => { window.scrollTo(0,0); setMenuOpen(false); }} style={{
-              display: "block", width: "100%", textAlign: "left",
-              padding: "16px 2rem", background: "none", border: "none", cursor: "pointer",
-              fontFamily: "'Courier New', Courier, monospace", fontSize: "1rem", fontWeight: 600,
-              color: "var(--dark)", textTransform: "uppercase", letterSpacing: ".1em",
-            }}>Inicio</button>
-          </div>
+          {/* Inicio */}
+          <button onClick={() => { window.scrollTo(0,0); setMenuOpen(false); }} style={{
+            display: "flex", alignItems: "center", gap: 12,
+            width: "100%", textAlign: "left",
+            padding: "18px 1.5rem", background: "none",
+            borderBottom: "1px solid var(--border)", border: "none", cursor: "pointer",
+            fontFamily: "'Courier New', Courier, monospace", fontSize: "0.9rem", fontWeight: 700,
+            color: "var(--dark)", textTransform: "uppercase", letterSpacing: ".1em",
+          }}>
+            <span style={{ fontSize: "1.1rem" }}>🏠</span> Inicio
+          </button>
 
-          {/* 2. Categorías de Productos */}
-          <div style={{ padding: "0 2rem 2rem", flex: 1 }}>
-            <div style={{ fontSize: "0.75rem", color: "var(--gray)", textTransform: "uppercase", letterSpacing: ".15em", marginBottom: 16, fontWeight: 700 }}>Categorías</div>
-            <div style={{ display: "flex", flexDirection: 'column', gap: 10 }}>
+          {/* Categorías */}
+          <div style={{ padding: "1.25rem 1.5rem", flex: 1 }}>
+            <div style={{
+              fontSize: "0.68rem", color: "var(--gray)", textTransform: "uppercase",
+              letterSpacing: ".15em", marginBottom: 14, fontWeight: 700,
+            }}>Categorías</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {CATS.map(cat => (
                 <button key={cat} onClick={() => handleCat(cat)} style={{
-                  display: 'block', width: '100%', textAlign: 'left',
-                  padding: "14px 20px", borderRadius: 12, cursor: "pointer",
-                  border: `1px solid ${cat === activecat ? "var(--dark)" : "var(--border)"}`,
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  width: "100%", padding: "14px 18px", borderRadius: 12, cursor: "pointer",
+                  border: `1.5px solid ${cat === activecat ? "var(--dark)" : "var(--border)"}`,
                   background: cat === activecat ? "var(--dark)" : "white",
                   color: cat === activecat ? "white" : "var(--dark)",
-                  fontFamily: "'Courier New', Courier, monospace", fontSize: "0.85rem",
-                }}>{cat}</button>
+                  fontFamily: "'Courier New', Courier, monospace",
+                  fontSize: "0.88rem", fontWeight: cat === activecat ? 700 : 400,
+                  transition: "all .15s",
+                }}>
+                  <span>{cat}</span>
+                  {cat === activecat && <span style={{ fontSize: "0.7rem", opacity: 0.7 }}>✦</span>}
+                </button>
               ))}
             </div>
           </div>
 
-          {/* 3. Footer del Menú (Redes Sociales — para mantener la barra principal limpia como HM/Mascota) */}
+          {/* Footer redes */}
           <div style={{
-            padding: '1.5rem 2rem', borderTop: '1px solid var(--border)',
-            background: '#fafafa', display: 'flex', justifyContent: 'center', gap: '2rem'
+            padding: "1.25rem 1.5rem",
+            borderTop: "1px solid var(--border)",
+            background: "var(--cream)",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: "2.5rem",
           }}>
-             <a href="https://www.instagram.com/pookiecat.pe/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--dark)", opacity: 0.7 }}><IconInstagram /></a>
-             <a href="https://www.tiktok.com/@pookiecat.pe" target="_blank" rel="noopener noreferrer" style={{ color: "var(--dark)", opacity: 0.7 }}><IconTiktok /></a>
+            <a href="https://www.instagram.com/pookiecat.pe/" target="_blank" rel="noopener noreferrer"
+              style={{ color: "var(--dark)", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, textDecoration: "none" }}>
+              <IconInstagram />
+              <span style={{ fontSize: "0.65rem", color: "var(--gray)", fontFamily: "'Courier New', Courier, monospace" }}>Instagram</span>
+            </a>
+            <a href="https://www.tiktok.com/@pookiecat.pe" target="_blank" rel="noopener noreferrer"
+              style={{ color: "var(--dark)", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, textDecoration: "none" }}>
+              <IconTiktok />
+              <span style={{ fontSize: "0.65rem", color: "var(--gray)", fontFamily: "'Courier New', Courier, monospace" }}>TikTok</span>
+            </a>
           </div>
         </div>
       )}

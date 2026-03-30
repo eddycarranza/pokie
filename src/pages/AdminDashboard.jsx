@@ -11,7 +11,7 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const BUCKET = "products";
 // =========================================
 
-const CATS = ["Tops", "Pantalones", "Faldas", "Accesorios"];
+const CATS = ["Tops", "Pantalones", "Vestidos", "Accesorios", "Zapatos"];
 const STATUSES = ["pendiente", "enviado", "entregado", "cancelado"];
 const COLOR_OPTIONS = [
   { name: "Pale Pink", hex: "hsl(337, 27%, 83%)" },

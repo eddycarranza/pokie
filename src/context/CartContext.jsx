@@ -68,7 +68,9 @@ export function CartProvider({ children }) {
       `PRODUCTOS`,
       ...itemLines,
       ``,
-      `TOTAL: S/ ${total.toFixed(2)}`
+      `TOTAL: S/ ${total.toFixed(2)}`,
+      ``,
+      `* PAGO POR EL ENVIO AGENCIA ES A CALCULAR *`
     ];
     
     const msg = encodeURIComponent(lines.join("\n"));
