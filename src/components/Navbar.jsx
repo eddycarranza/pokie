@@ -19,12 +19,19 @@ const IconMenu = () => (
 const IconClose = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
 );
+const ShoppingBagIcon = ({ size = 22, strokeWidth = 1.5 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2 -2V6l-3 -4z"></path>
+    <line x1="3" y1="6" x2="21" y2="6"></line>
+    <path d="M16 10a4 4 0 0 1 -8 0"></path>
+  </svg>
+);
 
 export default function Navbar({ activecat, onCatChange }) {
   const { count, setIsOpen } = useCart();
   const [dropOpen, setDropOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024); // Threshold más alto para tabletas
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const dropRef = useRef(null);
 
   useEffect(() => {
@@ -33,7 +40,6 @@ export default function Navbar({ activecat, onCatChange }) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Cerrar menú móvil si se redimensiona a escritorio
   useEffect(() => {
     if (!isMobile) setMenuOpen(false);
   }, [isMobile]);
@@ -55,7 +61,6 @@ export default function Navbar({ activecat, onCatChange }) {
     document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // ESTILOS COMUNES
   const linkBaseStyle = {
     fontFamily: "'Courier New', Courier, monospace", fontSize: "0.8rem",
     fontWeight: 600, letterSpacing: ".1em", color: "var(--dark)",
@@ -70,45 +75,38 @@ export default function Navbar({ activecat, onCatChange }) {
 
   return (
     <nav style={{ background: "white", borderBottom: "1px solid var(--border)", position: "sticky", top: 0, zIndex: 1000 }}>
-      {/* CONTENEDOR PRINCIPAL */}
       <div style={{
         padding: isMobile ? "0 0.5rem" : "0 1.5rem",
         display: "flex", alignItems: "center",
-        height: isMobile ? 64 : 80, // Un poco más alto para escritorio, estándar para móvil
+        height: isMobile ? 64 : 80,
         maxWidth: 1440, margin: "0 auto",
         position: "relative"
       }}>
         
-        {/* ========================================================
-           VERSION MÓVIL/TABLET ()
-           ======================================================== */}
         {isMobile ? (
           <>
-            {/* 1. IZQUIERDA: Menú Hamburguesa */}
             <div style={{ flex: '0 0 60px', display: 'flex', justifyContent: 'flex-start' }}>
               <button onClick={() => setMenuOpen(!menuOpen)} style={menuButtonStyle} aria-label="Menú">
                 {menuOpen ? <IconClose /> : <IconMenu />}
               </button>
             </div>
 
-            {/* 2. CENTRO: Logo y Nombre */}
             <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               <Link to="/" onClick={() => window.scrollTo(0,0)} style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
                 <Logo size={28} />
-                <span style={{ fontSize: "1rem", fontWeight: 700, color: "var(--dark)", fontFamily: "'Courier New', Courier, monospace" }}>
-                  PookieCat
+                <span style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--dark)", fontFamily: "'Courier New', Courier, monospace", letterSpacing: '-0.5px' }}>
+                  pookiecat
                 </span>
               </Link>
             </div>
 
-            {/* 3. DERECHA: Carrito */}
             <div style={{ flex: '0 0 60px', display: 'flex', justifyContent: 'flex-end' }}>
               <button onClick={() => setIsOpen(true)} style={menuButtonStyle} aria-label="Carrito">
-                <div style={{ position: 'relative' }}>
-                  🛍️
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <ShoppingBagIcon size={24} />
                   {count > 0 && (
                     <span style={{
-                      position: 'absolute', top: -10, right: -12,
+                      position: 'absolute', top: -8, right: -8,
                       background: 'var(--pink-dark)', color: 'white',
                       fontSize: '0.65rem', fontWeight: 700,
                       width: 18, height: 18, borderRadius: '50%',
@@ -122,11 +120,7 @@ export default function Navbar({ activecat, onCatChange }) {
             </div>
           </>
         ) : (
-          /* ========================================================
-             VERSION ESCRITORIO (Antigua, optimizada para 3 columnas)
-             ======================================================== */
           <>
-            {/* COL 1: Enlaces */}
             <div style={{ flex: 1, display: "flex", justifyContent: "flex-start", alignItems: "center", gap: 10, height: "100%" }}>
               <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} style={linkBaseStyle}
                 onMouseEnter={e => e.currentTarget.style.color = "var(--pink-dark)"}
@@ -166,17 +160,15 @@ export default function Navbar({ activecat, onCatChange }) {
               </div>
             </div>
 
-            {/* COL 2: Logo */}
             <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
               <Link to="/" onClick={() => window.scrollTo(0,0)} style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
                 <Logo size={36} />
                 <span style={{ fontSize: "1.4rem", fontWeight: 700, color: "var(--dark)", fontFamily: "'Courier New', Courier, monospace", letterSpacing: '-0.5px' }}>
-                  PookieCat
+                  pookiecat
                 </span>
               </Link>
             </div>
 
-            {/* COL 3: Redes y Carrito */}
             <div style={{ flex: 1, display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 10 }}>
               <a href="https://www.instagram.com/pookiecat.pe/" target="_blank" rel="noopener noreferrer"
                 style={{ color: "var(--dark)", padding: 10, borderRadius: "50%", transition: "all .2s" }}
@@ -188,6 +180,7 @@ export default function Navbar({ activecat, onCatChange }) {
                 onMouseEnter={e => { e.currentTarget.style.color = "#c9607f"; e.currentTarget.style.background = "#fdf0f4"; }}
                 onMouseLeave={e => { e.currentTarget.style.color = "var(--dark)"; e.currentTarget.style.background = "none"; }}
               ><IconTiktok /></a>
+              
               <button onClick={() => setIsOpen(true)} style={{
                 background: "var(--dark)", color: "white", border: "none",
                 padding: "10px 20px", borderRadius: 999, cursor: "pointer",
@@ -197,20 +190,21 @@ export default function Navbar({ activecat, onCatChange }) {
               }}
                 onMouseEnter={e => e.currentTarget.style.background = "var(--pink-dark)"}
                 onMouseLeave={e => e.currentTarget.style.background = "var(--dark)"}
-              >🛍️ <span style={{opacity: 0.7}}>Carrito:</span> {count}</button>
+              >
+                <ShoppingBagIcon size={18} strokeWidth={2} /> 
+                <span style={{opacity: 0.7}}>Carrito:</span> {count}
+              </button>
             </div>
           </>
         )}
       </div>
 
-      {/* MÓVIL: Panel del Menú Desplegable */}
       {isMobile && menuOpen && (
         <div style={{
           position: 'fixed', top: 64, left: 0, right: 0, bottom: 0,
           background: 'white', borderTop: "1px solid var(--border)",
           overflowY: 'auto', zIndex: 999, display: 'flex', flexDirection: 'column',
         }}>
-          {/* Inicio */}
           <button onClick={() => { window.scrollTo(0,0); setMenuOpen(false); }} style={{
             display: "flex", alignItems: "center", gap: 12,
             width: "100%", textAlign: "left",
@@ -222,7 +216,6 @@ export default function Navbar({ activecat, onCatChange }) {
             <span style={{ fontSize: "1.1rem" }}>🏠</span> Inicio
           </button>
 
-          {/* Categorías */}
           <div style={{ padding: "1.25rem 1.5rem", flex: 1 }}>
             <div style={{
               fontSize: "0.68rem", color: "var(--gray)", textTransform: "uppercase",
@@ -241,13 +234,12 @@ export default function Navbar({ activecat, onCatChange }) {
                   transition: "all .15s",
                 }}>
                   <span>{cat}</span>
-                  {cat === activecat && <span style={{ fontSize: "0.7rem", opacity: 0.7 }}>✦</span>}
+                  {/* Símbolo eliminado aquí también */}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Footer redes */}
           <div style={{
             padding: "1.25rem 1.5rem",
             borderTop: "1px solid var(--border)",

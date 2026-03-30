@@ -13,7 +13,7 @@ const CATS = ["Todos", "Tops", "Pantalones", "Vestidos", "Accesorios", "Zapatos"
 const SLIDES = [
   {
     bg: "#1a1a1a",
-    tag: "✦ Nueva colección",
+    tag: "Nueva colección",
     title: "Moda porque estamos en tendencia",
     sub: "con estilo",
     cta: "Ver colección",
@@ -23,7 +23,7 @@ const SLIDES = [
   },
   {
     bg: "#f5f0eb",
-    tag: "✦ Tops & Vestidos",
+    tag: "Tops & Vestidos",
     title: "Ropa femenina",
     sub: "con personalidad",
     cta: "Ver catálogo",
@@ -33,7 +33,7 @@ const SLIDES = [
   },
   {
     bg: "#1a1a1a",
-    tag: "✦ Envíos a todo el Perú",
+    tag: "Envíos a todo el Perú",
     title: "Calidad peruana",
     sub: "al mejor precio",
     cta: "Comprar ahora",
@@ -247,7 +247,7 @@ export default function Home() {
       <footer style={{ background: "var(--dark)", color: "white", textAlign: "center", padding: "2rem" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 6 }}>
           <Logo size={28} />
-          <span className="serif" style={{ fontSize: "1.2rem" }}>PookieCat</span>
+          <span className="serif" style={{ fontSize: "1.2rem" }}></span>
         </div>
         <p style={{ fontSize: "0.8rem", opacity: 0.5 }}>
           Envíos a todo el Perú · WhatsApp: 948761303 · pookiecat.pe

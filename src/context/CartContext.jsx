@@ -3,12 +3,14 @@ import { createContext, useContext, useState } from "react";
 import { supabase } from "../lib/supabase";
 
 const CartContext = createContext();
-const WA_NUMBER = "51948761303";
+// Cambia esto por tu número real si no lo has hecho
+const WA_NUMBER = "51948761303"; 
 
 export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
 
+  // Función para agregar al carrito (modificada levemente para consistencia)
   const addToCart = (product, qty = 1, size = "", color = "") => {
     const key = `${product.id}-${size}-${color}`;
     setCart(prev => {
@@ -17,17 +19,27 @@ export function CartProvider({ children }) {
       return [...prev, {
         key, id: product.id, name: product.name,
         price: product.sale_price || product.price,
-        emoji: product.emoji || "👗", imageUrl: product.image_url || product.imageUrl || null, size, color, qty
+        emoji: product.emoji || "🛍️", imageUrl: product.image_url || product.imageUrl || null, size, color, qty
       }];
     });
     setIsOpen(true);
   };
 
+  // --- NUEVA FUNCIÓN PARA ACTUALIZAR CANTIDAD (+/-) ---
+  const updateQuantity = (key, newQty) => {
+    if (newQty < 1) return; // No permitir cantidad menor a 1
+    setCart(prev => prev.map(i => i.key === key ? { ...i, qty: newQty } : i));
+  };
+  // ----------------------------------------------------
+
   const removeFromCart = (key) => setCart(prev => prev.filter(i => i.key !== key));
   const clearCart = () => setCart([]);
+  
+  // Cálculos
   const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
-  const count = cart.reduce((s, i) => s + i.qty, 0);
+  const count = cart.reduce((s, i) => s + i.qty, 0); // Total de items físicos
 
+  // Guardar en Supabase
   const saveOrder = async (customerData) => {
     try {
       await supabase.from("orders").insert({
@@ -35,42 +47,41 @@ export function CartProvider({ children }) {
         phone: customerData.phone,
         address: customerData.address,
         payment: customerData.payment,
-        items: cart,
+        items: cart, // Guardamos el estado actual del carrito
         total,
         status: "pendiente",
       });
     } catch (e) { console.warn("Error guardando pedido:", e); }
   };
 
+  // Formato para WhatsApp (El que definimos anteriormente)
   const sendToWhatsApp = (customerData) => {
-    // Formato de productos en una sola línea limpia
     const itemLines = cart.map(i => {
       const details = [];
-      if (i.size) details.push(`Talla: ${i.size}`);
-      if (i.color) details.push(`Color: ${i.color}`);
-      const detailsStr = details.length > 0 ? ` (${details.join(" | ")})` : "";
-      
-      return `- ${i.name}${detailsStr} x${i.qty} - S/ ${(i.price * i.qty).toFixed(2)}`;
+      if (i.size) details.push(`talla ${i.size}`);
+      if (i.color) details.push(`color ${i.color}`);
+      const detailsStr = details.length > 0 ? ` [${details.join(", ")}]` : "";
+      return `- ${i.name}${detailsStr} x${i.qty} ...s/.${(i.price * i.qty).toFixed(2)}`;
     });
 
-    // Estructura idéntica a tu captura de pantalla
     const lines = [
-      `NUEVO PEDIDO - POOKIECAT`,
+      `Nuevo pedido 𝜗ৎ`,
       ``,
-      `Cliente: ${customerData.name}`,
-      `DNI: ${customerData.dni}`,
-      `Teléfono: ${customerData.phone}`,
-      `Envío: ${customerData.shipping || 'Agencia Shalom'}`,
-      `Dirección/Agencia: ${customerData.address}`,
+      `⋆ Cliente: ${customerData.name}`,
+      `⋆ Dni: ${customerData.dni}`,
+      `⋆ Telf: ${customerData.phone}`,
+      `⋆ Medio de envío: ${customerData.shipping}`,
+      `⋆ Direccion/Nombre agencia: ${customerData.address}`,
+      `⋆ Referencia: ${customerData.reference || ''}`,
       ``,
-      `Método de pago: ${customerData.payment}`,
+      `Método de pago: ${customerData.payment.toLowerCase()}`,
       ``,
-      `PRODUCTOS`,
+      `Producto(s):`,
       ...itemLines,
       ``,
-      `TOTAL: S/ ${total.toFixed(2)}`,
+      `Total: S/.${total.toFixed(2)}`,
       ``,
-      `* PAGO POR EL ENVIO AGENCIA ES A CALCULAR *`
+      `El pago del envío es adicional y a calcular`
     ];
     
     const msg = encodeURIComponent(lines.join("\n"));
@@ -78,7 +89,8 @@ export function CartProvider({ children }) {
   };
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, clearCart, total, count, isOpen, setIsOpen, saveOrder, sendToWhatsApp }}>
+    // Agregamos 'updateQuantity' al Provider
+    <CartContext.Provider value={{ cart, addToCart, updateQuantity, removeFromCart, clearCart, total, count, isOpen, setIsOpen, saveOrder, sendToWhatsApp }}>
       {children}
     </CartContext.Provider>
   );

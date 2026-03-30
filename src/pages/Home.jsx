@@ -5,7 +5,6 @@ import ProductCard from "../components/ProductCard";
 import ProductModal from "../components/ProductModal";
 import CartSidebar from "../components/CartSidebar";
 import { useProducts } from "../hooks/useSupabase";
-import Logo from "../components/Logo";
 
 const CATS = ["Todos", "Tops", "Pantalones", "Faldas", "Accesorios"];
 
@@ -13,7 +12,7 @@ const CATS = ["Todos", "Tops", "Pantalones", "Faldas", "Accesorios"];
 const SLIDES = [
   {
     bg: "#1a1a1a",
-    tag: "✦ Nueva colección",
+    tag: "Nueva colección",
     title: "Moda porque estamos en tendencia",
     sub: "con estilo",
     cta: "Ver colección",
@@ -23,7 +22,7 @@ const SLIDES = [
   },
   {
     bg: "#f5f0eb",
-    tag: "✦ Tops & Vestidos",
+    tag: "Tops & Vestidos",
     title: "Ropa femenina",
     sub: "con personalidad",
     cta: "Ver catálogo",
@@ -33,7 +32,7 @@ const SLIDES = [
   },
   {
     bg: "#1a1a1a",
-    tag: "✦ Envíos a todo el Perú",
+    tag: "Envíos a todo el Perú",
     title: "Calidad peruana",
     sub: "al mejor precio",
     cta: "Comprar ahora",
@@ -176,13 +175,10 @@ export default function Home() {
   const [cat, setCat] = useState("Todos");
   const [selected, setSelected] = useState(null);
   
-  // Estado para controlar cuándo mostrar el botón de WhatsApp
   const [showWsp, setShowWsp] = useState(false);
 
-  // Efecto para detectar el scroll
   useEffect(() => {
     const handleScroll = () => {
-      // Si el usuario baja más de 400px (sale de la foto principal)
       if (window.scrollY > 400) {
         setShowWsp(true);
       } else {
@@ -191,7 +187,7 @@ export default function Home() {
     };
 
     window.addEventListener("scroll", handleScroll);
-    handleScroll(); // Comprobar al cargar la página
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -244,12 +240,8 @@ export default function Home() {
       </div>
 
       {/* Footer */}
-      <footer style={{ background: "var(--dark)", color: "white", textAlign: "center", padding: "2rem" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 6 }}>
-          <Logo size={28} />
-          <span className="serif" style={{ fontSize: "1.2rem" }}>PookieCat</span>
-        </div>
-        <p style={{ fontSize: "0.8rem", opacity: 0.5 }}>
+      <footer style={{ background: "var(--dark)", color: "white", textAlign: "center", padding: "1.5rem" }}>
+        <p style={{ fontSize: "0.85rem", opacity: 0.8, fontFamily: "'Courier New', Courier, monospace" }}>
           Envíos a todo el Perú · WhatsApp: 948761303 · pookiecat.pe
         </p>
       </footer>
@@ -267,8 +259,6 @@ export default function Home() {
           background: "#25D366", color: "white",
           display: "flex", alignItems: "center", justifyContent: "center",
           textDecoration: "none", 
-          
-          // Lógica de aparición dinámica
           opacity: showWsp ? 1 : 0,
           visibility: showWsp ? "visible" : "hidden",
           transform: showWsp ? "translateY(0) scale(1)" : "translateY(20px) scale(0.8)",
