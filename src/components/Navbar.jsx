@@ -4,9 +4,10 @@ import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import Logo from "./Logo";
 
-const CATS = ["Todos", "Tops", "Pantalones", "Vestidos", "Accesorios", "Zapatos"];
+// LISTA ACTUALIZADA
+const CATS = ["Todos", "Tops", "Pantalones", "Vestidos", "Faldas", "Accesorios", "Zapatos"];
 
-// Iconos SVG simples
+// Iconos SVG
 const IconInstagram = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
 );
@@ -205,17 +206,6 @@ export default function Navbar({ activecat, onCatChange }) {
           background: 'white', borderTop: "1px solid var(--border)",
           overflowY: 'auto', zIndex: 999, display: 'flex', flexDirection: 'column',
         }}>
-          <button onClick={() => { window.scrollTo(0,0); setMenuOpen(false); }} style={{
-            display: "flex", alignItems: "center", gap: 12,
-            width: "100%", textAlign: "left",
-            padding: "18px 1.5rem", background: "none",
-            borderBottom: "1px solid var(--border)", border: "none", cursor: "pointer",
-            fontFamily: "'Courier New', Courier, monospace", fontSize: "0.9rem", fontWeight: 700,
-            color: "var(--dark)", textTransform: "uppercase", letterSpacing: ".1em",
-          }}>
-            <span style={{ fontSize: "1.1rem" }}>🏠</span> Inicio
-          </button>
-
           <div style={{ padding: "1.25rem 1.5rem", flex: 1 }}>
             <div style={{
               fontSize: "0.68rem", color: "var(--gray)", textTransform: "uppercase",
@@ -234,7 +224,6 @@ export default function Navbar({ activecat, onCatChange }) {
                   transition: "all .15s",
                 }}>
                   <span>{cat}</span>
-                  {/* Símbolo eliminado aquí también */}
                 </button>
               ))}
             </div>
