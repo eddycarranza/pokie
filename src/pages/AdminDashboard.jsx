@@ -136,7 +136,6 @@ function ProductForm({ initial, onSave, onCancel, isMobile }) {
       urls = [initial.image_url || initial.imageUrl];
     }
 
-    // SANITIZACIÓN DE STOCK PARA EVITAR EL NaN
     const initialStock = parseInt(initial.stock, 10);
 
     return { 
@@ -159,7 +158,6 @@ function ProductForm({ initial, onSave, onCancel, isMobile }) {
     if (!form.name || !form.cat || !form.price) return alert("Nombre, categoría y precio son obligatorios");
     setSaving(true);
     
-    // SANITIZACIÓN ANTES DE GUARDAR
     const parsedStock = parseInt(form.stock, 10);
     
     await onSave({ 
@@ -175,7 +173,6 @@ function ProductForm({ initial, onSave, onCancel, isMobile }) {
     <div className="card">
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "1rem" }}>
         
-        {/* GALERÍA DE IMÁGENES */}
         <div className="form-group" style={{ gridColumn: "1/-1" }}>
           <label className="form-label">Imágenes del producto (Puedes subir varias)</label>
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '15px' }}>
@@ -269,11 +266,54 @@ function ProductForm({ initial, onSave, onCancel, isMobile }) {
   );
 }
 
+// NUEVO COMPONENTE: Formulario para crear pedidos manuales
+function OrderForm({ products, onSave, onCancel, isMobile }) {
+  const [form, setForm] = useState({ client: "", phone: "", address: "", payment: "Yape / Plin", items: [], total: 0 });
+
+  const addItem = (prod) => {
+    const newItem = { id: prod.id, name: prod.name, price: prod.price, qty: 1 };
+    setForm(p => ({ ...p, items: [...p.items, newItem], total: p.total + prod.price }));
+  };
+
+  const handleSave = () => {
+    if (!form.client || !form.phone || form.items.length === 0) return alert("Completa cliente, teléfono e incluye productos");
+    onSave(form);
+  };
+
+  return (
+    <div className="card" style={{ border: "2px solid var(--pink-dark)", marginBottom: "1.5rem" }}>
+      <h3 className="serif">Registrar Pedido Manual</h3>
+      <div style={{ display: "grid", gap: "10px", marginTop: "10px" }}>
+        <input className="form-input" placeholder="Nombre del Cliente" value={form.client} onChange={e => setForm({...form, client: e.target.value})} />
+        <input className="form-input" placeholder="Teléfono" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
+        <input className="form-input" placeholder="Dirección" value={form.address} onChange={e => setForm({...form, address: e.target.value})} />
+        
+        <label className="form-label">Seleccionar Productos:</label>
+        <div style={{ display: "flex", gap: 5, overflowX: "auto", paddingBottom: 10 }}>
+          {products.map(p => (
+            <button key={p.id} onClick={() => addItem(p)} className="btn btn-outline btn-sm" style={{ whiteSpace: "nowrap" }}>+ {p.name}</button>
+          ))}
+        </div>
+
+        <div style={{ background: "var(--pink-light)", padding: 10, borderRadius: 8 }}>
+          {form.items.map((it, i) => <div key={i} style={{ fontSize: "0.8rem" }}>{it.name} x{it.qty} - S/ {it.price.toFixed(2)}</div>)}
+          <div style={{ fontWeight: "bold", marginTop: 5 }}>Total: S/ {form.total.toFixed(2)}</div>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: 10 }}>
+          <button className="btn btn-dark" onClick={handleSave}>Guardar Pedido</button>
+          <button className="btn btn-outline" onClick={onCancel}>Cancelar</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const { logout } = useAuth();
   const nav = useNavigate();
   const { products, addProduct, updateProduct, deleteProduct } = useProducts();
-  const { orders, updateOrder } = useOrders();
+  const { orders, updateOrder, addOrder, deleteOrder } = useOrders(); // Desestructuración de nuevas funciones
   const { expenses, addExpense, deleteExpense } = useExpenses();
   const [panel, setPanel] = useState("dashboard");
   const [editing, setEditing] = useState(null);
@@ -374,13 +414,20 @@ export default function AdminDashboard() {
             await supabase.from('products').update({
                ventas_totales: (pData.ventas_totales || 0) + item.qty,
                stock: Math.max((pData.stock || 0) - item.qty, 0)
-            }).eq('id', item.id);
+            }, 'id', item.id);
          }
       }
       showToast(`Pedido entregado. Inventario actualizado ✓`);
     } else {
       showToast(`Pedido actualizado a ${newStatus}`);
     }
+  };
+
+  // NUEVA LÓGICA: Eliminar pedido
+  const handleDeleteOrder = async (id) => {
+    if (!window.confirm("¿Eliminar este pedido permanentemente?")) return;
+    await deleteOrder(id);
+    showToast("Pedido eliminado ✓");
   };
 
   return (
@@ -568,7 +615,6 @@ export default function AdminDashboard() {
                   {products.map(p => {
                     const firstImage = p.image_urls?.[0] || p.image_url || p.imageUrl;
                     
-                    // VALIDACIÓN DE STOCK PARA LA TABLA
                     const rawStock = parseInt(p.stock, 10);
                     const safeStock = isNaN(rawStock) ? 0 : rawStock;
 
@@ -604,7 +650,7 @@ export default function AdminDashboard() {
           </>
         )}
 
-        {panel === "productos" && editing && (
+        {panel === "productos" && editing && editing !== "new_order" && (
           <>
             <div style={{ marginBottom: "1.5rem" }}>
               <h2 className="serif" style={{ fontSize: "1.7rem", margin: 0 }}>{editing === "new" ? "Nuevo Producto" : "Editar Producto"}</h2>
@@ -615,33 +661,63 @@ export default function AdminDashboard() {
 
         {panel === "pedidos" && (
           <>
-            <div style={{ marginBottom: "1.5rem" }}><h2 className="serif" style={{ fontSize: "1.7rem", margin: 0 }}>Pedidos</h2></div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              {orders.length === 0 && <div style={{ textAlign: "center", padding: "3rem", color: "var(--gray)", background: "white", borderRadius: 12, border: "1px solid var(--border)" }}>No hay pedidos aun.</div>}
-              {orders.map(o => (
-                <div key={o.id} style={{ background: "white", borderRadius: 12, border: "1px solid var(--border)", padding: "1.25rem" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "0.75rem" }}>
-                    <div>
-                      <div style={{ fontWeight: 500, fontSize: "0.95rem" }}>#{o.id?.slice(-6)} - {o.client}</div>
-                      <div style={{ fontSize: "0.82rem", color: "var(--gray)", marginTop: 2 }}>Tel: {o.phone} | Dir: {o.address}</div>
-                      <div style={{ fontSize: "0.82rem", color: "var(--gray)" }}>Pago: {o.payment}</div>
-                    </div>
-                    <div style={{ textAlign: isMobile ? "left" : "right" }}>
-                      <div style={{ fontWeight: 600, fontSize: "1.05rem" }}>S/ {o.total?.toFixed(2)}</div>
-                      <span className={`badge-status badge-${o.status}`} style={{ marginTop: 4, display: "inline-block" }}>{o.status}</span>
-                    </div>
-                  </div>
-                  <div style={{ marginTop: "0.75rem", paddingTop: "0.75rem", borderTop: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem" }}>
-                    <div style={{ fontSize: "0.82rem", color: "var(--gray)" }}>
-                      {o.items?.map((i, idx) => (<span key={idx}>{i.name}{i.size ? ` (${i.size})` : ""} x{i.qty}{idx < o.items.length - 1 ? " · " : ""}</span>))}
-                    </div>
-                    <select className="form-input" style={{ width: isMobile ? "100%" : "auto", padding: "6px 12px", fontSize: "0.82rem" }} value={o.status} onChange={e => handleStatusChange(o, e.target.value)}>
-                      {STATUSES.map(s => <option key={s}>{s}</option>)}
-                    </select>
-                  </div>
-                </div>
-              ))}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+              <h2 className="serif" style={{ fontSize: "1.7rem", margin: 0 }}>Pedidos</h2>
+              {/* BOTÓN PARA ABRIR FORMULARIO DE NUEVO PEDIDO */}
+              <button className="btn btn-dark btn-sm" onClick={() => setEditing(editing === "new_order" ? null : "new_order")}>
+                {editing === "new_order" ? "✕ Cancelar" : "+ Crear Pedido Manual"}
+              </button>
             </div>
+
+            {/* RENDERIZADO DEL FORMULARIO DE PEDIDO */}
+            {editing === "new_order" ? (
+              <OrderForm 
+                products={products} 
+                onCancel={() => setEditing(null)} 
+                onSave={async (data) => {
+                  await addOrder({ ...data, status: "pendiente", created_at: new Date().toISOString() });
+                  setEditing(null);
+                  showToast("Pedido registrado ✓");
+                }} 
+                isMobile={isMobile}
+              />
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                {orders.length === 0 && <div style={{ textAlign: "center", padding: "3rem", color: "var(--gray)", background: "white", borderRadius: 12, border: "1px solid var(--border)" }}>No hay pedidos aun.</div>}
+                {orders.map(o => (
+                  <div key={o.id} style={{ background: "white", borderRadius: 12, border: "1px solid var(--border)", padding: "1.25rem" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "0.75rem" }}>
+                      <div>
+                        <div style={{ fontWeight: 500, fontSize: "0.95rem" }}>#{o.id?.slice(-6)} - {o.client}</div>
+                        <div style={{ fontSize: "0.82rem", color: "var(--gray)", marginTop: 2 }}>Tel: {o.phone} | Dir: {o.address}</div>
+                        <div style={{ fontSize: "0.82rem", color: "var(--gray)" }}>Pago: {o.payment}</div>
+                      </div>
+                      <div style={{ textAlign: isMobile ? "left" : "right" }}>
+                        <div style={{ fontWeight: 600, fontSize: "1.05rem" }}>S/ {o.total?.toFixed(2)}</div>
+                        <span className={`badge-status badge-${o.status}`} style={{ marginTop: 4, display: "inline-block" }}>{o.status}</span>
+                        {/* BOTÓN PARA ELIMINAR PEDIDO */}
+                        <div style={{ marginTop: 8 }}>
+                          <button 
+                            onClick={() => handleDeleteOrder(o.id)}
+                            style={{ background: "none", border: "1px solid var(--danger)", color: "var(--danger)", padding: "2px 8px", borderRadius: 5, fontSize: "0.7rem", cursor: "pointer" }}
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ marginTop: "0.75rem", paddingTop: "0.75rem", borderTop: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem" }}>
+                      <div style={{ fontSize: "0.82rem", color: "var(--gray)" }}>
+                        {o.items?.map((i, idx) => (<span key={idx}>{i.name}{i.size ? ` (${i.size})` : ""} x{i.qty}{idx < o.items.length - 1 ? " · " : ""}</span>))}
+                      </div>
+                      <select className="form-input" style={{ width: isMobile ? "100%" : "auto", padding: "6px 12px", fontSize: "0.82rem" }} value={o.status} onChange={e => handleStatusChange(o, e.target.value)}>
+                        {STATUSES.map(s => <option key={s}>{s}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </>
         )}
         

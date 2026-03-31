@@ -13,25 +13,23 @@ export function useProducts() {
     setLoading(false);
   };
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
+  useEffect(() => { fetchProducts(); }, []);
 
   const addProduct = async (data) => {
     const { error } = await supabase.from("products").insert(data);
-    if (error) alert("Error al agregar producto: " + JSON.stringify(error));
+    if (error) alert("Error: " + JSON.stringify(error));
     fetchProducts();
   };
 
   const updateProduct = async (id, data) => {
     const { error } = await supabase.from("products").update(data, "id", id);
-    if (error) alert("Error al actualizar producto: " + JSON.stringify(error));
+    if (error) alert("Error: " + JSON.stringify(error));
     fetchProducts();
   };
 
   const deleteProduct = async (id) => {
     const { error } = await supabase.from("products").delete("id", id);
-    if (error) alert("Error al eliminar producto: " + JSON.stringify(error));
+    if (error) alert("Error: " + JSON.stringify(error));
     fetchProducts();
   };
 
@@ -49,9 +47,7 @@ export function useOrders() {
     setLoading(false);
   };
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
+  useEffect(() => { fetchOrders(); }, []);
 
   const addOrder = async (data) => {
     const { error } = await supabase.from("orders").insert(data);
@@ -65,8 +61,15 @@ export function useOrders() {
     fetchOrders();
   };
 
-  return { orders, loading, addOrder, updateOrder };
+  const deleteOrder = async (id) => {
+    const { error } = await supabase.from("orders").delete("id", id);
+    if (error) alert("Error al eliminar pedido: " + JSON.stringify(error));
+    fetchOrders();
+  };
+
+  return { orders, loading, addOrder, updateOrder, deleteOrder };
 }
+
 export function useExpenses() {
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);

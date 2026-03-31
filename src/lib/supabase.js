@@ -14,9 +14,7 @@ export const supabase = {
       if (!res.ok) return { data: null, error: data };
       return { data, error: null };
     },
-    getSession: async () => {
-      return { data: { session: null } };
-    },
+    getSession: async () => { return { data: { session: null } }; },
     signOut: async () => {}
   },
   from: (table) => ({
