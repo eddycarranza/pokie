@@ -1,89 +1,155 @@
-// src/components/ProductCard.jsx
+// src/components/ProductModal.jsx
+import { useState, useEffect } from "react";
 import { useCart } from "../context/CartContext";
 
-export default function ProductCard({ product, onClick }) {
-  const { addToCart } = useCart();
+const COLOR_MAP = [
+  { name: "Pale Pink", hex: "hsl(337, 27%, 83%)" },
+  { name: "White", hex: "#f0f0f0" },
+  { name: "Black", hex: "rgb(34, 34, 34)" },
+  { name: "Azul denim", hex: "#7eb0d4" },
+  { name: "Light Brown", hex: "rgba(65, 47, 37, 0.86)" },
+];
 
-  const handleQuickAdd = (e) => {
-    e.stopPropagation();
-    if (product.sizes?.length) { onClick(product); return; }
-    addToCart(product, 1, "", "");
+export default function ProductModal({ product, onClose }) {
+  const { addToCart } = useCart();
+  const [selectedSize, setSelectedSize] = useState("");
+  const [selectedColor, setSelectedColor] = useState("");
+  const [mainImgIdx, setMainImgIdx] = useState(0); // Controla qué foto se ve en grande
+
+  // Resetea el scroll del body al abrir
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = "unset"; };
+  }, []);
+
+  if (!product) return null; // Validación de seguridad
+
+  // Sanitización de datos
+  const stock = parseInt(product.stock, 10);
+  const isOutOfStock = isNaN(stock) || stock <= 0;
+  
+  const salePrice = product.salePrice || product.sale_price;
+  const normalPrice = product.price || 0;
+  const effPrice = salePrice || normalPrice;
+
+  // Recolectar todas las imágenes para la galería
+  let images = [];
+  if (Array.isArray(product.image_urls) && product.image_urls.length > 0) {
+    images = product.image_urls;
+  } else if (product.image_url) {
+    images = [product.image_url];
+  } else if (product.imageUrl) {
+    images = [product.imageUrl];
+  }
+
+  const sizes = Array.isArray(product.sizes) ? product.sizes : [];
+  const colors = Array.isArray(product.colors) ? product.colors : [];
+
+  const handleAdd = () => {
+    if (sizes.length > 0 && !selectedSize) return alert("Por favor, selecciona una talla.");
+    if (colors.length > 0 && !selectedColor) return alert("Por favor, selecciona un color.");
+    addToCart(product, 1, selectedSize, selectedColor);
+    onClose();
   };
 
-  const effPrice = product.salePrice || product.price;
-
   return (
-    <div onClick={() => onClick(product)} style={{
-      background: "white", borderRadius: 16, overflow: "hidden",
-      border: "1px solid var(--border)", cursor: "pointer",
-      transition: "transform .2s, box-shadow .2s"
-    }}
-      onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 12px 40px rgba(0,0,0,.08)"; }}
-      onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}
-    >
-      {/* Image */}
-      <div style={{
-        width: "100%", aspectRatio: "3/4", background: "var(--pink-light)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        position: "relative", fontSize: "4.5rem"
-      }}>
-        {/* CORRECCIÓN AQUÍ: Soporta image_url (Supabase) o imageUrl */}
-        {product.image_url || product.imageUrl
-          ? <img src={product.image_url || product.imageUrl} alt={product.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          : product.emoji || "👗"}
-        {product.badge && (
-          <span className={`badge-${product.badge}`} style={{
-            position: "absolute", top: 10, left: 10,
-            padding: "4px 10px", borderRadius: 999, fontSize: "0.72rem", fontWeight: 500
-          }}>
-            {product.badge === "new" ? "Nuevo" : "Oferta"}
-          </span>
-        )}
-      </div>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }} onClick={onClose}>
+      <div style={{ background: "white", borderRadius: 20, width: "100%", maxWidth: 900, maxHeight: "90vh", overflow: "hidden", display: "flex", flexDirection: window.innerWidth < 768 ? "column" : "row", position: "relative" }} onClick={e => e.stopPropagation()}>
+        
+        {/* Botón de cerrar */}
+        <button onClick={onClose} style={{ position: "absolute", top: 15, right: 15, background: "rgba(255,255,255,0.9)", color: "var(--dark)", border: "none", width: 36, height: 36, borderRadius: "50%", fontSize: "1.2rem", cursor: "pointer", zIndex: 10, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
+          ✕
+        </button>
 
-      {/* Info */}
-      <div style={{ padding: "0.9rem" }}>
-        <div style={{ fontSize: "0.95rem", fontWeight: 500 }}>{product.name}</div>
-        <div style={{ fontSize: "0.78rem", color: "var(--gray)", margin: "2px 0 8px" }}>{product.cat}</div>
-        <div style={{ fontSize: "1rem", fontWeight: 500 }}>
-          {product.salePrice ? (
-            <>
-              <span style={{ textDecoration: "line-through", color: "var(--gray)", fontSize: "0.82rem", marginRight: 6 }}>
-                S/ {product.price?.toFixed(2)}
-              </span>
-              <span style={{ color: "var(--danger)" }}>S/ {product.salePrice.toFixed(2)}</span>
-            </>
-          ) : `S/ ${effPrice?.toFixed(2)}`}
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div style={{
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "0.6rem 0.9rem 0.9rem", borderTop: "1px solid var(--border)"
-      }}>
-        <div style={{ display: "flex", gap: 4 }}>
-          {(product.sizes || []).slice(0, 3).map(s => (
-            <div key={s} style={{
-              width: 28, height: 28, borderRadius: "50%", border: "1px solid var(--border)",
-              fontSize: "0.68rem", display: "flex", alignItems: "center", justifyContent: "center"
-            }}>{s}</div>
-          ))}
-          {product.sizes?.length > 3 && (
-            <div style={{ width: 28, height: 28, borderRadius: "50%", border: "1px solid var(--border)", fontSize: "0.68rem", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              +{product.sizes.length - 3}
+        {/* ================= GALERÍA DE FOTOS ================= */}
+        <div style={{ flex: window.innerWidth < 768 ? "0 0 350px" : "1 1 50%", background: "var(--pink-light)", position: "relative", display: "flex", flexDirection: "column" }}>
+          
+          {/* Foto Principal */}
+          <div style={{ flex: 1, position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "5rem" }}>
+            {images.length > 0 ? (
+               <img src={images[mainImgIdx]} alt={product.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ) : product.emoji || "👗"}
+            
+            {isOutOfStock && (
+               <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                 <span style={{ background: "var(--dark)", color: "white", padding: "8px 20px", borderRadius: 999, fontSize: "1.1rem", fontWeight: 600, letterSpacing: 1 }}>AGOTADO</span>
+               </div>
+            )}
+          </div>
+          
+          {/* Miniaturas (Solo aparece si hay más de 1 foto) */}
+          {images.length > 1 && (
+            <div style={{ display: "flex", gap: 10, padding: 12, background: "white", overflowX: "auto", borderTop: "1px solid var(--border)" }}>
+               {images.map((img, i) => (
+                 <div key={i} onClick={() => setMainImgIdx(i)} style={{ width: 65, height: 65, borderRadius: 8, overflow: "hidden", cursor: "pointer", flexShrink: 0, border: mainImgIdx === i ? "2px solid var(--dark)" : "1px solid var(--border)", opacity: mainImgIdx === i ? 1 : 0.6, transition: "all .2s" }}>
+                   <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                 </div>
+               ))}
             </div>
           )}
         </div>
-        <button onClick={handleQuickAdd} style={{
-          background: "var(--dark)", color: "white", border: "none",
-          width: 34, height: 34, borderRadius: "50%", fontSize: "1.2rem",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          transition: "background .2s"
-        }}
-          onMouseEnter={e => e.currentTarget.style.background = "var(--pink-dark)"}
-          onMouseLeave={e => e.currentTarget.style.background = "var(--dark)"}
-        >+</button>
+
+        {/* ================= INFORMACIÓN ================= */}
+        <div style={{ flex: "1 1 50%", padding: window.innerWidth < 768 ? "1.5rem" : "2.5rem", overflowY: "auto", display: "flex", flexDirection: "column", background: "white" }}>
+          <div style={{ fontSize: "0.85rem", color: "var(--gray)", marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>{product.cat}</div>
+          <h2 className="serif" style={{ fontSize: "2.2rem", margin: "0 0 0.5rem 0", lineHeight: 1.1 }}>{product.name}</h2>
+          
+          <div style={{ fontSize: "1.5rem", fontWeight: 600, marginBottom: "1.5rem" }}>
+            {salePrice ? (
+              <>
+                <span style={{ textDecoration: "line-through", color: "var(--gray)", fontSize: "1rem", marginRight: 10 }}>S/ {Number(normalPrice).toFixed(2)}</span>
+                <span style={{ color: "var(--danger)" }}>S/ {Number(salePrice).toFixed(2)}</span>
+              </>
+            ) : `S/ ${Number(effPrice).toFixed(2)}`}
+          </div>
+
+          <p style={{ color: "var(--gray)", lineHeight: 1.6, marginBottom: "2rem" }}>
+            {product.description || "Un diseño exclusivo para resaltar tu estilo único. Cómodo, versátil y perfecto para cualquier ocasión."}
+          </p>
+
+          {/* Selector de Tallas */}
+          {sizes.length > 0 && (
+            <div style={{ marginBottom: "1.5rem" }}>
+              <div style={{ fontSize: "0.85rem", fontWeight: 600, marginBottom: 10 }}>Talla: {selectedSize || <span style={{color: "var(--danger)"}}>(Requerido)</span>}</div>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                {sizes.map(s => (
+                  <button key={s} onClick={() => setSelectedSize(s)} style={{ minWidth: 42, padding: "0 12px", height: 42, borderRadius: 8, border: selectedSize === s ? "2px solid var(--dark)" : "1px solid var(--border)", background: selectedSize === s ? "var(--dark)" : "white", color: selectedSize === s ? "white" : "var(--dark)", fontSize: "0.9rem", fontWeight: 500, cursor: "pointer", transition: "all .2s" }}>
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Selector de Colores */}
+          {colors.length > 0 && (
+            <div style={{ marginBottom: "2rem" }}>
+              <div style={{ fontSize: "0.85rem", fontWeight: 600, marginBottom: 10 }}>Color: {selectedColor || <span style={{color: "var(--danger)"}}>(Requerido)</span>}</div>
+              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                {colors.map(c => {
+                  const colorObj = COLOR_MAP.find(opt => opt.name === c) || { hex: "#ccc" };
+                  return (
+                    <div key={c} onClick={() => setSelectedColor(c)} style={{ width: 38, height: 38, borderRadius: "50%", background: colorObj.hex, cursor: "pointer", border: selectedColor === c ? "2px solid var(--dark)" : "1px solid var(--border)", boxShadow: selectedColor === c ? "0 0 0 4px white inset" : "none", transition: "all .2s" }} title={c} />
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          <div style={{ marginTop: "auto", paddingTop: "1.5rem" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem", marginBottom: 10, fontWeight: 500 }}>
+              <span style={{ color: isOutOfStock ? "var(--danger)" : "var(--success)" }}>
+                {isOutOfStock ? "● Producto agotado" : "● En stock"}
+              </span>
+              {!isOutOfStock && <span style={{ color: "var(--gray)" }}>{stock} unidades disponibles</span>}
+            </div>
+            
+            <button onClick={handleAdd} disabled={isOutOfStock} style={{ width: "100%", padding: "16px", background: isOutOfStock ? "var(--border)" : "var(--dark)", color: isOutOfStock ? "var(--gray)" : "white", border: "none", borderRadius: 12, fontSize: "1.05rem", fontWeight: 600, cursor: isOutOfStock ? "not-allowed" : "pointer", transition: "all .2s" }}>
+              {isOutOfStock ? "Agotado" : "Agregar al carrito"}
+            </button>
+          </div>
+        </div>
+
       </div>
     </div>
   );

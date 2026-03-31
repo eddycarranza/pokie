@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useProducts, useOrders, useExpenses } from "../hooks/useSupabase";
+import { supabase } from "../lib/supabase"; 
 import Logo from "../components/Logo";
 
 // ============ SUPABASE CONFIG ============
@@ -41,25 +42,16 @@ async function uploadToSupabase(file, onProgress) {
   return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${fileName}`;
 }
 
-// --- TAG INPUT MEJORADO PARA MÓVILES ---
 function TagInput({ tags, onChange, placeholder }) {
   const [val, setVal] = useState("");
-  
   const handleAdd = (e) => {
     if (e) e.preventDefault();
     const newTag = val.trim().replace(/,$/, ''); 
-    
-    if (newTag && !tags.includes(newTag)) {
-      onChange([...tags, newTag]);
-    }
+    if (newTag && !tags.includes(newTag)) { onChange([...tags, newTag]); }
     setVal(""); 
   };
-
   const handleKeyDown = (e) => {
-    if (e.key === "Enter" || e.key === ",") {
-      e.preventDefault();
-      handleAdd();
-    }
+    if (e.key === "Enter" || e.key === ",") { e.preventDefault(); handleAdd(); }
   };
 
   return (
@@ -71,33 +63,17 @@ function TagInput({ tags, onChange, placeholder }) {
         </span>
       ))}
       <input 
-        value={val} 
-        onChange={e => setVal(e.target.value)} 
-        onKeyDown={handleKeyDown}
-        placeholder={tags.length ? "" : placeholder}
+        value={val} onChange={e => setVal(e.target.value)} onKeyDown={handleKeyDown} placeholder={tags.length ? "" : placeholder}
         style={{ border: "none", outline: "none", fontSize: "0.85rem", flex: 1, minWidth: 80, fontFamily: "'Courier New', Courier, monospace", background: "transparent" }} 
       />
-      {/* Botón "+" para agregar desde el celular */}
       {val.trim() && (
-        <button 
-          type="button" 
-          onClick={handleAdd}
-          style={{ 
-            background: "var(--pink-dark)", color: "white", border: "none", 
-            borderRadius: "50%", width: 24, height: 24, display: "flex", 
-            alignItems: "center", justifyContent: "center", cursor: "pointer", 
-            flexShrink: 0, fontSize: "1.2rem", lineHeight: 1
-          }}
-        >
-          +
-        </button>
+        <button type="button" onClick={handleAdd} style={{ background: "var(--pink-dark)", color: "white", border: "none", borderRadius: "50%", width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, fontSize: "1.2rem", lineHeight: 1 }}>+</button>
       )}
     </div>
   );
 }
-// ---------------------------------------
 
-function ImageUploader({ imageUrl, onUploaded }) {
+function ImageUploader({ onUploaded }) {
   const [progress, setProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -111,9 +87,8 @@ function ImageUploader({ imageUrl, onUploaded }) {
     try {
       const url = await uploadToSupabase(file, setProgress);
       onUploaded(url);
-    } catch (err) {
-      setError(`Error: ${err.message}`);
-    } finally { setUploading(false); setProgress(0); }
+    } catch (err) { setError(`Error: ${err.message}`); } 
+    finally { setUploading(false); setProgress(0); e.target.value = null; }
   };
 
   return (
@@ -121,17 +96,12 @@ function ImageUploader({ imageUrl, onUploaded }) {
       <div onClick={() => !uploading && inputRef.current.click()} style={{
         border: "2px dashed var(--border)", borderRadius: 12, padding: "1rem",
         textAlign: "center", cursor: uploading ? "default" : "pointer",
-        background: imageUrl ? "white" : "var(--pink-light)", minHeight: 120,
+        background: "var(--pink-light)", minHeight: 120, display: "flex", flexDirection: "column", justifyContent: "center"
       }}
         onMouseEnter={e => { if (!uploading) e.currentTarget.style.borderColor = "var(--pink-dark)"; }}
         onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border)"; }}
       >
-        {imageUrl ? (
-          <div>
-            <img src={imageUrl} alt="preview" style={{ width: "100%", maxHeight: 220, objectFit: "contain", borderRadius: 8, display: "block" }} />
-            <div style={{ marginTop: 8, fontSize: "0.78rem", color: "var(--gray)" }}>Clic para cambiar imagen</div>
-          </div>
-        ) : uploading ? (
+        {uploading ? (
           <div>
             <div style={{ fontSize: "1.5rem", marginBottom: 8 }}>subiendo</div>
             <div style={{ fontSize: "0.85rem", color: "var(--gray)", marginBottom: 8 }}>Subiendo... {progress}%</div>
@@ -141,8 +111,8 @@ function ImageUploader({ imageUrl, onUploaded }) {
           </div>
         ) : (
           <div>
-            <div style={{ fontSize: "2rem", marginBottom: 6 }}>foto</div>
-            <div style={{ fontSize: "0.85rem", color: "var(--gray)" }}>Clic para subir imagen</div>
+            <div style={{ fontSize: "2rem", marginBottom: 6 }}>+</div>
+            <div style={{ fontSize: "0.85rem", color: "var(--gray)" }}>Clic para subir nueva imagen</div>
             <div style={{ fontSize: "0.75rem", color: "var(--gray)", marginTop: 2 }}>JPG, PNG - max 5MB</div>
           </div>
         )}
@@ -154,7 +124,30 @@ function ImageUploader({ imageUrl, onUploaded }) {
 }
 
 function ProductForm({ initial, onSave, onCancel, isMobile }) {
-  const [form, setForm] = useState(initial || { name: "", cat: "", price: "", salePrice: "", description: "", emoji: "", badge: "", sizes: [], colors: [], imageUrl: "" });
+  const [form, setForm] = useState(() => {
+    if (!initial) {
+      return { name: "", cat: "", price: "", salePrice: "", stock: 0, description: "", emoji: "", badge: "", sizes: [], colors: [], imageUrls: [] };
+    }
+    
+    let urls = [];
+    if (initial.image_urls && initial.image_urls.length > 0) {
+      urls = initial.image_urls;
+    } else if (initial.image_url || initial.imageUrl) {
+      urls = [initial.image_url || initial.imageUrl];
+    }
+
+    // SANITIZACIÓN DE STOCK PARA EVITAR EL NaN
+    const initialStock = parseInt(initial.stock, 10);
+
+    return { 
+      ...initial, 
+      imageUrls: urls, 
+      stock: isNaN(initialStock) ? 0 : initialStock,
+      sizes: initial.sizes || [],
+      colors: initial.colors || []
+    };
+  });
+
   const [saving, setSaving] = useState(false);
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
@@ -163,19 +156,42 @@ function ProductForm({ initial, onSave, onCancel, isMobile }) {
   };
 
   const handleSave = async () => {
-    if (!form.name || !form.cat || !form.price) return alert("Nombre, categoria y precio son obligatorios");
+    if (!form.name || !form.cat || !form.price) return alert("Nombre, categoría y precio son obligatorios");
     setSaving(true);
-    await onSave({ ...form, price: parseFloat(form.price), salePrice: form.salePrice ? parseFloat(form.salePrice) : null });
+    
+    // SANITIZACIÓN ANTES DE GUARDAR
+    const parsedStock = parseInt(form.stock, 10);
+    
+    await onSave({ 
+      ...form, 
+      price: parseFloat(form.price), 
+      salePrice: form.salePrice ? parseFloat(form.salePrice) : null,
+      stock: isNaN(parsedStock) ? 0 : parsedStock 
+    });
     setSaving(false);
   };
 
   return (
     <div className="card">
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "1rem" }}>
+        
+        {/* GALERÍA DE IMÁGENES */}
         <div className="form-group" style={{ gridColumn: "1/-1" }}>
-          <label className="form-label">Imagen del producto</label>
-          <ImageUploader imageUrl={form.imageUrl || form.image_url} onUploaded={url => set("imageUrl", url)} />
+          <label className="form-label">Imágenes del producto (Puedes subir varias)</label>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '15px' }}>
+            {(form.imageUrls || []).map((img, i) => (
+              <div key={i} style={{ position: 'relative', width: 100, height: 120 }}>
+                <img src={img} alt="preview" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8, border: "1px solid var(--border)" }} />
+                <button type="button" onClick={() => setForm(p => ({...p, imageUrls: p.imageUrls.filter((_, index) => index !== i)}))} 
+                  style={{ position: 'absolute', top: -8, right: -8, background: 'var(--danger)', color: 'white', borderRadius: '50%', width: 24, height: 24, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+          <ImageUploader onUploaded={url => set("imageUrls", [...(form.imageUrls || []), url])} />
         </div>
+
         <div className="form-group" style={{ gridColumn: "1/-1" }}>
           <label className="form-label">Nombre del producto *</label>
           <input className="form-input" value={form.name} onChange={e => set("name", e.target.value)} placeholder="Ej: Vestido Floral Rosa" />
@@ -187,32 +203,39 @@ function ProductForm({ initial, onSave, onCancel, isMobile }) {
             {CATS.map(c => <option key={c}>{c}</option>)}
           </select>
         </div>
+        
         <div className="form-group">
+          <label className="form-label">Stock disponible *</label>
+          <input className="form-input" type="number" min="0" value={form.stock} onChange={e => set("stock", e.target.value)} placeholder="0" />
         </div>
+
         <div className="form-group">
           <label className="form-label">Precio (S/) *</label>
           <input className="form-input" type="number" step="0.01" value={form.price} onChange={e => set("price", e.target.value)} placeholder="89.90" />
         </div>
         <div className="form-group">
           <label className="form-label">Precio con oferta (S/)</label>
-          <input className="form-input" type="number" step="0.01" value={form.salePrice} onChange={e => set("salePrice", e.target.value)} placeholder="Dejar vacio si no hay" />
+          <input className="form-input" type="number" step="0.01" value={form.salePrice || ""} onChange={e => set("salePrice", e.target.value)} placeholder="Dejar vacio si no hay" />
         </div>
+        
         <div className="form-group" style={{ gridColumn: "1/-1" }}>
           <label className="form-label">Descripcion</label>
-          <textarea className="form-input" value={form.description} onChange={e => set("description", e.target.value)} rows={3} placeholder="Material, cuidados, detalles..." style={{ resize: "vertical" }} />
+          <textarea className="form-input" value={form.description || ""} onChange={e => set("description", e.target.value)} rows={3} placeholder="Material, cuidados, detalles..." style={{ resize: "vertical" }} />
         </div>
+        
         <div className="form-group">
           <label className="form-label">Tallas (Enter para agregar)</label>
-          <TagInput tags={form.sizes} onChange={v => set("sizes", v)} placeholder="XS, S, M, 38, 39..." />
+          <TagInput tags={form.sizes || []} onChange={v => set("sizes", v)} placeholder="XS, S, M, 38, 39..." />
         </div>
         <div className="form-group">
           <label className="form-label">Etiqueta</label>
-          <select className="form-input" value={form.badge} onChange={e => set("badge", e.target.value)}>
+          <select className="form-input" value={form.badge || ""} onChange={e => set("badge", e.target.value)}>
             <option value="">Sin etiqueta</option>
             <option value="new">Nuevo</option>
             <option value="sale">Oferta</option>
           </select>
         </div>
+        
         <div className="form-group" style={{ gridColumn: "1/-1" }}>
           <label className="form-label">Colores disponibles - clic para seleccionar</label>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 14, padding: "14px", background: "var(--gray-light)", borderRadius: 10 }}>
@@ -283,10 +306,7 @@ export default function AdminDashboard() {
       return Array.from({ length: 7 }, (_, i) => {
         const d = new Date(now); d.setDate(d.getDate() - (6 - i));
         const label = d.toLocaleDateString("es-PE", { weekday: "short" });
-        const total = delivered.filter(o => {
-          const od = new Date(o.created_at);
-          return od.toDateString() === d.toDateString();
-        }).reduce((s, o) => s + (o.total || 0), 0);
+        const total = delivered.filter(o => new Date(o.created_at).toDateString() === d.toDateString()).reduce((s, o) => s + (o.total || 0), 0);
         return { label, total };
       });
     } else if (chartPeriod === "semana") {
@@ -295,8 +315,7 @@ export default function AdminDashboard() {
         const weekEnd = new Date(weekStart); weekEnd.setDate(weekEnd.getDate() + 6);
         const label = `Sem ${i + 1}`;
         const total = delivered.filter(o => {
-          const od = new Date(o.created_at);
-          return od >= weekStart && od <= weekEnd;
+          const od = new Date(o.created_at); return od >= weekStart && od <= weekEnd;
         }).reduce((s, o) => s + (o.total || 0), 0);
         return { label, total };
       });
@@ -305,8 +324,7 @@ export default function AdminDashboard() {
         const d = new Date(now); d.setMonth(d.getMonth() - (5 - i));
         const label = d.toLocaleDateString("es-PE", { month: "short" });
         const total = delivered.filter(o => {
-          const od = new Date(o.created_at);
-          return od.getMonth() === d.getMonth() && od.getFullYear() === d.getFullYear();
+          const od = new Date(o.created_at); return od.getMonth() === d.getMonth() && od.getFullYear() === d.getFullYear();
         }).reduce((s, o) => s + (o.total || 0), 0);
         return { label, total };
       });
@@ -333,7 +351,8 @@ export default function AdminDashboard() {
     const supabaseData = {
       name: data.name, cat: data.cat, price: data.price, sale_price: data.salePrice || null,
       description: data.description || "", emoji: data.emoji || "", badge: data.badge || null,
-      sizes: data.sizes || [], colors: data.colors || [], image_url: data.imageUrl || data.image_url || null,
+      sizes: data.sizes || [], colors: data.colors || [], 
+      image_urls: data.imageUrls || [], stock: data.stock || 0
     };
     if (editing && editing !== "new") { await updateProduct(editing.id, supabaseData); showToast("Producto actualizado ✓"); }
     else { await addProduct(supabaseData); showToast("Producto agregado ✓"); }
@@ -345,8 +364,23 @@ export default function AdminDashboard() {
     await deleteProduct(id); showToast("Producto eliminado");
   };
 
-  const handleStatusChange = async (id, status) => {
-    await updateOrder(id, { status }); showToast(`Pedido actualizado a ${status}`);
+  const handleStatusChange = async (order, newStatus) => {
+    await updateOrder(order.id, { status: newStatus }); 
+    
+    if (newStatus === "entregado" && order.status !== "entregado") {
+      for (const item of order.items) {
+         const { data: pData } = await supabase.from('products').select('stock, ventas_totales').eq('id', item.id).single();
+         if (pData) {
+            await supabase.from('products').update({
+               ventas_totales: (pData.ventas_totales || 0) + item.qty,
+               stock: Math.max((pData.stock || 0) - item.qty, 0)
+            }).eq('id', item.id);
+         }
+      }
+      showToast(`Pedido entregado. Inventario actualizado ✓`);
+    } else {
+      showToast(`Pedido actualizado a ${newStatus}`);
+    }
   };
 
   return (
@@ -368,12 +402,9 @@ export default function AdminDashboard() {
         background: "var(--dark)", color: "white", padding: "1.5rem", 
         display: isMobile ? (menuOpen ? "flex" : "none") : "flex", 
         flexDirection: "column", gap: "0.4rem",
-        position: isMobile ? "fixed" : "sticky", 
-        top: isMobile ? 64 : 0, left: 0, bottom: 0, 
-        width: isMobile ? "250px" : "auto", 
-        height: isMobile ? "calc(100vh - 64px)" : "100vh", 
-        zIndex: 999,
-        boxShadow: isMobile && menuOpen ? "4px 0 20px rgba(0,0,0,0.5)" : "none"
+        position: isMobile ? "fixed" : "sticky", top: isMobile ? 64 : 0, left: 0, bottom: 0, 
+        width: isMobile ? "250px" : "auto", height: isMobile ? "calc(100vh - 64px)" : "100vh", 
+        zIndex: 999, boxShadow: isMobile && menuOpen ? "4px 0 20px rgba(0,0,0,0.5)" : "none"
       }}>
         {!isMobile && (
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "2rem" }}>
@@ -383,8 +414,7 @@ export default function AdminDashboard() {
         )}
         {[{ key: "dashboard", icon: "📊", label: "Dashboard" }, { key: "productos", icon: "👗", label: "Productos" }, { key: "pedidos", icon: "📦", label: "Pedidos" }, { key: "egresos", icon: "💸", label: "Egresos" }].map(item => (
           <button key={item.key} onClick={() => { setPanel(item.key); setEditing(null); if(isMobile) setMenuOpen(false); }} style={{
-            display: "flex", alignItems: "center", gap: 10,
-            background: panel === item.key ? "rgba(255,255,255,.12)" : "none",
+            display: "flex", alignItems: "center", gap: 10, background: panel === item.key ? "rgba(255,255,255,.12)" : "none",
             border: "none", color: panel === item.key ? "white" : "rgba(255,255,255,.55)",
             padding: "10px 12px", borderRadius: 8, cursor: "pointer", fontSize: "0.88rem", width: "100%", textAlign: "left"
           }}>{item.icon} {item.label}</button>
@@ -440,9 +470,7 @@ export default function AdminDashboard() {
                       <button key={p} onClick={() => setChartPeriod(p)} style={{
                         padding: "4px 10px", borderRadius: 999, border: "1px solid var(--border)",
                         background: chartPeriod === p ? "var(--dark)" : "white",
-                        color: chartPeriod === p ? "white" : "var(--gray)",
-                        fontSize: "0.72rem", cursor: "pointer",
-                        fontFamily: "'Courier New', Courier, monospace",
+                        color: chartPeriod === p ? "white" : "var(--gray)", fontSize: "0.72rem", cursor: "pointer", fontFamily: "'Courier New', Courier, monospace",
                       }}>{p}</button>
                     ))}
                   </div>
@@ -451,16 +479,8 @@ export default function AdminDashboard() {
                   {chartData.map((d, i) => (
                     <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, height: "100%" }}>
                       <div style={{ flex: 1, display: "flex", alignItems: "flex-end", width: "100%" }}>
-                        <div style={{
-                          width: "100%", height: `${maxVal > 0 ? (d.total / maxVal) * 100 : 0}%`, minHeight: d.total > 0 ? 4 : 0,
-                          background: d.total > 0 ? "var(--pink-dark)" : "var(--border)", borderRadius: "4px 4px 0 0",
-                          transition: "height .3s ease", position: "relative",
-                        }}>
-                          {d.total > 0 && (
-                            <div style={{ position: "absolute", top: -20, left: "50%", transform: "translateX(-50%)", fontSize: "0.62rem", color: "var(--gray)", whiteSpace: "nowrap" }}>
-                              S/{d.total.toFixed(0)}
-                            </div>
-                          )}
+                        <div style={{ width: "100%", height: `${maxVal > 0 ? (d.total / maxVal) * 100 : 0}%`, minHeight: d.total > 0 ? 4 : 0, background: d.total > 0 ? "var(--pink-dark)" : "var(--border)", borderRadius: "4px 4px 0 0", transition: "height .3s ease", position: "relative" }}>
+                          {d.total > 0 && ( <div style={{ position: "absolute", top: -20, left: "50%", transform: "translateX(-50%)", fontSize: "0.62rem", color: "var(--gray)", whiteSpace: "nowrap" }}>S/{d.total.toFixed(0)}</div> )}
                         </div>
                       </div>
                       <span style={{ fontSize: "0.68rem", color: "var(--gray)" }}>{d.label}</span>
@@ -472,7 +492,7 @@ export default function AdminDashboard() {
               <div style={{ background: "white", borderRadius: 12, border: "1px solid var(--border)", padding: "1.25rem" }}>
                 <div style={{ fontWeight: 600, fontSize: "0.9rem", marginBottom: "1rem" }}>Ingresos vs Egresos</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  {[{ label: "Ingresos reales", value: realRevenue, color: "var(--success)", bg: "#d1e7dd" }, { label: "Egresos", value: totalExpenses, color: "var(--danger)", bg: "#f8d7da" }, { label: "Ganancia neta", value: netProfit, color: netProfit >= 0 ? "var(--success)" : "var(--danger)", bg: netProfit >= 0 ? "#d1e7dd" : "#f8d7da" }].map(item => (
+                  {[{ label: "Ingresos reales", value: realRevenue, color: "var(--success)" }, { label: "Egresos", value: totalExpenses, color: "var(--danger)" }, { label: "Ganancia neta", value: netProfit, color: netProfit >= 0 ? "var(--success)" : "var(--danger)" }].map(item => (
                     <div key={item.label}>
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
                         <span style={{ fontSize: "0.78rem", color: "var(--gray)" }}>{item.label}</span>
@@ -542,20 +562,30 @@ export default function AdminDashboard() {
               <button className="btn btn-dark btn-sm" onClick={() => setEditing("new")}>+ Nuevo producto</button>
             </div>
             <div style={{ background: "white", borderRadius: 12, border: "1px solid var(--border)", overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "650px" }}>
-                <thead><tr>{["Producto", "Categoria", "Precio", "Tallas", "Etiqueta", "Acciones"].map(h => (<th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: "0.75rem", textTransform: "uppercase", color: "var(--gray)", background: "#f8f6f3", borderBottom: "1px solid var(--border)" }}>{h}</th>))}</tr></thead>
+              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "750px" }}>
+                <thead><tr>{["Producto", "Categoria", "Stock", "Precio", "Tallas", "Etiqueta", "Acciones"].map(h => (<th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: "0.75rem", textTransform: "uppercase", color: "var(--gray)", background: "#f8f6f3", borderBottom: "1px solid var(--border)" }}>{h}</th>))}</tr></thead>
                 <tbody>
-                  {products.map(p => (
+                  {products.map(p => {
+                    const firstImage = p.image_urls?.[0] || p.image_url || p.imageUrl;
+                    
+                    // VALIDACIÓN DE STOCK PARA LA TABLA
+                    const rawStock = parseInt(p.stock, 10);
+                    const safeStock = isNaN(rawStock) ? 0 : rawStock;
+
+                    return (
                     <tr key={p.id} style={{ borderBottom: "1px solid var(--border)" }}>
                       <td style={{ padding: "11px 14px" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                           <div style={{ width: 42, height: 48, background: "var(--pink-light)", borderRadius: 6, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.4rem", flexShrink: 0 }}>
-                            {p.image_url || p.imageUrl ? <img src={p.image_url || p.imageUrl} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : p.emoji || "👗"}
+                            {firstImage ? <img src={firstImage} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : p.emoji || "👗"}
                           </div>
                           <span style={{ fontSize: "0.88rem", fontWeight: 500 }}>{p.name}</span>
                         </div>
                       </td>
                       <td style={{ padding: "11px 14px", fontSize: "0.88rem" }}>{p.cat}</td>
+                      <td style={{ padding: "11px 14px", fontSize: "0.88rem", color: safeStock <= 0 ? "var(--danger)" : "var(--dark)", fontWeight: safeStock <= 0 ? "bold" : "normal" }}>
+                        {safeStock}
+                      </td>
                       <td style={{ padding: "11px 14px", fontSize: "0.88rem" }}>S/ {p.price?.toFixed(2)}{p.sale_price && <div style={{ color: "var(--danger)", fontSize: "0.78rem" }}>→ S/ {p.sale_price.toFixed(2)}</div>}</td>
                       <td style={{ padding: "11px 14px", fontSize: "0.82rem", color: "var(--gray)" }}>{p.sizes?.join(", ") || "-"}</td>
                       <td style={{ padding: "11px 14px" }}>{p.badge ? <span className={`badge-status badge-${p.badge}`}>{p.badge}</span> : "-"}</td>
@@ -566,7 +596,7 @@ export default function AdminDashboard() {
                         </div>
                       </td>
                     </tr>
-                  ))}
+                  )})}
                 </tbody>
               </table>
               {products.length === 0 && <div style={{ textAlign: "center", padding: "3rem", color: "var(--gray)" }}>No hay productos aun.</div>}
@@ -605,7 +635,7 @@ export default function AdminDashboard() {
                     <div style={{ fontSize: "0.82rem", color: "var(--gray)" }}>
                       {o.items?.map((i, idx) => (<span key={idx}>{i.name}{i.size ? ` (${i.size})` : ""} x{i.qty}{idx < o.items.length - 1 ? " · " : ""}</span>))}
                     </div>
-                    <select className="form-input" style={{ width: isMobile ? "100%" : "auto", padding: "6px 12px", fontSize: "0.82rem" }} value={o.status} onChange={e => handleStatusChange(o.id, e.target.value)}>
+                    <select className="form-input" style={{ width: isMobile ? "100%" : "auto", padding: "6px 12px", fontSize: "0.82rem" }} value={o.status} onChange={e => handleStatusChange(o, e.target.value)}>
                       {STATUSES.map(s => <option key={s}>{s}</option>)}
                     </select>
                   </div>

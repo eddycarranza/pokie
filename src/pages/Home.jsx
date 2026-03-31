@@ -71,7 +71,6 @@ function HeroBanner({ onShop }) {
       background: slide.bg, overflow: "hidden",
       display: "flex", alignItems: "flex-end",
     }}>
-      {/* Imagen de fondo */}
       {slide.img && (
         <img src={slide.img} alt="" style={{
           position: "absolute", inset: 0, width: "100%", height: "100%",
@@ -80,14 +79,10 @@ function HeroBanner({ onShop }) {
           transition: "opacity .5s ease",
         }} />
       )}
-
-      {/* Overlay gradiente bottom */}
       <div style={{
         position: "absolute", inset: 0,
         background: "linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.15) 50%, transparent 100%)",
       }} />
-
-      {/* Contenido abajo izquierda */}
       <div style={{
         position: "relative", zIndex: 2,
         padding: "0 4rem 4rem",
@@ -107,7 +102,6 @@ function HeroBanner({ onShop }) {
         }}>
           {slide.tag}
         </div>
-
         <h1 style={{
           fontFamily: "'Courier New', Courier, monospace",
           fontSize: "clamp(2.6rem, 5.5vw, 4.8rem)",
@@ -126,7 +120,6 @@ function HeroBanner({ onShop }) {
         }}>
           {slide.sub}
         </h2>
-
         <button onClick={onShop} style={{
           background: "white", color: "#1a1a1a", border: "none",
           padding: "13px 30px", borderRadius: 999, cursor: "pointer",
@@ -140,8 +133,6 @@ function HeroBanner({ onShop }) {
           {slide.cta} →
         </button>
       </div>
-
-      {/* Dots abajo derecha */}
       <div style={{
         position: "absolute", bottom: "2.2rem", right: "3rem",
         display: "flex", gap: 8, zIndex: 3, alignItems: "center",
@@ -155,8 +146,6 @@ function HeroBanner({ onShop }) {
           }} />
         ))}
       </div>
-
-      {/* Número del slide */}
       <div style={{
         position: "absolute", right: "3rem", top: "50%", transform: "translateY(-50%)",
         color: "rgba(255,255,255,0.5)", fontSize: "0.75rem", letterSpacing: ".1em",
@@ -174,24 +163,24 @@ export default function Home() {
   const { products, loading } = useProducts();
   const [cat, setCat] = useState("Todos");
   const [selected, setSelected] = useState(null);
-  
   const [showWsp, setShowWsp] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 400) {
-        setShowWsp(true);
-      } else {
-        setShowWsp(false);
-      }
+      if (window.scrollY > 400) { setShowWsp(true); } 
+      else { setShowWsp(false); }
     };
-
     window.addEventListener("scroll", handleScroll);
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const filtered = cat === "Todos" ? products : products.filter(p => p.cat === cat);
+  
+  // Buscar el más vendido (Aquel que tenga mayor valor en ventas_totales y que tenga stock)
+  const bestSeller = products.length > 0 
+    ? [...products].filter(p => p.stock > 0).sort((a, b) => (b.ventas_totales || 0) - (a.ventas_totales || 0))[0] 
+    : null;
 
   return (
     <>
@@ -201,8 +190,36 @@ export default function Home() {
       {/* Hero Carrusel */}
       <HeroBanner onShop={() => document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" })} />
 
+      {/* PRODUCTO MÁS VENDIDO */}
+      {!loading && bestSeller && (
+        <div style={{ maxWidth: 1000, margin: "3rem auto 1rem", padding: "0 1rem" }}>
+          <div style={{ background: "white", border: "1px solid var(--border)", borderRadius: 20, display: "flex", flexWrap: "wrap", overflow: "hidden", boxShadow: "0 10px 30px rgba(0,0,0,0.05)" }}>
+            <div style={{ flex: "1 1 300px", background: "var(--pink-light)", position: "relative" }}>
+               <img 
+                 src={bestSeller.image_urls?.[0] || bestSeller.image_url} 
+                 alt={bestSeller.name} 
+                 style={{ width: "100%", height: "100%", minHeight: 300, objectFit: "cover" }} 
+               />
+            </div>
+            <div style={{ flex: "1 1 300px", padding: "2.5rem", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+               <div style={{ alignSelf: "flex-start", background: "var(--dark)", color: "white", padding: "4px 12px", borderRadius: 20, fontSize: "0.75rem", fontWeight: 600, letterSpacing: 1, marginBottom: 16 }}>
+                 🔥 MÁS VENDIDO
+               </div>
+               <h2 className="serif" style={{ fontSize: "2.2rem", margin: "0 0 10px 0", lineHeight: 1.1 }}>{bestSeller.name}</h2>
+               <p style={{ color: "var(--gray)", fontSize: "0.95rem", marginBottom: "1.5rem" }}>
+                 {bestSeller.description || "El favorito de nuestras clientas. ¡Asegura el tuyo antes de que se agote!"}
+               </p>
+               <h3 style={{ fontSize: "1.5rem", marginBottom: "1.5rem" }}>S/ {bestSeller.sale_price || bestSeller.price}</h3>
+               <button className="btn btn-dark" onClick={() => setSelected(bestSeller)} style={{ alignSelf: "flex-start" }}>
+                 Comprar ahora
+               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Catálogo */}
-      <div id="catalog" style={{ maxWidth: 1200, margin: "0 auto", padding: "1.5rem 1rem 0" }}>
+      <div id="catalog" style={{ maxWidth: 1200, margin: "0 auto", padding: "3rem 1rem 0" }}>
         <h2 className="serif" style={{ fontSize: "1.8rem", marginBottom: 4 }}>Catálogo</h2>
         <p style={{ color: "var(--gray)", fontSize: "0.88rem", marginBottom: "1.5rem" }}>
           {cat === "Todos" ? "Todos los productos" : cat} — {filtered.length} producto{filtered.length !== 1 ? "s" : ""}
@@ -242,7 +259,7 @@ export default function Home() {
       {/* Footer */}
       <footer style={{ background: "var(--dark)", color: "white", textAlign: "center", padding: "1.5rem" }}>
         <p style={{ fontSize: "0.85rem", opacity: 0.8, fontFamily: "'Courier New', Courier, monospace" }}>
-          Envíos a todo el Perú · WhatsApp: 948761303 · pookiecat.pe
+          Envíos a todo el Perú · WhatsApp: 927 112 114 · pookiecat.pe
         </p>
       </footer>
 
@@ -250,7 +267,7 @@ export default function Home() {
 
       {/* Botón flotante WhatsApp animado */}
       <a
-        href="https://wa.me/51948761303?text=Hola!%20Quisiera%20consultar%20sobre%20un%20producto%20"
+        href="https://wa.me/51927112114?text=Hola!%20Quisiera%20consultar%20sobre%20un%20producto%20"
         target="_blank"
         rel="noopener noreferrer"
         style={{
