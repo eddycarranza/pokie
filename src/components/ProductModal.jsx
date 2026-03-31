@@ -1,269 +1,150 @@
 // src/components/ProductModal.jsx
 import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
 import { useCart } from "../context/CartContext";
 
-const COLOR_MAP = {
-  "Rosa": "#f2a7c3", "Blanco": "#f0f0f0", "Negro": "#1a1a1a",
-  "Azul denim": "#7eb0d4", "Marrón": "#8d6748",
-  "Pale Pink": "hsl(337, 27%, 83%)", "White": "#f0f0f0",
-  "Black": "rgb(34, 34, 34)", "Light Brown": "rgba(65, 47, 37, 0.86)",
-};
+const COLOR_MAP = [
+  { name: "Pale Pink", hex: "hsl(337, 27%, 83%)" },
+  { name: "White", hex: "#f0f0f0" },
+  { name: "Black", hex: "rgb(34, 34, 34)" },
+  { name: "Azul denim", hex: "#7eb0d4" },
+  { name: "Light Brown", hex: "rgba(65, 47, 37, 0.86)" },
+];
 
 export default function ProductModal({ product, onClose }) {
   const { addToCart } = useCart();
-  const [size, setSize] = useState("");
-  const [color, setColor] = useState("");
-  const [qty, setQty] = useState(1);
-  const [error, setError] = useState("");
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [selectedSize, setSelectedSize] = useState("");
+  const [selectedColor, setSelectedColor] = useState("");
+  const [mainImgIdx, setMainImgIdx] = useState(0); 
 
   useEffect(() => {
-    const handle = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener("resize", handle);
-
-    // Bloquear scroll — fix para iOS y Android
-    const scrollY = window.scrollY;
     document.body.style.overflow = "hidden";
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = "100%";
-
-    return () => {
-      window.removeEventListener("resize", handle);
-      document.body.style.overflow = "";
-      document.body.style.position = "";
-      document.body.style.top = "";
-      document.body.style.width = "";
-      window.scrollTo(0, scrollY);
-    };
+    return () => { document.body.style.overflow = "unset"; };
   }, []);
 
-  if (!product) return null;
+  if (!product) return null; 
+
+  const stock = parseInt(product.stock, 10);
+  const isOutOfStock = isNaN(stock) || stock <= 0;
+  
+  const salePrice = product.salePrice || product.sale_price;
+  const normalPrice = product.price || 0;
+  const effPrice = salePrice || normalPrice;
+
+  let images = [];
+  if (Array.isArray(product.image_urls) && product.image_urls.length > 0) {
+    images = product.image_urls;
+  } else if (product.image_url) {
+    images = [product.image_url];
+  } else if (product.imageUrl) {
+    images = [product.imageUrl];
+  }
+
+  const sizes = Array.isArray(product.sizes) ? product.sizes : [];
+  const colors = Array.isArray(product.colors) ? product.colors : [];
 
   const handleAdd = () => {
-    if (product.sizes?.length && !size) { setError("Selecciona una talla"); return; }
-    addToCart(product, qty, size, color);
+    if (sizes.length > 0 && !selectedSize) return alert("Por favor, selecciona una talla.");
+    if (colors.length > 0 && !selectedColor) return alert("Por favor, selecciona un color.");
+    addToCart(product, 1, selectedSize, selectedColor);
     onClose();
   };
 
-  const effPrice = product.sale_price || product.salePrice || product.price;
-  const origPrice = product.price;
-  const hasDiscount = (product.sale_price || product.salePrice) && effPrice < origPrice;
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }} onClick={onClose}>
+      <div style={{ background: "white", borderRadius: 20, width: "100%", maxWidth: 900, maxHeight: "90vh", overflow: "hidden", display: "flex", flexDirection: window.innerWidth < 768 ? "column" : "row", position: "relative" }} onClick={e => e.stopPropagation()}>
+        
+        <button onClick={onClose} style={{ position: "absolute", top: 15, right: 15, background: "rgba(255,255,255,0.9)", color: "var(--dark)", border: "none", width: 36, height: 36, borderRadius: "50%", fontSize: "1.2rem", cursor: "pointer", zIndex: 10, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
+          ✕
+        </button>
 
-  // Componente del botón para reutilizarlo en PC y Móvil
-  const AddToCartBtn = () => (
-    <button onClick={handleAdd} style={{
-      marginTop: isMobile ? 0 : "auto", width: "100%",
-      background: "var(--dark)", color: "white", border: "none",
-      padding: "16px", borderRadius: 999, cursor: "pointer",
-      fontSize: "0.95rem", fontFamily: "'Courier New', Courier, monospace",
-      fontWeight: 700, letterSpacing: ".05em", textTransform: "uppercase",
-      transition: "background .2s",
-    }}
-      onMouseEnter={e => e.currentTarget.style.background = "var(--pink-dark)"}
-      onMouseLeave={e => e.currentTarget.style.background = "var(--dark)"}
-    >
-      🛍 Agregar al carrito
-    </button>
-  );
-
-  return createPortal(
-    <div
-      onClick={e => e.target === e.currentTarget && onClose()}
-      style={{
-        position: "fixed", inset: 0, zIndex: 9999,
-        background: "rgba(0,0,0,.6)",
-        display: "flex", alignItems: isMobile ? "flex-end" : "center",
-        justifyContent: "center",
-        padding: isMobile ? 0 : "1rem",
-      }}
-    >
-      <div style={{
-        background: "white",
-        borderRadius: isMobile ? "20px 20px 0 0" : 20,
-        width: "100%",
-        maxWidth: isMobile ? "100%" : 780,
-        height: isMobile ? "92vh" : "auto", 
-        maxHeight: isMobile ? "92vh" : "90vh",
-        overflow: "hidden", 
-        display: "flex",
-        flexDirection: isMobile ? "column" : "row",
-      }}>
-
-        {/* ---- IMAGEN ---- */}
-        <div style={{
-          background: "#fafafa",
-          borderRadius: isMobile ? "20px 20px 0 0" : "20px 0 0 20px",
-          width: isMobile ? "100%" : "45%",
-          height: isMobile ? "45vh" : "auto", 
-          minHeight: isMobile ? "auto" : 480,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: "6rem", position: "relative", flexShrink: 0,
-          borderRight: isMobile ? "none" : "1px solid var(--border)",
-        }}>
-          {product.image_url || product.imageUrl
-            ? <img
-                src={product.image_url || product.imageUrl}
-                alt={product.name}
-                // REGRESAMOS A CONTAIN CON PADDING PARA QUE SE VEA COMPLETA
-                style={{ width: "100%", height: "100%", objectFit: "contain", padding: isMobile ? "1rem" : "1.5rem" }} 
-              />
-            : product.emoji || "👗"}
-          <button onClick={onClose} style={{
-            position: "absolute", top: 12, right: 12,
-            background: "white", border: "none", width: 34, height: 34,
-            borderRadius: "50%", cursor: "pointer", fontSize: "1rem",
-            boxShadow: "0 2px 8px rgba(0,0,0,.2)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontFamily: "inherit", zIndex: 10
-          }}>✕</button>
+        {/* ================= GALERÍA DE FOTOS ================= */}
+        <div style={{ flex: window.innerWidth < 768 ? "0 0 350px" : "1 1 50%", background: "var(--pink-light)", position: "relative", display: "flex", flexDirection: "column" }}>
+          
+          <div style={{ flex: 1, position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "5rem" }}>
+            {images.length > 0 ? (
+               <img src={images[mainImgIdx]} alt={product.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ) : product.emoji || "👗"}
+            
+            {isOutOfStock && (
+               <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                 <span style={{ background: "var(--dark)", color: "white", padding: "8px 20px", borderRadius: 999, fontSize: "1.1rem", fontWeight: 600, letterSpacing: 1 }}>AGOTADO</span>
+               </div>
+            )}
+          </div>
+          
+          {images.length > 1 && (
+            <div style={{ display: "flex", gap: 10, padding: 12, background: "white", overflowX: "auto", borderTop: "1px solid var(--border)" }}>
+               {images.map((img, i) => (
+                 <div key={i} onClick={() => setMainImgIdx(i)} style={{ width: 65, height: 65, borderRadius: 8, overflow: "hidden", cursor: "pointer", flexShrink: 0, border: mainImgIdx === i ? "2px solid var(--dark)" : "1px solid var(--border)", opacity: mainImgIdx === i ? 1 : 0.6, transition: "all .2s" }}>
+                   <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                 </div>
+               ))}
+            </div>
+          )}
         </div>
 
-        {/* ---- CUERPO Y SCROLL ---- */}
-        <div style={{
-          flex: 1, 
-          display: "flex", 
-          flexDirection: "column",
-          overflow: "hidden" 
-        }}>
+        {/* ================= INFORMACIÓN ================= */}
+        <div style={{ flex: "1 1 50%", padding: window.innerWidth < 768 ? "1.5rem" : "2.5rem", overflowY: "auto", display: "flex", flexDirection: "column", background: "white" }}>
+          <div style={{ fontSize: "0.85rem", color: "var(--gray)", marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>{product.cat}</div>
+          <h2 className="serif" style={{ fontSize: "2.2rem", margin: "0 0 0.5rem 0", lineHeight: 1.1 }}>{product.name}</h2>
           
-          <div style={{
-            flex: 1, overflowY: "auto",
-            padding: isMobile ? "1.5rem 1.5rem 2rem" : "2rem",
-          }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: "1.2rem", minHeight: "100%" }}>
-
-              {/* Nombre + precio */}
-              <div>
-                {product.badge && (
-                  <span style={{
-                    display: "inline-block", padding: "4px 12px", borderRadius: 999,
-                    fontSize: "0.72rem", fontWeight: 600, width: "fit-content",
-                    background: product.badge === "new" ? "var(--dark)" : "var(--danger)",
-                    color: "white", marginBottom: 8
-                  }}>
-                    {product.badge === "new" ? "Nuevo" : "Oferta"}
-                  </span>
-                )}
-                <h2 style={{
-                  fontSize: isMobile ? "1.3rem" : "1.6rem",
-                  fontWeight: 700, marginBottom: 6,
-                  fontFamily: "'Courier New', Courier, monospace",
-                }}>{product.name}</h2>
-                <div style={{ fontSize: isMobile ? "1.1rem" : "1.25rem", fontWeight: 600 }}>
-                  {hasDiscount ? (
-                    <>
-                      <span style={{ textDecoration: "line-through", color: "var(--gray)", fontSize: "0.9rem", marginRight: 8 }}>
-                        S/ {origPrice?.toFixed(2)}
-                      </span>
-                      <span style={{ color: "var(--danger)" }}>S/ {effPrice?.toFixed(2)}</span>
-                    </>
-                  ) : `S/ ${effPrice?.toFixed(2)}`}
-                </div>
-              </div>
-
-              {/* Descripción (De vuelta arriba, debajo del precio) */}
-              <div style={{
-                color: "var(--gray)", fontSize: "0.85rem", lineHeight: 1.6,
-                fontFamily: "'Courier New', Courier, monospace",
-                paddingBottom: "1rem", borderBottom: "1px solid var(--border)"
-              }}>
-                {(product.description || product.desc || "Producto de calidad PookieCat.").split("\n").map((line, idx) =>
-                  line.trim() === ""
-                    ? <br key={idx} />
-                    : <span key={idx} style={{ display: "block", marginBottom: 3 }}>{line}</span>
-                )}
-              </div>
-
-              {/* Colores */}
-              {product.colors?.length > 0 && (
-                <div>
-                  <div style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--dark)", marginBottom: 10, fontFamily: "'Courier New', Courier, monospace" }}>
-                    Color: <span style={{color: "var(--gray)", fontWeight: 400}}>{color || "Selecciona un color"}</span>
-                  </div>
-                  <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                    {product.colors.map(c => (
-                      <div key={c} onClick={() => setColor(c)} title={c} style={{
-                        width: 36, height: 36, borderRadius: "50%",
-                        background: COLOR_MAP[c] || "#888",
-                        cursor: "pointer", transition: "all .15s",
-                        border: `1px solid ${COLOR_MAP[c] === "#f0f0f0" || COLOR_MAP[c] === "#ffffff" ? "#ddd" : "transparent"}`,
-                        outline: `2px solid ${color === c ? "var(--dark)" : "transparent"}`,
-                        outlineOffset: 2,
-                      }} />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Tallas */}
-              {product.sizes?.length > 0 && (
-                <div>
-                  <div style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--dark)", marginBottom: 10, fontFamily: "'Courier New', Courier, monospace" }}>
-                    Talla: <span style={{color: "var(--gray)", fontWeight: 400}}>{size || "Selecciona una talla"}</span>
-                  </div>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    {product.sizes.map(s => (
-                      <button key={s} onClick={() => { setSize(s); setError(""); }} style={{
-                        padding: "10px 16px", minWidth: "3.5rem",
-                        border: `1px solid ${size === s ? "var(--dark)" : "var(--border)"}`,
-                        borderRadius: 4, cursor: "pointer",
-                        background: size === s ? "var(--dark)" : "white",
-                        color: size === s ? "white" : "var(--dark)",
-                        transition: "all .15s", fontSize: "0.9rem",
-                        fontFamily: "'Courier New', Courier, monospace",
-                      }}>{s}</button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Cantidad */}
-              <div>
-                <div style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--dark)", marginBottom: 10, fontFamily: "'Courier New', Courier, monospace" }}>
-                  Cantidad:
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                  <button onClick={() => setQty(q => Math.max(1, q - 1))} style={{
-                    width: 40, height: 40, borderRadius: "50%", border: "1px solid var(--border)",
-                    background: "none", cursor: "pointer", fontSize: "1.2rem", fontFamily: "inherit",
-                    display: "flex", alignItems: "center", justifyContent: "center"
-                  }}>−</button>
-                  <span style={{ fontSize: "1.1rem", fontWeight: 600, minWidth: 20, textAlign: "center" }}>{qty}</span>
-                  <button onClick={() => setQty(q => q + 1)} style={{
-                    width: 40, height: 40, borderRadius: "50%", border: "1px solid var(--border)",
-                    background: "none", cursor: "pointer", fontSize: "1.2rem", fontFamily: "inherit",
-                    display: "flex", alignItems: "center", justifyContent: "center"
-                  }}>+</button>
-                </div>
-              </div>
-
-              {error && <p style={{ color: "var(--danger)", fontSize: "0.85rem", fontWeight: 600 }}>⚠ {error}</p>}
-              
-              {/* Botón PC (se oculta en móvil porque el móvil usa el footer fijo) */}
-              {!isMobile && <div style={{marginTop: "auto", paddingTop: "1rem"}}><AddToCartBtn /></div>}
-
-            </div>
+          <div style={{ fontSize: "1.5rem", fontWeight: 600, marginBottom: "1.5rem" }}>
+            {salePrice ? (
+              <>
+                <span style={{ textDecoration: "line-through", color: "var(--gray)", fontSize: "1rem", marginRight: 10 }}>S/ {Number(normalPrice).toFixed(2)}</span>
+                <span style={{ color: "var(--danger)" }}>S/ {Number(salePrice).toFixed(2)}</span>
+              </>
+            ) : `S/ ${Number(effPrice).toFixed(2)}`}
           </div>
 
-          {/* ========================================================
-              STICKY FOOTER (Solo para celular)
-              ======================================================== */}
-          {isMobile && (
-            <div style={{
-              padding: "1rem 1.5rem",
-              borderTop: "1px solid var(--border)",
-              background: "white",
-              paddingBottom: "max(1rem, env(safe-area-inset-bottom))"
-            }}>
-              <AddToCartBtn />
+          <p style={{ color: "var(--gray)", lineHeight: 1.6, marginBottom: "2rem" }}>
+            {product.description || "Un diseño exclusivo para resaltar tu estilo único. Cómodo, versátil y perfecto para cualquier ocasión."}
+          </p>
+
+          {/* Selector de Tallas */}
+          {sizes.length > 0 && (
+            <div style={{ marginBottom: "1.5rem" }}>
+              <div style={{ fontSize: "0.85rem", fontWeight: 600, marginBottom: 10 }}>Talla: {selectedSize || <span style={{color: "var(--danger)"}}>(Requerido)</span>}</div>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                {sizes.map(s => (
+                  <button key={s} onClick={() => setSelectedSize(s)} style={{ minWidth: 42, padding: "0 12px", height: 42, borderRadius: 8, border: selectedSize === s ? "2px solid var(--dark)" : "1px solid var(--border)", background: selectedSize === s ? "var(--dark)" : "white", color: selectedSize === s ? "white" : "var(--dark)", fontSize: "0.9rem", fontWeight: 500, cursor: "pointer", transition: "all .2s" }}>
+                    {s}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
+          {/* Selector de Colores */}
+          {colors.length > 0 && (
+            <div style={{ marginBottom: "2rem" }}>
+              <div style={{ fontSize: "0.85rem", fontWeight: 600, marginBottom: 10 }}>Color: {selectedColor || <span style={{color: "var(--danger)"}}>(Requerido)</span>}</div>
+              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                {colors.map(c => {
+                  const colorObj = COLOR_MAP.find(opt => opt.name === c) || { hex: "#ccc" };
+                  return (
+                    <div key={c} onClick={() => setSelectedColor(c)} style={{ width: 38, height: 38, borderRadius: "50%", background: colorObj.hex, cursor: "pointer", border: selectedColor === c ? "2px solid var(--dark)" : "1px solid var(--border)", boxShadow: selectedColor === c ? "0 0 0 4px white inset" : "none", transition: "all .2s" }} title={c} />
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          <div style={{ marginTop: "auto", paddingTop: "1.5rem" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem", marginBottom: 10, fontWeight: 500 }}>
+              <span style={{ color: isOutOfStock ? "var(--danger)" : "var(--success)" }}>
+                {isOutOfStock ? "● Producto agotado" : "● En stock"}
+              </span>
+              {!isOutOfStock && <span style={{ color: "var(--gray)" }}>{stock} unidades disponibles</span>}
+            </div>
+            
+            <button onClick={handleAdd} disabled={isOutOfStock} style={{ width: "100%", padding: "16px", background: isOutOfStock ? "var(--border)" : "var(--dark)", color: isOutOfStock ? "var(--gray)" : "white", border: "none", borderRadius: 12, fontSize: "1.05rem", fontWeight: 600, cursor: isOutOfStock ? "not-allowed" : "pointer", transition: "all .2s" }}>
+              {isOutOfStock ? "Agotado" : "Agregar al carrito"}
+            </button>
+          </div>
         </div>
+
       </div>
-    </div>,
-    document.body
+    </div>
   );
 }
