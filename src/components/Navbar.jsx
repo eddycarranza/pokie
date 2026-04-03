@@ -96,7 +96,7 @@ export default function Navbar({ activecat, onCatChange }) {
               <Link to="/" onClick={() => window.scrollTo(0,0)} style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
                 <Logo size={28} />
                 <span style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--dark)", fontFamily: "'Courier New', Courier, monospace", letterSpacing: '-0.5px' }}>
-                  pookiecat
+                  Pookiecat
                 </span>
               </Link>
             </div>
@@ -165,7 +165,7 @@ export default function Navbar({ activecat, onCatChange }) {
               <Link to="/" onClick={() => window.scrollTo(0,0)} style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
                 <Logo size={36} />
                 <span style={{ fontSize: "1.4rem", fontWeight: 700, color: "var(--dark)", fontFamily: "'Courier New', Courier, monospace", letterSpacing: '-0.5px' }}>
-                  pookiecat
+                  Pookiecat
                 </span>
               </Link>
             </div>

@@ -1,6 +1,13 @@
-// src/lib/supabase.js
 export const SUPABASE_URL = "https://dsxtauxcbyeumkdbhtxj.supabase.co";
 export const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzeHRhdXhjYnlldW1rZGJodHhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjMxNzgsImV4cCI6MjA5MDEzOTE3OH0.CZPiBgf5Gmrsuq3TTzIphI5stuEVy-w4TqAIfo-QsO4";
+
+// Esta función decide si envía el token de admin o la clave pública normal
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("admin_token");
+  return token 
+    ? { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${token}` }
+    : { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` };
+};
 
 export const supabase = {
   auth: {
@@ -20,7 +27,7 @@ export const supabase = {
   from: (table) => ({
     select: async (cols = "*") => {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?select=${cols}&order=created_at.desc`, {
-        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
+        headers: getAuthHeaders()
       });
       const data = await res.json();
       return { data, error: res.ok ? null : data };
@@ -28,7 +35,7 @@ export const supabase = {
     insert: async (body) => {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
         method: "POST",
-        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}`, "Content-Type": "application/json", Prefer: "return=representation" },
+        headers: { ...getAuthHeaders(), "Content-Type": "application/json", Prefer: "return=representation" },
         body: JSON.stringify(body)
       });
       const data = await res.json();
@@ -37,7 +44,7 @@ export const supabase = {
     update: async (body, matchCol, matchVal) => {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${matchCol}=eq.${matchVal}`, {
         method: "PATCH",
-        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}`, "Content-Type": "application/json", Prefer: "return=representation" },
+        headers: { ...getAuthHeaders(), "Content-Type": "application/json", Prefer: "return=representation" },
         body: JSON.stringify(body)
       });
       const data = await res.json();
@@ -46,7 +53,7 @@ export const supabase = {
     delete: async (matchCol, matchVal) => {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${matchCol}=eq.${matchVal}`, {
         method: "DELETE",
-        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
+        headers: getAuthHeaders()
       });
       return { error: res.ok ? null : await res.json() };
     }
@@ -56,7 +63,7 @@ export const supabase = {
       const fileName = `${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
       const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucket}/${fileName}`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${SUPABASE_ANON_KEY}`, "Content-Type": file.type, "x-upsert": "true" },
+        headers: { ...getAuthHeaders(), "Content-Type": file.type, "x-upsert": "true" },
         body: file,
       });
       if (!res.ok) { const err = await res.json(); throw new Error(err.message || "Error subiendo imagen"); }

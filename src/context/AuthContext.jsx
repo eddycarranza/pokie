@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { supabase } from "../lib/supabase"; // ¡Conectando al nuevo motor!
+import { supabase } from "../lib/supabase";
 
 const AuthContext = createContext();
 
@@ -8,33 +8,30 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkSession = async () => {
-      if (supabase.auth && supabase.auth.getSession) {
-        const { data } = await supabase.auth.getSession();
-        setUser(data?.session?.user || null);
-      }
-      setLoading(false);
-    };
-    checkSession();
+    // Busca el token guardado en el navegador
+    const token = localStorage.getItem("admin_token");
+    if (token) {
+      setUser({ email: "admin@pookiecat.pe" }); 
+    }
+    setLoading(false);
   }, []);
 
   const login = async (email, password) => {
-    // Llama a la función de login manual que agregamos a supabase.js
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     
     if (error || !data.access_token) {
       throw new Error("Credenciales incorrectas");
     }
     
-    // Guardamos un usuario temporal en el estado
+    // Guarda el token secreto en el navegador
+    localStorage.setItem("admin_token", data.access_token);
     setUser({ email }); 
     return data;
   };
 
   const logout = async () => {
-    if (supabase.auth && supabase.auth.signOut) {
-      await supabase.auth.signOut();
-    }
+    // Borra el token al salir
+    localStorage.removeItem("admin_token");
     setUser(null);
   };
 
