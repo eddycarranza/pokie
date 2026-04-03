@@ -8,7 +8,6 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Busca el token guardado en el navegador
     const token = localStorage.getItem("admin_token");
     if (token) {
       setUser({ email: "admin@pookiecat.pe" }); 
@@ -18,19 +17,13 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    
-    if (error || !data.access_token) {
-      throw new Error("Credenciales incorrectas");
-    }
-    
-    // Guarda el token secreto en el navegador
+    if (error || !data.access_token) throw new Error("Credenciales incorrectas");
     localStorage.setItem("admin_token", data.access_token);
     setUser({ email }); 
     return data;
   };
 
-  const logout = async () => {
-    // Borra el token al salir
+  const logout = () => {
     localStorage.removeItem("admin_token");
     setUser(null);
   };

@@ -1,7 +1,6 @@
-export const SUPABASE_URL = "https://dsxtauxcbyeumkdbhtxj.supabase.co";
-export const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzeHRhdXhjYnlldW1rZGJodHhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjMxNzgsImV4cCI6MjA5MDEzOTE3OH0.CZPiBgf5Gmrsuq3TTzIphI5stuEVy-w4TqAIfo-QsO4";
+export const SUPABASE_URL = process.env.REACT_APP_SUPABASE_URL;
+export const SUPABASE_ANON_KEY = process.env.REACT_APP_SUPABASE_ANON_KEY;
 
-// Esta función decide si envía el token de admin o la clave pública normal
 const getAuthHeaders = () => {
   const token = localStorage.getItem("admin_token");
   return token 
@@ -20,9 +19,7 @@ export const supabase = {
       const data = await res.json();
       if (!res.ok) return { data: null, error: data };
       return { data, error: null };
-    },
-    getSession: async () => { return { data: { session: null } }; },
-    signOut: async () => {}
+    }
   },
   from: (table) => ({
     select: async (cols = "*") => {

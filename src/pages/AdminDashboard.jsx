@@ -3,12 +3,10 @@ import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useProducts, useOrders, useExpenses } from "../hooks/useSupabase";
-import { supabase } from "../lib/supabase"; 
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from "../lib/supabase"; 
 import Logo from "../components/Logo";
 
-// ============ SUPABASE CONFIG ============
-const SUPABASE_URL = "https://dsxtauxcbyeumkdbhtxj.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzeHRhdXhjYnlldW1rZGJodHhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NjMxNzgsImV4cCI6MjA5MDEzOTE3OH0.CZPiBgf5Gmrsuq3TTzIphI5stuEVy-w4TqAIfo-QsO4";
+// ============ CONFIGURACIÓN ============
 const BUCKET = "products";
 // =========================================
 
@@ -266,7 +264,6 @@ function ProductForm({ initial, onSave, onCancel, isMobile }) {
   );
 }
 
-// NUEVO COMPONENTE: Formulario para crear pedidos manuales
 function OrderForm({ products, onSave, onCancel, isMobile }) {
   const [form, setForm] = useState({ client: "", phone: "", address: "", payment: "Yape / Plin", items: [], total: 0 });
 
@@ -313,7 +310,7 @@ export default function AdminDashboard() {
   const { logout } = useAuth();
   const nav = useNavigate();
   const { products, addProduct, updateProduct, deleteProduct } = useProducts();
-  const { orders, updateOrder, addOrder, deleteOrder } = useOrders(); // Desestructuración de nuevas funciones
+  const { orders, updateOrder, addOrder, deleteOrder } = useOrders();
   const { expenses, addExpense, deleteExpense } = useExpenses();
   const [panel, setPanel] = useState("dashboard");
   const [editing, setEditing] = useState(null);
@@ -423,7 +420,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // NUEVA LÓGICA: Eliminar pedido
   const handleDeleteOrder = async (id) => {
     if (!window.confirm("¿Eliminar este pedido permanentemente?")) return;
     await deleteOrder(id);
@@ -437,7 +433,7 @@ export default function AdminDashboard() {
         <div style={{ background: "var(--dark)", color: "white", padding: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 1000 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <Logo size={24} />
-            <span className="serif" style={{ fontSize: "1.1rem" }}>pookiecat admin</span>
+            <span className="serif" style={{ fontSize: "1.1rem" }}>Pookiecat Admin</span>
           </div>
           <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: "none", border: "none", color: "white", fontSize: "1.5rem", cursor: "pointer", lineHeight: 1 }}>
             {menuOpen ? "✕" : "☰"}
@@ -456,7 +452,7 @@ export default function AdminDashboard() {
         {!isMobile && (
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "2rem" }}>
             <Logo size={30} />
-            <span className="serif" style={{ fontSize: "1.1rem" }}>pookiecat</span>
+            <span className="serif" style={{ fontSize: "1.1rem" }}>Pookiecat</span>
           </div>
         )}
         {[{ key: "dashboard", icon: "📊", label: "Dashboard" }, { key: "productos", icon: "👗", label: "Productos" }, { key: "pedidos", icon: "📦", label: "Pedidos" }, { key: "egresos", icon: "💸", label: "Egresos" }].map(item => (
@@ -471,7 +467,7 @@ export default function AdminDashboard() {
           🏠 Ver tienda
         </button>
         <button onClick={handleLogout} style={{ display: "flex", alignItems: "center", gap: 10, background: "none", border: "none", color: "rgba(255,255,255,.4)", padding: "10px 12px", borderRadius: 8, cursor: "pointer", fontSize: "0.85rem", width: "100%", textAlign: "left" }}>
-          Cerrar sesion
+          Cerrar sesión
         </button>
       </aside>
 
@@ -610,7 +606,7 @@ export default function AdminDashboard() {
             </div>
             <div style={{ background: "white", borderRadius: 12, border: "1px solid var(--border)", overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "750px" }}>
-                <thead><tr>{["Producto", "Categoria", "Stock", "Precio", "Tallas", "Etiqueta", "Acciones"].map(h => (<th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: "0.75rem", textTransform: "uppercase", color: "var(--gray)", background: "#f8f6f3", borderBottom: "1px solid var(--border)" }}>{h}</th>))}</tr></thead>
+                <thead><tr>{["Producto", "Categoría", "Stock", "Precio", "Tallas", "Etiqueta", "Acciones"].map(h => (<th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: "0.75rem", textTransform: "uppercase", color: "var(--gray)", background: "#f8f6f3", borderBottom: "1px solid var(--border)" }}>{h}</th>))}</tr></thead>
                 <tbody>
                   {products.map(p => {
                     const firstImage = p.image_urls?.[0] || p.image_url || p.imageUrl;
@@ -645,7 +641,7 @@ export default function AdminDashboard() {
                   )})}
                 </tbody>
               </table>
-              {products.length === 0 && <div style={{ textAlign: "center", padding: "3rem", color: "var(--gray)" }}>No hay productos aun.</div>}
+              {products.length === 0 && <div style={{ textAlign: "center", padding: "3rem", color: "var(--gray)" }}>No hay productos aún.</div>}
             </div>
           </>
         )}
@@ -663,13 +659,11 @@ export default function AdminDashboard() {
           <>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
               <h2 className="serif" style={{ fontSize: "1.7rem", margin: 0 }}>Pedidos</h2>
-              {/* BOTÓN PARA ABRIR FORMULARIO DE NUEVO PEDIDO */}
               <button className="btn btn-dark btn-sm" onClick={() => setEditing(editing === "new_order" ? null : "new_order")}>
                 {editing === "new_order" ? "✕ Cancelar" : "+ Crear Pedido Manual"}
               </button>
             </div>
 
-            {/* RENDERIZADO DEL FORMULARIO DE PEDIDO */}
             {editing === "new_order" ? (
               <OrderForm 
                 products={products} 
@@ -683,7 +677,7 @@ export default function AdminDashboard() {
               />
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                {orders.length === 0 && <div style={{ textAlign: "center", padding: "3rem", color: "var(--gray)", background: "white", borderRadius: 12, border: "1px solid var(--border)" }}>No hay pedidos aun.</div>}
+                {orders.length === 0 && <div style={{ textAlign: "center", padding: "3rem", color: "var(--gray)", background: "white", borderRadius: 12, border: "1px solid var(--border)" }}>No hay pedidos aún.</div>}
                 {orders.map(o => (
                   <div key={o.id} style={{ background: "white", borderRadius: 12, border: "1px solid var(--border)", padding: "1.25rem" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "0.75rem" }}>
@@ -695,7 +689,6 @@ export default function AdminDashboard() {
                       <div style={{ textAlign: isMobile ? "left" : "right" }}>
                         <div style={{ fontWeight: 600, fontSize: "1.05rem" }}>S/ {o.total?.toFixed(2)}</div>
                         <span className={`badge-status badge-${o.status}`} style={{ marginTop: 4, display: "inline-block" }}>{o.status}</span>
-                        {/* BOTÓN PARA ELIMINAR PEDIDO */}
                         <div style={{ marginTop: 8 }}>
                           <button 
                             onClick={() => handleDeleteOrder(o.id)}
