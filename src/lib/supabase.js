@@ -54,17 +54,5 @@ export const supabase = {
       });
       return { error: res.ok ? null : await res.json() };
     }
-  }),
-  storage: {
-    upload: async (bucket, file) => {
-      const fileName = `${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
-      const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucket}/${fileName}`, {
-        method: "POST",
-        headers: { ...getAuthHeaders(), "Content-Type": file.type, "x-upsert": "true" },
-        body: file,
-      });
-      if (!res.ok) { const err = await res.json(); throw new Error(err.message || "Error subiendo imagen"); }
-      return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${fileName}`;
-    }
-  }
+  })
 };

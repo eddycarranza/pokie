@@ -4,6 +4,8 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
 
+const sanitizeEmail = (val) => val.replace(/[^a-zA-Z0-9@._+-]/g, "").slice(0, 100);
+
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,11 +42,11 @@ export default function AdminLogin() {
         <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
           <div className="form-group">
             <label className="form-label">Email</label>
-            <input type="email" required className="form-input" value={email} onChange={e => setEmail(e.target.value)} />
+            <input type="email" required className="form-input" value={email} onChange={e => setEmail(sanitizeEmail(e.target.value))} />
           </div>
           <div className="form-group">
             <label className="form-label">Contraseña</label>
-            <input type="password" required className="form-input" value={password} onChange={e => setPassword(e.target.value)} />
+            <input type="password" required className="form-input" value={password} onChange={e => setPassword(e.target.value.slice(0, 100))} />
           </div>
 
           {error && <div style={{ color: "var(--danger)", fontSize: "0.85rem", textAlign: "center" }}>⚠ {error}</div>}

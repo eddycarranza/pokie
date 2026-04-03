@@ -9,17 +9,15 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const token = localStorage.getItem("admin_token");
-    if (token) {
-      setUser({ email: "admin@pookiecat.pe" }); 
-    }
+    if (token) setUser({ email: "admin@pookiecat.pe" });
     setLoading(false);
   }, []);
 
   const login = async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error || !data.access_token) throw new Error("Credenciales incorrectas");
+    if (error || !data.access_token) throw new Error("Acceso denegado.");
     localStorage.setItem("admin_token", data.access_token);
-    setUser({ email }); 
+    setUser({ email });
     return data;
   };
 

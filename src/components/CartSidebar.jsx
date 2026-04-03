@@ -167,19 +167,19 @@ export default function CartSidebar() {
               
               <div className="form-group">
                 <label className="form-label">Nombre completo *</label>
-                <input className="form-input" placeholder="Ej: Juan Perez" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} />
+                <input className="form-input" placeholder="Ej: Juan Perez" value={form.name} onChange={e => setForm(p => ({ ...p, name: sanitizeName(e.target.value) }))} />
                 {errors.name && <span className="form-error">⚠ {errors.name}</span>}
               </div>
 
               <div className="form-group">
                 <label className="form-label">DNI / CE *</label>
-                <input className="form-input" placeholder="8 números" value={form.dni} onChange={e => setForm(p => ({ ...p, dni: e.target.value }))} />
+                <input className="form-input" placeholder="8 números" value={form.dni} onChange={e => setForm(p => ({ ...p, dni: sanitizeDni(e.target.value) }))} />
                 {errors.dni && <span className="form-error">⚠ {errors.dni}</span>}
               </div>
 
               <div className="form-group">
                 <label className="form-label">Teléfono / WhatsApp *</label>
-                <input className="form-input" placeholder="9XXXXXXXX" value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} />
+                <input className="form-input" placeholder="9XXXXXXXX" value={form.phone} onChange={e => setForm(p => ({ ...p, phone: sanitizePhone(e.target.value) }))} />
                 {errors.phone && <span className="form-error">⚠ {errors.phone}</span>}
               </div>
 
@@ -193,13 +193,13 @@ export default function CartSidebar() {
 
               <div className="form-group">
                 <label className="form-label">Agencia de destino *</label>
-                <input className="form-input" placeholder="Ej: Agencia Centro, Piura..." value={form.address} onChange={e => setForm(p => ({ ...p, address: e.target.value }))} />
+                <input className="form-input" placeholder="Ej: Agencia Centro, Piura..." value={form.address} onChange={e => setForm(p => ({ ...p, address: sanitizeAddress(e.target.value) }))} />
                 {errors.address && <span className="form-error">⚠ {errors.address}</span>}
               </div>
 
               <div className="form-group">
                 <label className="form-label">Referencia (Opcional)</label>
-                <input className="form-input" placeholder="Frente a la plaza, puerta azul..." value={form.reference} onChange={e => setForm(p => ({ ...p, reference: e.target.value }))} />
+                <input className="form-input" placeholder="Frente a la plaza, puerta azul..." value={form.reference} onChange={e => setForm(p => ({ ...p, reference: sanitizeText(e.target.value) }))} />
               </div>
 
               <div className="form-group">

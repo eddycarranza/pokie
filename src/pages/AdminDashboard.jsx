@@ -6,6 +6,16 @@ import { useProducts, useOrders, useExpenses } from "../hooks/useSupabase";
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from "../lib/supabase"; 
 import Logo from "../components/Logo";
 
+// ============ SANITIZACIÓN ============
+const sanitize = (val) => String(val)
+  .replace(/[<>'"`;]/g, "")
+  .replace(/javascript:/gi, "")
+  .trimStart();
+const sanitizeText = (val) => sanitize(val).slice(0, 300);
+const sanitizeShort = (val) => sanitize(val).slice(0, 100);
+const sanitizeNum = (val) => val.replace(/[^0-9.]/g, "").slice(0, 12);
+// ======================================
+
 // ============ CONFIGURACIÓN ============
 const BUCKET = "products";
 // =========================================
@@ -189,7 +199,7 @@ function ProductForm({ initial, onSave, onCancel, isMobile }) {
 
         <div className="form-group" style={{ gridColumn: "1/-1" }}>
           <label className="form-label">Nombre del producto *</label>
-          <input className="form-input" value={form.name} onChange={e => set("name", e.target.value)} placeholder="Ej: Vestido Floral Rosa" />
+          <input className="form-input" value={form.name} onChange={e => set("name", sanitizeShort(e.target.value))} placeholder="Ej: Vestido Floral Rosa" />
         </div>
         <div className="form-group">
           <label className="form-label">Categoria *</label>
@@ -206,16 +216,16 @@ function ProductForm({ initial, onSave, onCancel, isMobile }) {
 
         <div className="form-group">
           <label className="form-label">Precio (S/) *</label>
-          <input className="form-input" type="number" step="0.01" value={form.price} onChange={e => set("price", e.target.value)} placeholder="89.90" />
+          <input className="form-input" type="number" step="0.01" value={form.price} onChange={e => set("price", sanitizeNum(e.target.value))} placeholder="89.90" />
         </div>
         <div className="form-group">
           <label className="form-label">Precio con oferta (S/)</label>
-          <input className="form-input" type="number" step="0.01" value={form.salePrice || ""} onChange={e => set("salePrice", e.target.value)} placeholder="Dejar vacio si no hay" />
+          <input className="form-input" type="number" step="0.01" value={form.salePrice || ""} onChange={e => set("salePrice", sanitizeNum(e.target.value))} placeholder="Dejar vacio si no hay" />
         </div>
         
         <div className="form-group" style={{ gridColumn: "1/-1" }}>
           <label className="form-label">Descripcion</label>
-          <textarea className="form-input" value={form.description || ""} onChange={e => set("description", e.target.value)} rows={3} placeholder="Material, cuidados, detalles..." style={{ resize: "vertical" }} />
+          <textarea className="form-input" value={form.description || ""} onChange={e => set("description", sanitizeText(e.target.value))} rows={3} placeholder="Material, cuidados, detalles..." style={{ resize: "vertical" }} />
         </div>
         
         <div className="form-group">
@@ -728,11 +738,11 @@ export default function AdminDashboard() {
                 <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr auto", gap: "1rem", alignItems: "end" }}>
                   <div className="form-group">
                     <label className="form-label">Descripción *</label>
-                    <input className="form-input" placeholder="Ej: Compra de telas" value={expForm.description} onChange={e => setExpForm(p => ({ ...p, description: e.target.value }))} />
+                    <input className="form-input" placeholder="Ej: Compra de telas" value={expForm.description} onChange={e => setExpForm(p => ({ ...p, description: sanitizeShort(e.target.value) }))} />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Monto (S/) *</label>
-                    <input className="form-input" type="number" step="0.01" placeholder="0.00" value={expForm.amount} onChange={e => setExpForm(p => ({ ...p, amount: e.target.value }))} />
+                    <input className="form-input" type="number" step="0.01" placeholder="0.00" value={expForm.amount} onChange={e => setExpForm(p => ({ ...p, amount: sanitizeNum(e.target.value) }))} />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Categoría</label>

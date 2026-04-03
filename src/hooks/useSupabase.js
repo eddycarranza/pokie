@@ -2,14 +2,36 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 
+// ============ LÓGICA DE SEGURIDAD GLOBAL ============
+// Esta función revisa si Supabase nos bloquea porque el pase VIP (JWT) caducó.
+const handleFetchResponse = (error, data, setState) => {
+  // 1. Si el token expiró, limpiamos la memoria y recargamos para usar la llave pública
+  if (error && error.message === "JWT expired") {
+    console.warn("El token de administrador expiró. Limpiando sesión...");
+    localStorage.removeItem("admin_token");
+    window.location.reload();
+    return;
+  }
+
+  // 2. Si no hay error y los datos son válidos, actualizamos la lista
+  if (!error && Array.isArray(data)) {
+    setState(data);
+  } else {
+    // 3. Si hay otro tipo de error, lo mostramos en consola y evitamos que la app colapse
+    console.error("Error DETALLADO Supabase:", JSON.stringify(error || data, null, 2));
+    setState([]); 
+  }
+};
+// ====================================================
+
 export function useProducts() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchProducts = async () => {
     setLoading(true);
-    const { data } = await supabase.from("products").select("*");
-    if (data) setProducts(data);
+    const { data, error } = await supabase.from("products").select("*");
+    handleFetchResponse(error, data, setProducts);
     setLoading(false);
   };
 
@@ -17,19 +39,19 @@ export function useProducts() {
 
   const addProduct = async (data) => {
     const { error } = await supabase.from("products").insert(data);
-    if (error) alert("Error: " + JSON.stringify(error));
+    if (error) alert("Error al agregar producto: " + JSON.stringify(error));
     fetchProducts();
   };
 
   const updateProduct = async (id, data) => {
     const { error } = await supabase.from("products").update(data, "id", id);
-    if (error) alert("Error: " + JSON.stringify(error));
+    if (error) alert("Error al actualizar producto: " + JSON.stringify(error));
     fetchProducts();
   };
 
   const deleteProduct = async (id) => {
     const { error } = await supabase.from("products").delete("id", id);
-    if (error) alert("Error: " + JSON.stringify(error));
+    if (error) alert("Error al eliminar producto: " + JSON.stringify(error));
     fetchProducts();
   };
 
@@ -42,8 +64,8 @@ export function useOrders() {
 
   const fetchOrders = async () => {
     setLoading(true);
-    const { data } = await supabase.from("orders").select("*");
-    if (data) setOrders(data);
+    const { data, error } = await supabase.from("orders").select("*");
+    handleFetchResponse(error, data, setOrders);
     setLoading(false);
   };
 
@@ -76,8 +98,8 @@ export function useExpenses() {
 
   const fetchExpenses = async () => {
     setLoading(true);
-    const { data } = await supabase.from("expenses").select("*");
-    if (data) setExpenses(data);
+    const { data, error } = await supabase.from("expenses").select("*");
+    handleFetchResponse(error, data, setExpenses);
     setLoading(false);
   };
 
