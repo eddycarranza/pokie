@@ -1,44 +1,32 @@
 // src/pages/Home.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Navbar from "../components/Navbar";
 import ProductCard from "../components/ProductCard";
 import ProductModal from "../components/ProductModal";
 import CartSidebar from "../components/CartSidebar";
 import { useProducts } from "../hooks/useSupabase";
 
-const CATS = ["Todos", "Tops", "Pantalones", "Faldas", "Accesorios"];
+const CATALOG_CATS = ["Tops", "Partes de abajo", "Accesorios", "Zapatos"];
 
 // ============ HERO BANNER ============
 const SLIDES = [
   {
-    bg: "#1a1a1a",
-    tag: "Nueva colección",
-    title: "Moda porque estamos en tendencia",
-    sub: "con estilo",
-    cta: "Ver colección",
+    bg: "#1a1a1a", tag: "Nueva colección",
+    title: "Moda porque estamos en tendencia", sub: "con estilo", cta: "Ver colección",
     img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1400&q=80",
     accent: "#f2a7c3",
-    light: true,
   },
   {
-    bg: "#f5f0eb",
-    tag: "Tops & Vestidos",
-    title: "Ropa femenina",
-    sub: "con personalidad",
-    cta: "Ver catálogo",
+    bg: "#f5f0eb", tag: "Tops & Vestidos",
+    title: "Ropa femenina", sub: "con personalidad", cta: "Ver catálogo",
     img: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=1400&q=80",
     accent: "#c9607f",
-    light: false,
   },
   {
-    bg: "#1a1a1a",
-    tag: "Envíos a todo el Perú",
-    title: "Calidad peruana",
-    sub: "al mejor precio",
-    cta: "Comprar ahora",
+    bg: "#1a1a1a", tag: "Envíos a todo el Perú",
+    title: "Calidad peruana", sub: "al mejor precio", cta: "Comprar ahora",
     img: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1400&q=80",
     accent: "#f2a7c3",
-    light: true,
   },
 ];
 
@@ -49,10 +37,7 @@ function HeroBanner({ onShop }) {
   useEffect(() => {
     const timer = setInterval(() => {
       setAnimating(true);
-      setTimeout(() => {
-        setCurrent(p => (p + 1) % SLIDES.length);
-        setAnimating(false);
-      }, 400);
+      setTimeout(() => { setCurrent(p => (p + 1) % SLIDES.length); setAnimating(false); }, 400);
     }, 4500);
     return () => clearInterval(timer);
   }, []);
@@ -68,79 +53,51 @@ function HeroBanner({ onShop }) {
   return (
     <div style={{
       position: "relative", width: "100%", height: "94vh", minHeight: 560,
-      background: slide.bg, overflow: "hidden",
-      display: "flex", alignItems: "flex-end",
+      background: slide.bg, overflow: "hidden", display: "flex", alignItems: "flex-end",
     }}>
-      {slide.img && (
-        <img src={slide.img} alt="" style={{
-          position: "absolute", inset: 0, width: "100%", height: "100%",
-          objectFit: "cover", objectPosition: "center top",
-          opacity: animating ? 0 : 1,
-          transition: "opacity .5s ease",
-        }} />
-      )}
-      <div style={{
-        position: "absolute", inset: 0,
-        background: "linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.15) 50%, transparent 100%)",
+      <img src={slide.img} alt="" style={{
+        position: "absolute", inset: 0, width: "100%", height: "100%",
+        objectFit: "cover", objectPosition: "center top",
+        opacity: animating ? 0 : 1, transition: "opacity .5s ease",
       }} />
+      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.15) 50%, transparent 100%)" }} />
       <div style={{
-        position: "relative", zIndex: 2,
-        padding: "0 4rem 4rem",
+        position: "relative", zIndex: 2, padding: "0 4rem 4rem",
         opacity: animating ? 0 : 1,
         transform: animating ? "translateY(20px)" : "translateY(0)",
-        transition: "opacity .45s ease, transform .45s ease",
-        maxWidth: 680,
+        transition: "opacity .45s ease, transform .45s ease", maxWidth: 680,
       }}>
         <div style={{
-          display: "inline-block",
-          color: slide.accent, fontSize: "0.72rem",
-          letterSpacing: ".15em", textTransform: "uppercase",
-          marginBottom: "1rem",
+          display: "inline-block", color: slide.accent, fontSize: "0.72rem",
+          letterSpacing: ".15em", textTransform: "uppercase", marginBottom: "1rem",
           fontFamily: "'Courier New', Courier, monospace",
-          borderBottom: `1px solid ${slide.accent}`,
-          paddingBottom: 4,
-        }}>
-          {slide.tag}
-        </div>
+          borderBottom: `1px solid ${slide.accent}`, paddingBottom: 4,
+        }}>{slide.tag}</div>
         <h1 style={{
           fontFamily: "'Courier New', Courier, monospace",
-          fontSize: "clamp(2.6rem, 5.5vw, 4.8rem)",
-          fontWeight: 700, lineHeight: 1.0,
-          color: "white", marginBottom: "0.3rem",
-          textShadow: "0 2px 20px rgba(0,0,0,0.3)",
-        }}>
-          {slide.title}
-        </h1>
+          fontSize: "clamp(2.6rem, 5.5vw, 4.8rem)", fontWeight: 700, lineHeight: 1.0,
+          color: "white", marginBottom: "0.3rem", textShadow: "0 2px 20px rgba(0,0,0,0.3)",
+        }}>{slide.title}</h1>
         <h2 style={{
           fontFamily: "'Courier New', Courier, monospace",
-          fontSize: "clamp(2rem, 4.5vw, 3.8rem)",
-          fontWeight: 400, lineHeight: 1.1,
-          color: slide.accent, marginBottom: "2rem",
-          fontStyle: "italic",
-        }}>
-          {slide.sub}
-        </h2>
+          fontSize: "clamp(2rem, 4.5vw, 3.8rem)", fontWeight: 400, lineHeight: 1.1,
+          color: slide.accent, marginBottom: "2rem", fontStyle: "italic",
+        }}>{slide.sub}</h2>
         <button onClick={onShop} style={{
           background: "white", color: "#1a1a1a", border: "none",
           padding: "13px 30px", borderRadius: 999, cursor: "pointer",
           fontFamily: "'Courier New', Courier, monospace",
-          fontSize: "0.88rem", letterSpacing: ".05em", fontWeight: 600,
-          transition: "all .2s",
+          fontSize: "0.88rem", letterSpacing: ".05em", fontWeight: 600, transition: "all .2s",
         }}
           onMouseEnter={e => { e.currentTarget.style.background = slide.accent; e.currentTarget.style.color = "white"; }}
           onMouseLeave={e => { e.currentTarget.style.background = "white"; e.currentTarget.style.color = "#1a1a1a"; }}
-        >
-          {slide.cta} →
-        </button>
+        >{slide.cta} →</button>
       </div>
-      <div style={{
-        position: "absolute", bottom: "2.2rem", right: "3rem",
-        display: "flex", gap: 8, zIndex: 3, alignItems: "center",
-      }}>
+      <div style={{ position: "absolute", bottom: "2.2rem", right: "3rem", display: "flex", gap: 8, zIndex: 3 }}>
         {SLIDES.map((_, i) => (
           <button key={i} onClick={() => goTo(i)} style={{
-            width: i === current ? 28 : 8, height: 8,
-            borderRadius: 999, border: "none", cursor: "pointer",
+            width: i === current ? 28 : 8, height: 8, borderRadius: 999,
+            border: "none", cursor: "pointer",
             background: i === current ? "white" : "rgba(255,255,255,0.4)",
             transition: "all .35s ease", padding: 0,
           }} />
@@ -149,214 +106,269 @@ function HeroBanner({ onShop }) {
       <div style={{
         position: "absolute", right: "3rem", top: "50%", transform: "translateY(-50%)",
         color: "rgba(255,255,255,0.5)", fontSize: "0.75rem", letterSpacing: ".1em",
-        fontFamily: "'Courier New', Courier, monospace", zIndex: 3,
-        writingMode: "vertical-rl",
+        fontFamily: "'Courier New', Courier, monospace", zIndex: 3, writingMode: "vertical-rl",
       }}>
-        {String(current + 1).padStart(2,"0")} / {String(SLIDES.length).padStart(2,"0")}
+        {String(current + 1).padStart(2, "0")} / {String(SLIDES.length).padStart(2, "0")}
       </div>
     </div>
   );
 }
-// =====================================
 
-// ============ BANNER DE PAGOS Y ENVÍOS (CON IMÁGENES ESTÉTICAS) ============
-function TrustBanner() {
-  const cardStyle = {
-    background: "white", padding: "2.5rem 2rem", borderRadius: "16px",
-    boxShadow: "0 10px 30px rgba(0,0,0,0.04)", display: "flex", flexDirection: "column", alignItems: "center"
+// ============ NEW IN — carrusel horizontal con cards rectangulares ============
+function NewInCarousel({ items, onSelect }) {
+  const trackRef = useRef(null);
+  const [canLeft, setCanLeft] = useState(false);
+  const [canRight, setCanRight] = useState(true);
+
+  const checkScroll = () => {
+    const el = trackRef.current;
+    if (!el) return;
+    setCanLeft(el.scrollLeft > 4);
+    setCanRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
   };
 
-  const titleStyle = {
-    fontSize: "1.05rem", letterSpacing: "1px", textTransform: "uppercase",
-    marginBottom: "2rem", color: "var(--dark)", fontWeight: 700, textAlign: "center"
-  };
-
-  const imgContainerStyle = {
-    display: "flex", justifyContent: "center", gap: "2.5rem", flexWrap: "wrap", alignItems: "center"
-  };
-
-  const logoStyle = {
-    height: "40px",
-    objectFit: "contain",
-    filter: "drop-shadow(0px 4px 6px rgba(0,0,0,0.05))",
-    transition: "transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
-    cursor: "pointer"
+  const scroll = (dir) => {
+    trackRef.current?.scrollBy({ left: dir * 300, behavior: "smooth" });
   };
 
   return (
-    <div style={{ background: "#fdf8fa", padding: "4.5rem 1rem", borderTop: "1px solid #fce8f0" }}>
-      <div style={{ maxWidth: 1000, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "2.5rem" }}>
+    <div style={{ background: "white", padding: "4rem 0 2rem" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 2rem" }}>
+        <h2 className="serif" style={{ fontSize: "2rem", textAlign: "center", marginBottom: "2.5rem", fontWeight: 600 }}>
+          New in
+        </h2>
+        <div style={{ position: "relative" }}>
+          {/* Arrow left */}
+          <button onClick={() => scroll(-1)} style={{
+            position: "absolute", left: -24, top: "40%", transform: "translateY(-50%)",
+            zIndex: 10, width: 40, height: 40, borderRadius: "50%",
+            background: "white", border: "1px solid var(--border)", cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
+            opacity: canLeft ? 1 : 0.3, transition: "opacity .2s",
+          }} aria-label="Anterior">‹</button>
 
-        {/* Tarjeta Métodos de Pago */}
+          {/* Track */}
+          <div ref={trackRef} onScroll={checkScroll} style={{
+            display: "flex", gap: "1.2rem",
+            overflowX: "auto", scrollSnapType: "x mandatory",
+            paddingBottom: "0.5rem",
+            scrollbarWidth: "none", msOverflowStyle: "none",
+          }}>
+            {items.map(p => (
+              <div key={p.id} style={{ scrollSnapAlign: "start", flexShrink: 0 }}>
+                <ProductCard product={p} onClick={onSelect} variant="newIn" />
+              </div>
+            ))}
+          </div>
+
+          {/* Arrow right */}
+          <button onClick={() => scroll(1)} style={{
+            position: "absolute", right: -24, top: "40%", transform: "translateY(-50%)",
+            zIndex: 10, width: 40, height: 40, borderRadius: "50%",
+            background: "white", border: "1px solid var(--border)", cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
+            opacity: canRight ? 1 : 0.3, transition: "opacity .2s",
+          }} aria-label="Siguiente">›</button>
+        </div>
+      </div>
+      <style>{`div[style*="overflowX"]::-webkit-scrollbar{display:none}`}</style>
+    </div>
+  );
+}
+
+// ============ CATALOG — estilo imagen 2: sidebar izq + grid derecho ============
+function CatalogSection({ products, loading, onSelect, externalCat, onExternalCatConsumed }) {
+  const [activeCat, setActiveCat] = useState("Todos");
+
+  // Cuando llega una categoría desde el navbar, aplicarla
+  useEffect(() => {
+    if (externalCat) {
+      setActiveCat(externalCat);
+      onExternalCatConsumed?.();
+    }
+  }, [externalCat]);
+
+  const allCats = ["Todos", ...CATALOG_CATS];
+  const filtered = activeCat === "Todos" ? products : products.filter(p => p.cat === activeCat);
+
+  // Agrupar por categoría en orden cuando es "Todos"
+  const grouped = CATALOG_CATS.map(c => ({
+    cat: c, items: products.filter(p => p.cat === c),
+  })).filter(g => g.items.length > 0);
+
+  return (
+    <div id="catalog" style={{ background: "white", borderTop: "1px solid var(--border)" }}>
+      {/* Breadcrumb */}
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "1.2rem 2rem 0" }}>
+        <div style={{ fontSize: "0.82rem", color: "var(--gray)", fontFamily: "'Courier New', Courier, monospace" }}>
+          <span style={{ cursor: "pointer", textDecoration: "underline" }} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>Inicio</span>
+          {" / "}
+          <span>Productos</span>
+          {activeCat !== "Todos" && <span style={{ color: "var(--dark)", fontWeight: 600 }}> / {activeCat}</span>}
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "1.5rem 2rem 4rem", display: "flex", gap: "2.5rem", alignItems: "flex-start" }}>
+
+        {/* Sidebar izquierdo — igual que imagen 2 */}
+        <div style={{ width: 160, flexShrink: 0, paddingTop: "0.5rem" }} className="catalog-sidebar">
+          <div style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".12em", color: "var(--gray)", marginBottom: "1rem", fontFamily: "'Courier New', Courier, monospace" }}>
+            Categorias
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {allCats.map(c => (
+              <button key={c} onClick={() => setActiveCat(c)} style={{
+                display: "block", textAlign: "left", padding: "7px 0",
+                background: "none", border: "none", cursor: "pointer",
+                fontFamily: "'Courier New', Courier, monospace",
+                fontSize: "0.88rem",
+                color: c === activeCat ? "var(--dark)" : "var(--gray)",
+                fontWeight: c === activeCat ? 700 : 400,
+                borderLeft: c === activeCat ? "2px solid var(--dark)" : "2px solid transparent",
+                paddingLeft: "10px",
+                transition: "all .15s",
+              }}
+                onMouseEnter={e => { if (c !== activeCat) e.currentTarget.style.color = "var(--dark)"; }}
+                onMouseLeave={e => { if (c !== activeCat) e.currentTarget.style.color = "var(--gray)"; }}
+              >{c}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* Grid principal */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {loading ? (
+            <div style={{ textAlign: "center", padding: "4rem", color: "var(--gray)" }}>
+              <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>🐱</div>
+              Cargando productos...
+            </div>
+          ) : activeCat !== "Todos" ? (
+            filtered.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "4rem", color: "var(--gray)" }}>
+                No hay productos en esta categoría aún.
+              </div>
+            ) : (
+              <div className="catalog-grid">
+                {filtered.map(p => <ProductCard key={p.id} product={p} onClick={onSelect} variant="grid" />)}
+              </div>
+            )
+          ) : (
+            grouped.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "4rem", color: "var(--gray)" }}>No hay productos aún.</div>
+            ) : (
+              grouped.map(({ cat: catName, items }) => (
+                <div key={catName} style={{ marginBottom: "3rem" }}>
+                  <h3 style={{
+                    fontSize: "1rem", fontWeight: 700, marginBottom: "1rem",
+                    paddingBottom: "0.5rem", borderBottom: "1px solid var(--border)",
+                    fontFamily: "'Courier New', Courier, monospace", textTransform: "uppercase",
+                    letterSpacing: ".08em", color: "var(--dark)",
+                  }}>{catName}</h3>
+                  <div className="catalog-grid">
+                    {items.map(p => <ProductCard key={p.id} product={p} onClick={onSelect} variant="grid" />)}
+                  </div>
+                </div>
+              ))
+            )
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============ TRUST BANNER ============
+function TrustBanner() {
+  const cardStyle = {
+    background: "white", padding: "2.5rem 2rem", borderRadius: "16px",
+    border: "1px solid var(--border)", display: "flex", flexDirection: "column", alignItems: "center"
+  };
+  const titleStyle = {
+    fontSize: "1.05rem", letterSpacing: "1px", textTransform: "uppercase",
+    marginBottom: "2rem", color: "var(--dark)", fontWeight: 700, textAlign: "center",
+    fontFamily: "'Courier New', Courier, monospace"
+  };
+  const logoStyle = {
+    height: "40px", objectFit: "contain",
+    filter: "drop-shadow(0px 4px 6px rgba(0,0,0,0.05))",
+    transition: "transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)", cursor: "pointer"
+  };
+  return (
+    <div style={{ background: "#fafafa", padding: "4.5rem 1rem", borderTop: "1px solid var(--border)" }}>
+      <div style={{ maxWidth: 1000, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "2.5rem" }}>
         <div style={cardStyle}>
           <h3 style={titleStyle}>Métodos de Pago</h3>
-          <div style={imgContainerStyle}>
-            {/* Logo Yape */}
-            <img
-              src="https://upload.wikimedia.org/wikipedia/commons/d/d1/Yape_text_logo.png"
-              alt="Yape"
-              style={{ ...logoStyle, height: "35px" }}
-              onMouseEnter={e => e.currentTarget.style.transform = "scale(1.12)"}
-              onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
-            />
-            {/* Logo Plin */}
-            <img
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Plin_logo.png/320px-Plin_logo.png"
-              alt="Plin"
-              style={{ ...logoStyle, height: "42px" }}
-              onMouseEnter={e => e.currentTarget.style.transform = "scale(1.12)"}
-              onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
-            />
-            {/* Ícono Transferencia */}
-            <div
-              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, fontWeight: 600, color: "#555", fontSize: "0.85rem", cursor: "pointer", transition: "transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)" }}
-              onMouseEnter={e => e.currentTarget.style.transform = "scale(1.12)"}
-              onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
-            >
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect>
-                <line x1="2" y1="10" x2="22" y2="10"></line>
-              </svg>
+          <div style={{ display: "flex", justifyContent: "center", gap: "2.5rem", flexWrap: "wrap", alignItems: "center" }}>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/d/d1/Yape_text_logo.png" alt="Yape" style={{ ...logoStyle, height: "35px" }} onMouseEnter={e => e.currentTarget.style.transform = "scale(1.12)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"} />
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Plin_logo.png/320px-Plin_logo.png" alt="Plin" style={{ ...logoStyle, height: "42px" }} onMouseEnter={e => e.currentTarget.style.transform = "scale(1.12)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"} />
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, fontWeight: 600, color: "#555", fontSize: "0.85rem", cursor: "pointer", transition: "transform 0.3s" }} onMouseEnter={e => e.currentTarget.style.transform = "scale(1.12)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
               Transferencia
             </div>
           </div>
         </div>
-
-        {/* Tarjeta Métodos de Envío */}
         <div style={cardStyle}>
           <h3 style={titleStyle}>Métodos de Envío</h3>
-          <div style={imgContainerStyle}>
-            {/* Logo Olva */}
-            <img
-              src="https://www.olvacourier.com/wp-content/uploads/2021/10/logo-olva.png"
-              alt="Olva Courier"
-              style={{ ...logoStyle, height: "48px" }}
-              onMouseEnter={e => e.currentTarget.style.transform = "scale(1.12)"}
-              onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
-              onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}
-            />
-            <div style={{ display: 'none', background: "#FFD100", color: "#002D74", padding: "8px 20px", borderRadius: 8, fontWeight: 900, fontStyle: "italic", fontSize: "1.2rem", cursor: "pointer" }}>OLVA</div>
-
-            {/* Logo Shalom */}
-            <img
-              src="https://shalom.pe/wp-content/uploads/2021/10/logo-shalom.png"
-              alt="Shalom"
-              style={{ ...logoStyle, height: "40px" }}
-              onMouseEnter={e => e.currentTarget.style.transform = "scale(1.12)"}
-              onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
-              onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}
-            />
-            <div style={{ display: 'none', background: "#E3000F", color: "white", padding: "8px 20px", borderRadius: 8, fontWeight: 900, fontStyle: "italic", fontSize: "1.2rem", letterSpacing: "1px", cursor: "pointer" }}>SHALOM</div>
+          <div style={{ display: "flex", justifyContent: "center", gap: "2.5rem", flexWrap: "wrap", alignItems: "center" }}>
+            <img src="https://www.olvacourier.com/wp-content/uploads/2021/10/logo-olva.png" alt="Olva Courier" style={{ ...logoStyle, height: "48px" }} onMouseEnter={e => e.currentTarget.style.transform = "scale(1.12)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"} onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
+            <div style={{ display: 'none', background: "#FFD100", color: "#002D74", padding: "8px 20px", borderRadius: 8, fontWeight: 900, fontStyle: "italic", fontSize: "1.2rem" }}>OLVA</div>
+            <img src="https://shalom.pe/wp-content/uploads/2021/10/logo-shalom.png" alt="Shalom" style={{ ...logoStyle, height: "40px" }} onMouseEnter={e => e.currentTarget.style.transform = "scale(1.12)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"} onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
+            <div style={{ display: 'none', background: "#E3000F", color: "white", padding: "8px 20px", borderRadius: 8, fontWeight: 900, fontStyle: "italic", fontSize: "1.2rem" }}>SHALOM</div>
           </div>
         </div>
-
       </div>
     </div>
   );
 }
-// =====================================
 
+// ============ MAIN ============
 export default function Home() {
   const { products, loading } = useProducts();
-  const [cat, setCat] = useState("Todos");
   const [selected, setSelected] = useState(null);
   const [showWsp, setShowWsp] = useState(false);
+  const [navCat, setNavCat] = useState(null); // categoría que viene desde el navbar
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 400) { setShowWsp(true); } 
-      else { setShowWsp(false); }
-    };
+    const handleScroll = () => setShowWsp(window.scrollY > 400);
     window.addEventListener("scroll", handleScroll);
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const safeProducts = Array.isArray(products) ? products : [];
-  const filtered = cat === "Todos" ? safeProducts : safeProducts.filter(p => p.cat === cat);
-  
-  const bestItems = safeProducts.length > 0 
-    ? [...safeProducts].filter(p => p.stock > 0).sort((a, b) => (b.ventas_totales || 0) - (a.ventas_totales || 0)).slice(0, 4) 
-    : [];
 
   const newInItems = safeProducts.length > 0
-    ? [...safeProducts].filter(p => p.stock > 0).sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)).slice(0, 4)
+    ? [...safeProducts].filter(p => p.stock > 0)
+        .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
+        .slice(0, 10)
     : [];
 
   return (
     <>
-      <Navbar activecat={cat} onCatChange={setCat} />
+      <Navbar onCatChange={(cat) => {
+        setNavCat(cat);
+        setTimeout(() => document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" }), 80);
+      }} />
       <CartSidebar />
 
-      {/* Hero Carrusel */}
       <HeroBanner onShop={() => document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" })} />
 
-      {/* SECCIÓN "BEST ITEMS" */}
-      {!loading && bestItems.length > 0 && (
-        <div style={{ maxWidth: 1200, margin: "4rem auto 2rem", padding: "0 1rem" }}>
-          <h2 className="serif" style={{ fontSize: "2rem", textAlign: "center", marginBottom: "2.5rem", fontWeight: 600 }}>
-            Best items
-          </h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "2rem 1.5rem" }}>
-            {bestItems.map(p => <ProductCard key={p.id} product={p} onClick={setSelected} />)}
-          </div>
-        </div>
-      )}
-
-      {/* SECCIÓN "NEW IN" */}
       {!loading && newInItems.length > 0 && (
-        <div style={{ maxWidth: 1200, margin: "4rem auto 2rem", padding: "0 1rem" }}>
-          <h2 className="serif" style={{ fontSize: "2rem", textAlign: "center", marginBottom: "2.5rem", fontWeight: 600 }}>
-            New in
-          </h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "2rem 1.5rem" }}>
-            {newInItems.map(p => <ProductCard key={p.id} product={p} onClick={setSelected} />)}
-          </div>
-        </div>
+        <NewInCarousel items={newInItems} onSelect={setSelected} />
       )}
 
-      {/* Catálogo Completo */}
-      <div id="catalog" style={{ maxWidth: 1200, margin: "0 auto", padding: "4rem 1rem 0" }}>
-        <h2 className="serif" style={{ fontSize: "1.8rem", marginBottom: 4 }}>Catálogo</h2>
-        <p style={{ color: "var(--gray)", fontSize: "0.88rem", marginBottom: "1.5rem" }}>
-          {cat === "Todos" ? "Todos los productos" : cat} — {filtered.length} producto{filtered.length !== 1 ? "s" : ""}
-        </p>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: "2rem" }}>
-          {CATS.map(c => (
-            <button key={c} onClick={() => setCat(c)} style={{
-              padding: "8px 20px", borderRadius: 999,
-              border: `1px solid ${c === cat ? "var(--dark)" : "var(--border)"}`,
-              background: c === cat ? "var(--dark)" : "white",
-              color: c === cat ? "white" : "var(--dark)",
-              fontSize: "0.88rem", cursor: "pointer", transition: "all .2s",
-              fontFamily: "'Courier New', Courier, monospace"
-            }}>{c}</button>
-          ))}
-        </div>
-      </div>
+      <CatalogSection
+        products={safeProducts}
+        loading={loading}
+        onSelect={setSelected}
+        externalCat={navCat}
+        onExternalCatConsumed={() => setNavCat(null)}
+      />
 
-      {/* Grid productos del catálogo */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 1rem 4rem" }}>
-        {loading ? (
-          <div style={{ textAlign: "center", padding: "4rem", color: "var(--gray)" }}>
-            <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>🐱</div>
-            Cargando productos...
-          </div>
-        ) : filtered.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "4rem", color: "var(--gray)" }}>
-            <p>No hay productos en esta categoría aún.</p>
-          </div>
-        ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "2rem 1.5rem" }}>
-            {filtered.map(p => <ProductCard key={p.id} product={p} onClick={setSelected} />)}
-          </div>
-        )}
-      </div>
-
-      {/* BANNER DE CONFIANZA (PAGOS Y ENVÍOS REDISEÑADOS CON IMÁGENES) */}
       <TrustBanner />
 
-      {/* Footer */}
       <footer style={{ background: "var(--dark)", color: "white", textAlign: "center", padding: "2rem 1rem" }}>
         <p style={{ fontSize: "0.85rem", opacity: 0.8, fontFamily: "'Courier New', Courier, monospace" }}>
           Envíos a todo el Perú · WhatsApp: 927 112 114 · pookiecat.pe
@@ -365,34 +377,18 @@ export default function Home() {
 
       {selected && <ProductModal product={selected} onClose={() => setSelected(null)} />}
 
-      {/* Botón flotante WhatsApp animado */}
-      <a
-        href="https://wa.me/51927112114?text=Hola!%20Quisiera%20consultar%20sobre%20un%20producto%20"
-        target="_blank"
-        rel="noopener noreferrer"
+      <a href="https://wa.me/51927112114?text=Hola!%20Quisiera%20consultar%20sobre%20un%20producto%20"
+        target="_blank" rel="noopener noreferrer"
         style={{
           position: "fixed", bottom: "2rem", right: "2rem", zIndex: 9000,
           width: 58, height: 58, borderRadius: "50%",
           background: "#25D366", color: "white",
           display: "flex", alignItems: "center", justifyContent: "center",
-          textDecoration: "none", 
-          opacity: showWsp ? 1 : 0,
-          visibility: showWsp ? "visible" : "hidden",
+          textDecoration: "none",
+          opacity: showWsp ? 1 : 0, visibility: showWsp ? "visible" : "hidden",
           transform: showWsp ? "translateY(0) scale(1)" : "translateY(20px) scale(0.8)",
           boxShadow: showWsp ? "0 4px 20px rgba(37,211,102,.45)" : "none",
-          transition: "all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s",
-        }}
-        onMouseEnter={e => { 
-          if(showWsp) {
-            e.currentTarget.style.transform = "translateY(0) scale(1.1)"; 
-            e.currentTarget.style.boxShadow = "0 6px 28px rgba(37,211,102,.6)"; 
-          }
-        }}
-        onMouseLeave={e => { 
-          if(showWsp) {
-            e.currentTarget.style.transform = "translateY(0) scale(1)"; 
-            e.currentTarget.style.boxShadow = "0 4px 20px rgba(37,211,102,.45)"; 
-          }
+          transition: "all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
         }}
         title="Consultas por WhatsApp"
       >

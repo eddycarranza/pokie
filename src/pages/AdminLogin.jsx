@@ -69,7 +69,7 @@ export default function AdminLogin() {
       await login(email, password);
       sessionStorage.removeItem(RATE_KEY); 
       
-      // ✅ CORRECCIÓN APLICADA: Redirige al dashboard correctamente
+      // CORRECCIÓN APLICADA: Redirige al dashboard correctamente
       navigate("/admin/dashboard"); 
       
     } catch (err) {

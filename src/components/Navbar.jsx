@@ -4,10 +4,9 @@ import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import Logo from "./Logo";
 
-// LISTA ACTUALIZADA
-const CATS = ["Todos", "Tops", "Pantalones", "Vestidos", "Faldas", "Accesorios", "Zapatos"];
+// Solo las 4 categorías correctas
+const CATS = ["Tops", "Partes de abajo", "Accesorios", "Zapatos"];
 
-// Iconos SVG
 const IconInstagram = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
 );
@@ -22,13 +21,13 @@ const IconClose = () => (
 );
 const ShoppingBagIcon = ({ size = 22, strokeWidth = 1.5 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
-    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2 -2V6l-3 -4z"></path>
+    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
     <line x1="3" y1="6" x2="21" y2="6"></line>
-    <path d="M16 10a4 4 0 0 1 -8 0"></path>
+    <path d="M16 10a4 4 0 0 1-8 0"></path>
   </svg>
 );
 
-export default function Navbar({ activecat, onCatChange }) {
+export default function Navbar({ onCatChange }) {
   const { count, setIsOpen } = useCart();
   const [dropOpen, setDropOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -59,7 +58,10 @@ export default function Navbar({ activecat, onCatChange }) {
     onCatChange?.(cat);
     setDropOpen(false);
     setMenuOpen(false);
-    document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" });
+    // Scroll al catálogo y pasar la categoría
+    setTimeout(() => {
+      document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" });
+    }, 50);
   };
 
   const linkBaseStyle = {
@@ -83,7 +85,7 @@ export default function Navbar({ activecat, onCatChange }) {
         maxWidth: 1440, margin: "0 auto",
         position: "relative"
       }}>
-        
+
         {isMobile ? (
           <>
             <div style={{ flex: '0 0 60px', display: 'flex', justifyContent: 'flex-start' }}>
@@ -91,16 +93,12 @@ export default function Navbar({ activecat, onCatChange }) {
                 {menuOpen ? <IconClose /> : <IconMenu />}
               </button>
             </div>
-
             <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <Link to="/" onClick={() => window.scrollTo(0,0)} style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
+              <Link to="/" onClick={() => window.scrollTo(0, 0)} style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
                 <Logo size={28} />
-                <span style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--dark)", fontFamily: "'Courier New', Courier, monospace", letterSpacing: '-0.5px' }}>
-                  Pookiecat
-                </span>
+                <span style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--dark)", fontFamily: "'Courier New', Courier, monospace", letterSpacing: '-0.5px' }}>Pookiecat</span>
               </Link>
             </div>
-
             <div style={{ flex: '0 0 60px', display: 'flex', justifyContent: 'flex-end' }}>
               <button onClick={() => setIsOpen(true)} style={menuButtonStyle} aria-label="Carrito">
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
@@ -112,9 +110,7 @@ export default function Navbar({ activecat, onCatChange }) {
                       fontSize: '0.65rem', fontWeight: 700,
                       width: 18, height: 18, borderRadius: '50%',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}>
-                      {count}
-                    </span>
+                    }}>{count}</span>
                   )}
                 </div>
               </button>
@@ -122,38 +118,40 @@ export default function Navbar({ activecat, onCatChange }) {
           </>
         ) : (
           <>
+            {/* Left: Inicio + Productos dropdown */}
             <div style={{ flex: 1, display: "flex", justifyContent: "flex-start", alignItems: "center", gap: 10, height: "100%" }}>
               <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} style={linkBaseStyle}
                 onMouseEnter={e => e.currentTarget.style.color = "var(--pink-dark)"}
                 onMouseLeave={e => e.currentTarget.style.color = "var(--dark)"}>
                 Inicio
               </Link>
-              
+
               <div ref={dropRef} style={{ position: "relative", height: "100%" }}>
                 <button onClick={() => setDropOpen(p => !p)} style={{
                   ...linkBaseStyle, background: "none", border: "none", cursor: "pointer",
                   color: dropOpen ? "var(--pink-dark)" : "var(--dark)",
-                  padding: "0 10px", gap: 6, width: "auto"
+                  gap: 6, width: "auto"
                 }}>
                   Productos
                   <span style={{ fontSize: "0.7rem", transform: dropOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform .2s" }}>▾</span>
                 </button>
+
                 {dropOpen && (
                   <div style={{
-                    position: "absolute", top: "calc(100% - 15px)", left: "0",
+                    position: "absolute", top: "calc(100% - 15px)", left: 0,
                     background: "white", border: "1px solid var(--border)", borderRadius: 12,
-                    padding: "10px 0", minWidth: 200, boxShadow: "0 10px 40px rgba(0,0,0,.1)", zIndex: 1100,
+                    padding: "10px 0", minWidth: 200,
+                    boxShadow: "0 10px 40px rgba(0,0,0,.1)", zIndex: 1100,
                   }}>
                     {CATS.map(cat => (
                       <button key={cat} onClick={() => handleCat(cat)} style={{
                         display: "block", width: "100%", textAlign: "left",
                         padding: "11px 20px", background: "none", border: "none", cursor: "pointer",
                         fontFamily: "'Courier New', Courier, monospace", fontSize: "0.85rem",
-                        color: cat === activecat ? "var(--pink-dark)" : "var(--dark)",
-                        fontWeight: cat === activecat ? 600 : 400, transition: "background .15s",
+                        color: "var(--dark)", fontWeight: 400, transition: "background .15s",
                       }}
-                        onMouseEnter={e => { e.currentTarget.style.background = "var(--pink-light)"; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = "none"; }}
+                        onMouseEnter={e => { e.currentTarget.style.background = "var(--pink-light)"; e.currentTarget.style.color = "var(--pink-dark)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "var(--dark)"; }}
                       >{cat}</button>
                     ))}
                   </div>
@@ -161,27 +159,29 @@ export default function Navbar({ activecat, onCatChange }) {
               </div>
             </div>
 
+            {/* Center: Logo */}
             <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
-              <Link to="/" onClick={() => window.scrollTo(0,0)} style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+              <Link to="/" onClick={() => window.scrollTo(0, 0)} style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
                 <Logo size={36} />
-                <span style={{ fontSize: "1.4rem", fontWeight: 700, color: "var(--dark)", fontFamily: "'Courier New', Courier, monospace", letterSpacing: '-0.5px' }}>
-                  Pookiecat
-                </span>
+                <span style={{ fontSize: "1.4rem", fontWeight: 700, color: "var(--dark)", fontFamily: "'Courier New', Courier, monospace", letterSpacing: '-0.5px' }}>Pookiecat</span>
               </Link>
             </div>
 
+            {/* Right: RRSS + Carrito */}
             <div style={{ flex: 1, display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 10 }}>
               <a href="https://www.instagram.com/pookiecat.pe/" target="_blank" rel="noopener noreferrer"
                 style={{ color: "var(--dark)", padding: 10, borderRadius: "50%", transition: "all .2s" }}
                 onMouseEnter={e => { e.currentTarget.style.color = "#c9607f"; e.currentTarget.style.background = "#fdf0f4"; }}
-                onMouseLeave={e => { e.currentTarget.style.color = "var(--dark)"; e.currentTarget.style.background = "none"; }}
-              ><IconInstagram /></a>
+                onMouseLeave={e => { e.currentTarget.style.color = "var(--dark)"; e.currentTarget.style.background = "none"; }}>
+                <IconInstagram />
+              </a>
               <a href="https://www.tiktok.com/@pookiecat.pe" target="_blank" rel="noopener noreferrer"
                 style={{ color: "var(--dark)", padding: 10, borderRadius: "50%", transition: "all .2s" }}
                 onMouseEnter={e => { e.currentTarget.style.color = "#c9607f"; e.currentTarget.style.background = "#fdf0f4"; }}
-                onMouseLeave={e => { e.currentTarget.style.color = "var(--dark)"; e.currentTarget.style.background = "none"; }}
-              ><IconTiktok /></a>
-              
+                onMouseLeave={e => { e.currentTarget.style.color = "var(--dark)"; e.currentTarget.style.background = "none"; }}>
+                <IconTiktok />
+              </a>
+
               <button onClick={() => setIsOpen(true)} style={{
                 background: "var(--dark)", color: "white", border: "none",
                 padding: "10px 20px", borderRadius: 999, cursor: "pointer",
@@ -192,14 +192,15 @@ export default function Navbar({ activecat, onCatChange }) {
                 onMouseEnter={e => e.currentTarget.style.background = "var(--pink-dark)"}
                 onMouseLeave={e => e.currentTarget.style.background = "var(--dark)"}
               >
-                <ShoppingBagIcon size={18} strokeWidth={2} /> 
-                <span style={{opacity: 0.7}}>Carrito:</span> {count}
+                <ShoppingBagIcon size={18} strokeWidth={2} />
+                <span style={{ opacity: 0.7 }}>Carrito:</span> {count}
               </button>
             </div>
           </>
         )}
       </div>
 
+      {/* Mobile menu */}
       {isMobile && menuOpen && (
         <div style={{
           position: 'fixed', top: 64, left: 0, right: 0, bottom: 0,
@@ -216,14 +217,17 @@ export default function Navbar({ activecat, onCatChange }) {
                 <button key={cat} onClick={() => handleCat(cat)} style={{
                   display: "flex", alignItems: "center", justifyContent: "space-between",
                   width: "100%", padding: "14px 18px", borderRadius: 12, cursor: "pointer",
-                  border: `1.5px solid ${cat === activecat ? "var(--dark)" : "var(--border)"}`,
-                  background: cat === activecat ? "var(--dark)" : "white",
-                  color: cat === activecat ? "white" : "var(--dark)",
+                  border: "1.5px solid var(--border)",
+                  background: "white", color: "var(--dark)",
                   fontFamily: "'Courier New', Courier, monospace",
-                  fontSize: "0.88rem", fontWeight: cat === activecat ? 700 : 400,
+                  fontSize: "0.88rem", fontWeight: 400,
                   transition: "all .15s",
-                }}>
+                }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "var(--dark)"; e.currentTarget.style.color = "white"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "white"; e.currentTarget.style.color = "var(--dark)"; }}
+                >
                   <span>{cat}</span>
+                  <span style={{ opacity: 0.4 }}>→</span>
                 </button>
               ))}
             </div>
@@ -232,7 +236,6 @@ export default function Navbar({ activecat, onCatChange }) {
           <div style={{
             padding: "1.25rem 1.5rem",
             borderTop: "1px solid var(--border)",
-            background: "var(--cream)",
             display: "flex", alignItems: "center", justifyContent: "center", gap: "2.5rem",
           }}>
             <a href="https://www.instagram.com/pookiecat.pe/" target="_blank" rel="noopener noreferrer"
