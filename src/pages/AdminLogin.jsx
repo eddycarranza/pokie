@@ -4,6 +4,42 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
 
+// ============ RATE LIMITER — LOGIN ============
+const RATE_KEY = "pookiecat_login_attempts";
+const MAX_ATTEMPTS = 5;
+const WINDOW_MS = 15 * 60 * 1000; // 15 minutos
+
+function getRateData() {
+  try {
+    const raw = sessionStorage.getItem(RATE_KEY);
+    return raw ? JSON.parse(raw) : { attempts: 0, firstAttempt: null };
+  } catch { return { attempts: 0, firstAttempt: null }; }
+}
+
+function checkRateLimit() {
+  const { attempts, firstAttempt } = getRateData();
+  if (!firstAttempt) return { blocked: false, remaining: MAX_ATTEMPTS };
+  const elapsed = Date.now() - firstAttempt;
+  if (elapsed > WINDOW_MS) {
+    sessionStorage.removeItem(RATE_KEY);
+    return { blocked: false, remaining: MAX_ATTEMPTS };
+  }
+  if (attempts >= MAX_ATTEMPTS) {
+    const waitMin = Math.ceil((WINDOW_MS - elapsed) / 60000);
+    return { blocked: true, remaining: 0, waitMin };
+  }
+  return { blocked: false, remaining: MAX_ATTEMPTS - attempts };
+}
+
+function registerAttempt() {
+  const { attempts, firstAttempt } = getRateData();
+  sessionStorage.setItem(RATE_KEY, JSON.stringify({
+    attempts: attempts + 1,
+    firstAttempt: firstAttempt || Date.now(),
+  }));
+}
+// ================================================
+
 const sanitizeEmail = (val) => val.replace(/[^a-zA-Z0-9@._+-]/g, "").slice(0, 100);
 
 export default function AdminLogin() {
@@ -11,20 +47,39 @@ export default function AdminLogin() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [rateInfo, setRateInfo] = useState(() => checkRateLimit());
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
+
+    const rate = checkRateLimit();
+    setRateInfo(rate);
+    if (rate.blocked) {
+      setError(`Demasiados intentos. Espera ${rate.waitMin} minuto${rate.waitMin > 1 ? "s" : ""}.`);
+      return;
+    }
+
     setLoading(true);
-    
+    registerAttempt();
+
     try {
-      // Esto ahora llamará a Supabase gracias a tu nuevo AuthContext
       await login(email, password);
-      navigate("/admin/dashboard");
+      sessionStorage.removeItem(RATE_KEY); 
+      
+      // ✅ CORRECCIÓN APLICADA: Redirige al dashboard correctamente
+      navigate("/admin/dashboard"); 
+      
     } catch (err) {
-      setError("Credenciales incorrectas. Verifica tu email y contraseña.");
+      const updatedRate = checkRateLimit();
+      setRateInfo(updatedRate);
+      if (updatedRate.blocked) {
+        setError(`Demasiados intentos fallidos. Espera ${updatedRate.waitMin} minuto${updatedRate.waitMin > 1 ? "s" : ""}.`);
+      } else {
+        setError(`Credenciales incorrectas. Intentos restantes: ${updatedRate.remaining}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -51,9 +106,15 @@ export default function AdminLogin() {
 
           {error && <div style={{ color: "var(--danger)", fontSize: "0.85rem", textAlign: "center" }}>⚠ {error}</div>}
 
-          <button type="submit" disabled={loading} className="btn btn-dark btn-full" style={{ marginTop: "0.5rem" }}>
-            {loading ? "Verificando..." : "Ingresar →"}
-          </button>
+          {rateInfo.blocked ? (
+            <div style={{ background: "#f8d7da", color: "#842029", padding: "12px 16px", borderRadius: 10, fontSize: "0.85rem", textAlign: "center", fontWeight: 500 }}>
+              🔒 Acceso bloqueado temporalmente.<br/>Espera {rateInfo.waitMin} minuto{rateInfo.waitMin > 1 ? "s" : ""} e intenta de nuevo.
+            </div>
+          ) : (
+            <button type="submit" disabled={loading} className="btn btn-dark btn-full" style={{ marginTop: "0.5rem" }}>
+              {loading ? "Verificando..." : "Ingresar →"}
+            </button>
+          )}
         </form>
       </div>
     </div>

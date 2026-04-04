@@ -159,6 +159,103 @@ function HeroBanner({ onShop }) {
 }
 // =====================================
 
+// ============ BANNER DE PAGOS Y ENVÍOS (CON IMÁGENES ESTÉTICAS) ============
+function TrustBanner() {
+  const cardStyle = {
+    background: "white", padding: "2.5rem 2rem", borderRadius: "16px",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.04)", display: "flex", flexDirection: "column", alignItems: "center"
+  };
+
+  const titleStyle = {
+    fontSize: "1.05rem", letterSpacing: "1px", textTransform: "uppercase",
+    marginBottom: "2rem", color: "var(--dark)", fontWeight: 700, textAlign: "center"
+  };
+
+  const imgContainerStyle = {
+    display: "flex", justifyContent: "center", gap: "2.5rem", flexWrap: "wrap", alignItems: "center"
+  };
+
+  const logoStyle = {
+    height: "40px",
+    objectFit: "contain",
+    filter: "drop-shadow(0px 4px 6px rgba(0,0,0,0.05))",
+    transition: "transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+    cursor: "pointer"
+  };
+
+  return (
+    <div style={{ background: "#fdf8fa", padding: "4.5rem 1rem", borderTop: "1px solid #fce8f0" }}>
+      <div style={{ maxWidth: 1000, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "2.5rem" }}>
+
+        {/* Tarjeta Métodos de Pago */}
+        <div style={cardStyle}>
+          <h3 style={titleStyle}>Métodos de Pago</h3>
+          <div style={imgContainerStyle}>
+            {/* Logo Yape */}
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/d/d1/Yape_text_logo.png"
+              alt="Yape"
+              style={{ ...logoStyle, height: "35px" }}
+              onMouseEnter={e => e.currentTarget.style.transform = "scale(1.12)"}
+              onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+            />
+            {/* Logo Plin */}
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Plin_logo.png/320px-Plin_logo.png"
+              alt="Plin"
+              style={{ ...logoStyle, height: "42px" }}
+              onMouseEnter={e => e.currentTarget.style.transform = "scale(1.12)"}
+              onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+            />
+            {/* Ícono Transferencia */}
+            <div
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, fontWeight: 600, color: "#555", fontSize: "0.85rem", cursor: "pointer", transition: "transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)" }}
+              onMouseEnter={e => e.currentTarget.style.transform = "scale(1.12)"}
+              onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+            >
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="2" y1="10" x2="22" y2="10"></line>
+              </svg>
+              Transferencia
+            </div>
+          </div>
+        </div>
+
+        {/* Tarjeta Métodos de Envío */}
+        <div style={cardStyle}>
+          <h3 style={titleStyle}>Métodos de Envío</h3>
+          <div style={imgContainerStyle}>
+            {/* Logo Olva */}
+            <img
+              src="https://www.olvacourier.com/wp-content/uploads/2021/10/logo-olva.png"
+              alt="Olva Courier"
+              style={{ ...logoStyle, height: "48px" }}
+              onMouseEnter={e => e.currentTarget.style.transform = "scale(1.12)"}
+              onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+              onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}
+            />
+            <div style={{ display: 'none', background: "#FFD100", color: "#002D74", padding: "8px 20px", borderRadius: 8, fontWeight: 900, fontStyle: "italic", fontSize: "1.2rem", cursor: "pointer" }}>OLVA</div>
+
+            {/* Logo Shalom */}
+            <img
+              src="https://shalom.pe/wp-content/uploads/2021/10/logo-shalom.png"
+              alt="Shalom"
+              style={{ ...logoStyle, height: "40px" }}
+              onMouseEnter={e => e.currentTarget.style.transform = "scale(1.12)"}
+              onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+              onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}
+            />
+            <div style={{ display: 'none', background: "#E3000F", color: "white", padding: "8px 20px", borderRadius: 8, fontWeight: 900, fontStyle: "italic", fontSize: "1.2rem", letterSpacing: "1px", cursor: "pointer" }}>SHALOM</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+// =====================================
+
 export default function Home() {
   const { products, loading } = useProducts();
   const [cat, setCat] = useState("Todos");
@@ -175,12 +272,16 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const filtered = cat === "Todos" ? products : products.filter(p => p.cat === cat);
+  const safeProducts = Array.isArray(products) ? products : [];
+  const filtered = cat === "Todos" ? safeProducts : safeProducts.filter(p => p.cat === cat);
   
-  // Buscar el más vendido (Aquel que tenga mayor valor en ventas_totales y que tenga stock)
-  const bestSeller = products.length > 0 
-    ? [...products].filter(p => p.stock > 0).sort((a, b) => (b.ventas_totales || 0) - (a.ventas_totales || 0))[0] 
-    : null;
+  const bestItems = safeProducts.length > 0 
+    ? [...safeProducts].filter(p => p.stock > 0).sort((a, b) => (b.ventas_totales || 0) - (a.ventas_totales || 0)).slice(0, 4) 
+    : [];
+
+  const newInItems = safeProducts.length > 0
+    ? [...safeProducts].filter(p => p.stock > 0).sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)).slice(0, 4)
+    : [];
 
   return (
     <>
@@ -190,36 +291,32 @@ export default function Home() {
       {/* Hero Carrusel */}
       <HeroBanner onShop={() => document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" })} />
 
-      {/* PRODUCTO MÁS VENDIDO */}
-      {!loading && bestSeller && (
-        <div style={{ maxWidth: 1000, margin: "3rem auto 1rem", padding: "0 1rem" }}>
-          <div style={{ background: "white", border: "1px solid var(--border)", borderRadius: 20, display: "flex", flexWrap: "wrap", overflow: "hidden", boxShadow: "0 10px 30px rgba(0,0,0,0.05)" }}>
-            <div style={{ flex: "1 1 300px", background: "var(--pink-light)", position: "relative" }}>
-               <img 
-                 src={bestSeller.image_urls?.[0] || bestSeller.image_url} 
-                 alt={bestSeller.name} 
-                 style={{ width: "100%", height: "100%", minHeight: 300, objectFit: "cover" }} 
-               />
-            </div>
-            <div style={{ flex: "1 1 300px", padding: "2.5rem", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-               <div style={{ alignSelf: "flex-start", background: "var(--dark)", color: "white", padding: "4px 12px", borderRadius: 20, fontSize: "0.75rem", fontWeight: 600, letterSpacing: 1, marginBottom: 16 }}>
-                 🔥 MÁS VENDIDO
-               </div>
-               <h2 className="serif" style={{ fontSize: "2.2rem", margin: "0 0 10px 0", lineHeight: 1.1 }}>{bestSeller.name}</h2>
-               <p style={{ color: "var(--gray)", fontSize: "0.95rem", marginBottom: "1.5rem" }}>
-                 {bestSeller.description || "El favorito de nuestras clientas. ¡Asegura el tuyo antes de que se agote!"}
-               </p>
-               <h3 style={{ fontSize: "1.5rem", marginBottom: "1.5rem" }}>S/ {bestSeller.sale_price || bestSeller.price}</h3>
-               <button className="btn btn-dark" onClick={() => setSelected(bestSeller)} style={{ alignSelf: "flex-start" }}>
-                 Comprar ahora
-               </button>
-            </div>
+      {/* SECCIÓN "BEST ITEMS" */}
+      {!loading && bestItems.length > 0 && (
+        <div style={{ maxWidth: 1200, margin: "4rem auto 2rem", padding: "0 1rem" }}>
+          <h2 className="serif" style={{ fontSize: "2rem", textAlign: "center", marginBottom: "2.5rem", fontWeight: 600 }}>
+            Best items
+          </h2>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "2rem 1.5rem" }}>
+            {bestItems.map(p => <ProductCard key={p.id} product={p} onClick={setSelected} />)}
           </div>
         </div>
       )}
 
-      {/* Catálogo */}
-      <div id="catalog" style={{ maxWidth: 1200, margin: "0 auto", padding: "3rem 1rem 0" }}>
+      {/* SECCIÓN "NEW IN" */}
+      {!loading && newInItems.length > 0 && (
+        <div style={{ maxWidth: 1200, margin: "4rem auto 2rem", padding: "0 1rem" }}>
+          <h2 className="serif" style={{ fontSize: "2rem", textAlign: "center", marginBottom: "2.5rem", fontWeight: 600 }}>
+            New in
+          </h2>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "2rem 1.5rem" }}>
+            {newInItems.map(p => <ProductCard key={p.id} product={p} onClick={setSelected} />)}
+          </div>
+        </div>
+      )}
+
+      {/* Catálogo Completo */}
+      <div id="catalog" style={{ maxWidth: 1200, margin: "0 auto", padding: "4rem 1rem 0" }}>
         <h2 className="serif" style={{ fontSize: "1.8rem", marginBottom: 4 }}>Catálogo</h2>
         <p style={{ color: "var(--gray)", fontSize: "0.88rem", marginBottom: "1.5rem" }}>
           {cat === "Todos" ? "Todos los productos" : cat} — {filtered.length} producto{filtered.length !== 1 ? "s" : ""}
@@ -238,8 +335,8 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Grid productos */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 1rem 3rem" }}>
+      {/* Grid productos del catálogo */}
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 1rem 4rem" }}>
         {loading ? (
           <div style={{ textAlign: "center", padding: "4rem", color: "var(--gray)" }}>
             <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>🐱</div>
@@ -250,14 +347,17 @@ export default function Home() {
             <p>No hay productos en esta categoría aún.</p>
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "1rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "2rem 1.5rem" }}>
             {filtered.map(p => <ProductCard key={p.id} product={p} onClick={setSelected} />)}
           </div>
         )}
       </div>
 
+      {/* BANNER DE CONFIANZA (PAGOS Y ENVÍOS REDISEÑADOS CON IMÁGENES) */}
+      <TrustBanner />
+
       {/* Footer */}
-      <footer style={{ background: "var(--dark)", color: "white", textAlign: "center", padding: "1.5rem" }}>
+      <footer style={{ background: "var(--dark)", color: "white", textAlign: "center", padding: "2rem 1rem" }}>
         <p style={{ fontSize: "0.85rem", opacity: 0.8, fontFamily: "'Courier New', Courier, monospace" }}>
           Envíos a todo el Perú · WhatsApp: 927 112 114 · pookiecat.pe
         </p>

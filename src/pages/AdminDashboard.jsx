@@ -7,21 +7,17 @@ import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from "../lib/supabase";
 import Logo from "../components/Logo";
 
 // ============ SANITIZACIÓN ============
-const sanitize = (val) => String(val)
-  .replace(/[<>'"`;]/g, "")
-  .replace(/javascript:/gi, "")
-  .trimStart();
+const sanitize = (val) => String(val).replace(/[<>'"`;]/g, "").replace(/javascript:/gi, "").trimStart();
 const sanitizeText = (val) => sanitize(val).slice(0, 300);
 const sanitizeShort = (val) => sanitize(val).slice(0, 100);
 const sanitizeNum = (val) => val.replace(/[^0-9.]/g, "").slice(0, 12);
-// ======================================
 
 // ============ CONFIGURACIÓN ============
 const BUCKET = "products";
-// =========================================
-
 const CATS = ["Tops", "Pantalones", "Vestidos", "Accesorios", "Zapatos"];
 const STATUSES = ["pendiente", "enviado", "entregado", "cancelado"];
+
+// COLORES ORIGINALES
 const COLOR_OPTIONS = [
   { name: "Pale Pink", hex: "hsl(337, 27%, 83%)" },
   { name: "White", hex: "#f0f0f0" },
@@ -35,17 +31,10 @@ async function uploadToSupabase(file, onProgress) {
   onProgress(30);
   const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${fileName}`, {
     method: "POST",
-    headers: {
-      "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-      "Content-Type": file.type,
-      "x-upsert": "true",
-    },
+    headers: { "Authorization": `Bearer ${SUPABASE_ANON_KEY}`, "Content-Type": file.type, "x-upsert": "true" },
     body: file,
   });
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.message || "Error al subir imagen");
-  }
+  if (!res.ok) throw new Error((await res.json()).message || "Error al subir imagen");
   onProgress(100);
   return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${fileName}`;
 }
@@ -105,23 +94,19 @@ function ImageUploader({ onUploaded }) {
         border: "2px dashed var(--border)", borderRadius: 12, padding: "1rem",
         textAlign: "center", cursor: uploading ? "default" : "pointer",
         background: "var(--pink-light)", minHeight: 120, display: "flex", flexDirection: "column", justifyContent: "center"
-      }}
-        onMouseEnter={e => { if (!uploading) e.currentTarget.style.borderColor = "var(--pink-dark)"; }}
-        onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border)"; }}
-      >
+      }}>
         {uploading ? (
           <div>
             <div style={{ fontSize: "1.5rem", marginBottom: 8 }}>subiendo</div>
             <div style={{ fontSize: "0.85rem", color: "var(--gray)", marginBottom: 8 }}>Subiendo... {progress}%</div>
             <div style={{ height: 6, background: "var(--border)", borderRadius: 3, overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${progress}%`, background: "var(--pink-dark)", transition: "width .3s", borderRadius: 3 }} />
+              <div style={{ height: "100%", width: `${progress}%`, background: "var(--pink-dark)", transition: "width .3s" }} />
             </div>
           </div>
         ) : (
           <div>
             <div style={{ fontSize: "2rem", marginBottom: 6 }}>+</div>
             <div style={{ fontSize: "0.85rem", color: "var(--gray)" }}>Clic para subir nueva imagen</div>
-            <div style={{ fontSize: "0.75rem", color: "var(--gray)", marginTop: 2 }}>JPG, PNG - max 5MB</div>
           </div>
         )}
       </div>
@@ -131,27 +116,26 @@ function ImageUploader({ onUploaded }) {
   );
 }
 
+// ==========================================
+// FORMULARIO CON GENERADOR ÚNICO Y BLINDADO
+// ==========================================
 function ProductForm({ initial, onSave, onCancel, isMobile }) {
   const [form, setForm] = useState(() => {
     if (!initial) {
-      return { name: "", cat: "", price: "", salePrice: "", stock: 0, description: "", emoji: "", badge: "", sizes: [], colors: [], imageUrls: [] };
+      return { name: "", cat: "", price: "", salePrice: "", stock: 0, description: "", badge: "", imageUrls: [], sizes: [], colors: [], variants: [] };
     }
-    
     let urls = [];
-    if (initial.image_urls && initial.image_urls.length > 0) {
-      urls = initial.image_urls;
-    } else if (initial.image_url || initial.imageUrl) {
-      urls = [initial.image_url || initial.imageUrl];
-    }
+    if (initial.image_urls && initial.image_urls.length > 0) urls = initial.image_urls;
+    else if (initial.image_url || initial.imageUrl) urls = [initial.image_url || initial.imageUrl];
 
     const initialStock = parseInt(initial.stock, 10);
-
     return { 
       ...initial, 
       imageUrls: urls, 
       stock: isNaN(initialStock) ? 0 : initialStock,
       sizes: initial.sizes || [],
-      colors: initial.colors || []
+      colors: initial.colors || [],
+      variants: Array.isArray(initial.variants) ? initial.variants : []
     };
   });
 
@@ -162,17 +146,63 @@ function ProductForm({ initial, onSave, onCancel, isMobile }) {
     set("colors", form.colors.includes(colorName) ? form.colors.filter(c => c !== colorName) : [...form.colors, colorName]);
   };
 
+  // ÚNICA FORMA DE CREAR FILAS: El Generador Automático (Ahora es un Añadidor Inteligente)
+  const handleGenerateVariants = () => {
+    if (form.sizes.length === 0 && form.colors.length === 0) {
+      return alert("Primero debes seleccionar al menos una Talla o un Color arriba para generar combinaciones.");
+    }
+
+    const sizesToUse = form.sizes.length > 0 ? form.sizes : ["Única"];
+    const colorsToUse = form.colors.length > 0 ? form.colors : ["Único"];
+    
+    const currentVariants = [...(form.variants || [])];
+    let itemsAdded = 0;
+
+    sizesToUse.forEach(s => {
+      colorsToUse.forEach(c => {
+        // Verifica si la combinación EXACTA ya existe en la tabla
+        const exists = currentVariants.some(v => v.size === s && v.color === c);
+        
+        // Si no existe, la añade. Si ya existe, la ignora para no borrar tu stock.
+        if (!exists) {
+          currentVariants.push({ size: s, color: c, stock: 0 });
+          itemsAdded++;
+        }
+      });
+    });
+
+    set("variants", currentVariants);
+    
+    if (itemsAdded === 0) {
+      alert("Las combinaciones seleccionadas ya están generadas en la tabla.");
+    }
+  };
+
+  const handleVariantChange = (index, field, value) => {
+    const newVariants = [...form.variants];
+    newVariants[index][field] = field === "stock" ? Number(value) : value;
+    set("variants", newVariants);
+  };
+
+  const handleRemoveVariant = (index) => {
+    set("variants", form.variants.filter((_, i) => i !== index));
+  };
+
   const handleSave = async () => {
     if (!form.name || !form.cat || !form.price) return alert("Nombre, categoría y precio son obligatorios");
     setSaving(true);
     
-    const parsedStock = parseInt(form.stock, 10);
+    // Auto-calculamos el stock total en base a lo que escribas en la cuadrícula
+    const totalStock = form.variants?.length > 0 
+      ? form.variants.reduce((acc, curr) => acc + (curr.stock || 0), 0)
+      : parseInt(form.stock, 10) || 0;
     
     await onSave({ 
       ...form, 
       price: parseFloat(form.price), 
       salePrice: form.salePrice ? parseFloat(form.salePrice) : null,
-      stock: isNaN(parsedStock) ? 0 : parsedStock 
+      stock: totalStock,
+      variants: form.variants
     });
     setSaving(false);
   };
@@ -188,9 +218,7 @@ function ProductForm({ initial, onSave, onCancel, isMobile }) {
               <div key={i} style={{ position: 'relative', width: 100, height: 120 }}>
                 <img src={img} alt="preview" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8, border: "1px solid var(--border)" }} />
                 <button type="button" onClick={() => setForm(p => ({...p, imageUrls: p.imageUrls.filter((_, index) => index !== i)}))} 
-                  style={{ position: 'absolute', top: -8, right: -8, background: 'var(--danger)', color: 'white', borderRadius: '50%', width: 24, height: 24, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>
-                  ✕
-                </button>
+                  style={{ position: 'absolute', top: -8, right: -8, background: 'var(--danger)', color: 'white', borderRadius: '50%', width: 24, height: 24, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>✕</button>
               </div>
             ))}
           </div>
@@ -201,46 +229,42 @@ function ProductForm({ initial, onSave, onCancel, isMobile }) {
           <label className="form-label">Nombre del producto *</label>
           <input className="form-input" value={form.name} onChange={e => set("name", sanitizeShort(e.target.value))} placeholder="Ej: Vestido Floral Rosa" />
         </div>
+        
         <div className="form-group">
-          <label className="form-label">Categoria *</label>
+          <label className="form-label">Categoría *</label>
           <select className="form-input" value={form.cat} onChange={e => set("cat", e.target.value)}>
             <option value="">Seleccionar...</option>
             {CATS.map(c => <option key={c}>{c}</option>)}
           </select>
         </div>
-        
+
         <div className="form-group">
-          <label className="form-label">Stock disponible *</label>
-          <input className="form-input" type="number" min="0" value={form.stock} onChange={e => set("stock", e.target.value)} placeholder="0" />
+          <label className="form-label">Etiqueta (Badge)</label>
+          <select className="form-input" value={form.badge || ""} onChange={e => set("badge", e.target.value)}>
+            <option value="">Sin etiqueta</option><option value="new">Nuevo</option><option value="sale">Oferta</option>
+          </select>
         </div>
 
         <div className="form-group">
           <label className="form-label">Precio (S/) *</label>
           <input className="form-input" type="number" step="0.01" value={form.price} onChange={e => set("price", sanitizeNum(e.target.value))} placeholder="89.90" />
         </div>
+        
         <div className="form-group">
           <label className="form-label">Precio con oferta (S/)</label>
-          <input className="form-input" type="number" step="0.01" value={form.salePrice || ""} onChange={e => set("salePrice", sanitizeNum(e.target.value))} placeholder="Dejar vacio si no hay" />
+          <input className="form-input" type="number" step="0.01" value={form.salePrice || ""} onChange={e => set("salePrice", sanitizeNum(e.target.value))} placeholder="Dejar vacío si no hay" />
         </div>
         
         <div className="form-group" style={{ gridColumn: "1/-1" }}>
-          <label className="form-label">Descripcion</label>
+          <label className="form-label">Descripción</label>
           <textarea className="form-input" value={form.description || ""} onChange={e => set("description", sanitizeText(e.target.value))} rows={3} placeholder="Material, cuidados, detalles..." style={{ resize: "vertical" }} />
         </div>
-        
+
         <div className="form-group">
           <label className="form-label">Tallas (Enter para agregar)</label>
           <TagInput tags={form.sizes || []} onChange={v => set("sizes", v)} placeholder="XS, S, M, 38, 39..." />
         </div>
-        <div className="form-group">
-          <label className="form-label">Etiqueta</label>
-          <select className="form-input" value={form.badge || ""} onChange={e => set("badge", e.target.value)}>
-            <option value="">Sin etiqueta</option>
-            <option value="new">Nuevo</option>
-            <option value="sale">Oferta</option>
-          </select>
-        </div>
-        
+
         <div className="form-group" style={{ gridColumn: "1/-1" }}>
           <label className="form-label">Colores disponibles - clic para seleccionar</label>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 14, padding: "14px", background: "var(--gray-light)", borderRadius: 10 }}>
@@ -265,6 +289,49 @@ function ProductForm({ initial, onSave, onCancel, isMobile }) {
             </div>
           )}
         </div>
+
+        {/* ======================================================== */}
+        {/* INVENTARIO EXACTO - SOLO SE CREA CON EL BOTÓN */}
+        {/* ======================================================== */}
+        <div style={{ gridColumn: "1/-1", background: "var(--gray-light)", border: "1px solid var(--border)", borderRadius: 12, padding: "1.5rem", marginTop: "0.5rem" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", flexWrap: "wrap", gap: 10 }}>
+            <div>
+              <h3 style={{ fontSize: "1rem", fontWeight: 600, margin: 0 }}>Inventario Exacto</h3>
+              <p style={{ fontSize: "0.8rem", color: "var(--gray)", margin: "4px 0 0 0" }}>Selecciona tallas/colores arriba y dale click a generar.</p>
+            </div>
+            <button type="button" onClick={handleGenerateVariants} style={{ background: "var(--dark)", color: "white", border: "none", padding: "8px 14px", borderRadius: 8, cursor: "pointer", fontSize: "0.85rem", fontWeight: 600, boxShadow: "0 4px 10px rgba(0,0,0,0.15)" }}>
+              ⚡ Generar Combinaciones
+            </button>
+          </div>
+
+          {(!form.variants || form.variants.length === 0) ? (
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label">Stock General (Solo si no usas combinaciones)</label>
+              <input type="number" className="form-input" style={{ maxWidth: 200 }} value={form.stock} onChange={e => set("stock", e.target.value)} placeholder="0" />
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 100px 40px", gap: "10px", fontSize: "0.8rem", fontWeight: 600, color: "var(--gray)", paddingBottom: "5px", borderBottom: "1px solid var(--border)" }}>
+                <span>Talla</span>
+                <span>Color</span>
+                <span>Stock Disp.</span>
+                <span></span>
+              </div>
+              {form.variants.map((v, index) => (
+                <div key={index} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 100px 40px", gap: "10px", alignItems: "center", padding: "8px 0", borderBottom: "1px dashed var(--border)" }}>
+                  
+                  <span style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--dark)" }}>{v.size}</span>
+                  <span style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--dark)" }}>{v.color}</span>
+                  
+                  <input className="form-input" type="number" placeholder="0" value={v.stock} onChange={e => handleVariantChange(index, "stock", e.target.value)} required min="0" style={{ padding: "6px" }} />
+                  
+                  <button type="button" onClick={() => handleRemoveVariant(index)} style={{ background: "var(--danger)", color: "white", border: "none", borderRadius: 8, height: "32px", cursor: "pointer", fontWeight: "bold" }} title="Eliminar esta variante">✕</button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
       </div>
       <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: "0.75rem", marginTop: "1.5rem" }}>
         <button className="btn btn-dark" onClick={handleSave} disabled={saving} style={{ width: isMobile ? "100%" : "auto" }}>{saving ? "Guardando..." : "Guardar producto"}</button>
@@ -276,17 +343,14 @@ function ProductForm({ initial, onSave, onCancel, isMobile }) {
 
 function OrderForm({ products, onSave, onCancel, isMobile }) {
   const [form, setForm] = useState({ client: "", phone: "", address: "", payment: "Yape / Plin", items: [], total: 0 });
-
   const addItem = (prod) => {
     const newItem = { id: prod.id, name: prod.name, price: prod.price, qty: 1 };
     setForm(p => ({ ...p, items: [...p.items, newItem], total: p.total + prod.price }));
   };
-
   const handleSave = () => {
     if (!form.client || !form.phone || form.items.length === 0) return alert("Completa cliente, teléfono e incluye productos");
     onSave(form);
   };
-
   return (
     <div className="card" style={{ border: "2px solid var(--pink-dark)", marginBottom: "1.5rem" }}>
       <h3 className="serif">Registrar Pedido Manual</h3>
@@ -294,19 +358,14 @@ function OrderForm({ products, onSave, onCancel, isMobile }) {
         <input className="form-input" placeholder="Nombre del Cliente" value={form.client} onChange={e => setForm({...form, client: e.target.value})} />
         <input className="form-input" placeholder="Teléfono" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
         <input className="form-input" placeholder="Dirección" value={form.address} onChange={e => setForm({...form, address: e.target.value})} />
-        
         <label className="form-label">Seleccionar Productos:</label>
         <div style={{ display: "flex", gap: 5, overflowX: "auto", paddingBottom: 10 }}>
-          {products.map(p => (
-            <button key={p.id} onClick={() => addItem(p)} className="btn btn-outline btn-sm" style={{ whiteSpace: "nowrap" }}>+ {p.name}</button>
-          ))}
+          {products.map(p => <button key={p.id} onClick={() => addItem(p)} className="btn btn-outline btn-sm" style={{ whiteSpace: "nowrap" }}>+ {p.name}</button>)}
         </div>
-
         <div style={{ background: "var(--pink-light)", padding: 10, borderRadius: 8 }}>
           {form.items.map((it, i) => <div key={i} style={{ fontSize: "0.8rem" }}>{it.name} x{it.qty} - S/ {it.price.toFixed(2)}</div>)}
           <div style={{ fontWeight: "bold", marginTop: 5 }}>Total: S/ {form.total.toFixed(2)}</div>
         </div>
-
         <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: 10 }}>
           <button className="btn btn-dark" onClick={handleSave}>Guardar Pedido</button>
           <button className="btn btn-outline" onClick={onCancel}>Cancelar</button>
@@ -361,18 +420,14 @@ export default function AdminDashboard() {
         const weekStart = new Date(now); weekStart.setDate(weekStart.getDate() - (3 - i) * 7 - weekStart.getDay());
         const weekEnd = new Date(weekStart); weekEnd.setDate(weekEnd.getDate() + 6);
         const label = `Sem ${i + 1}`;
-        const total = delivered.filter(o => {
-          const od = new Date(o.created_at); return od >= weekStart && od <= weekEnd;
-        }).reduce((s, o) => s + (o.total || 0), 0);
+        const total = delivered.filter(o => { const od = new Date(o.created_at); return od >= weekStart && od <= weekEnd; }).reduce((s, o) => s + (o.total || 0), 0);
         return { label, total };
       });
     } else {
       return Array.from({ length: 6 }, (_, i) => {
         const d = new Date(now); d.setMonth(d.getMonth() - (5 - i));
         const label = d.toLocaleDateString("es-PE", { month: "short" });
-        const total = delivered.filter(o => {
-          const od = new Date(o.created_at); return od.getMonth() === d.getMonth() && od.getFullYear() === d.getFullYear();
-        }).reduce((s, o) => s + (o.total || 0), 0);
+        const total = delivered.filter(o => { const od = new Date(o.created_at); return od.getMonth() === d.getMonth() && od.getFullYear() === d.getFullYear(); }).reduce((s, o) => s + (o.total || 0), 0);
         return { label, total };
       });
     }
@@ -397,9 +452,10 @@ export default function AdminDashboard() {
   const handleSaveProduct = async (data) => {
     const supabaseData = {
       name: data.name, cat: data.cat, price: data.price, sale_price: data.salePrice || null,
-      description: data.description || "", emoji: data.emoji || "", badge: data.badge || null,
+      description: data.description || "", badge: data.badge || null,
       sizes: data.sizes || [], colors: data.colors || [], 
-      image_urls: data.imageUrls || [], stock: data.stock || 0
+      image_urls: data.imageUrls || [], stock: data.stock || 0,
+      variants: data.variants || []
     };
     if (editing && editing !== "new") { await updateProduct(editing.id, supabaseData); showToast("Producto actualizado ✓"); }
     else { await addProduct(supabaseData); showToast("Producto agregado ✓"); }
@@ -413,7 +469,6 @@ export default function AdminDashboard() {
 
   const handleStatusChange = async (order, newStatus) => {
     await updateOrder(order.id, { status: newStatus }); 
-    
     if (newStatus === "entregado" && order.status !== "entregado") {
       for (const item of order.items) {
          const { data: pData } = await supabase.from('products').select('stock, ventas_totales').eq('id', item.id).single();
@@ -432,8 +487,7 @@ export default function AdminDashboard() {
 
   const handleDeleteOrder = async (id) => {
     if (!window.confirm("¿Eliminar este pedido permanentemente?")) return;
-    await deleteOrder(id);
-    showToast("Pedido eliminado ✓");
+    await deleteOrder(id); showToast("Pedido eliminado ✓");
   };
 
   return (
@@ -481,9 +535,7 @@ export default function AdminDashboard() {
         </button>
       </aside>
 
-      {isMobile && menuOpen && (
-        <div onClick={() => setMenuOpen(false)} style={{ position: "fixed", inset: 0, top: 64, background: "rgba(0,0,0,0.5)", zIndex: 998 }} />
-      )}
+      {isMobile && menuOpen && <div onClick={() => setMenuOpen(false)} style={{ position: "fixed", inset: 0, top: 64, background: "rgba(0,0,0,0.5)", zIndex: 998 }} />}
 
       <main style={{ padding: isMobile ? "1rem" : "2rem", background: "#f8f6f3", flex: 1, overflowY: "auto", minWidth: 0 }}>
         {panel === "dashboard" && (() => {
@@ -522,8 +574,7 @@ export default function AdminDashboard() {
                     {["dia", "semana", "mes"].map(p => (
                       <button key={p} onClick={() => setChartPeriod(p)} style={{
                         padding: "4px 10px", borderRadius: 999, border: "1px solid var(--border)",
-                        background: chartPeriod === p ? "var(--dark)" : "white",
-                        color: chartPeriod === p ? "white" : "var(--gray)", fontSize: "0.72rem", cursor: "pointer", fontFamily: "'Courier New', Courier, monospace",
+                        background: chartPeriod === p ? "var(--dark)" : "white", color: chartPeriod === p ? "white" : "var(--gray)", fontSize: "0.72rem", cursor: "pointer", fontFamily: "'Courier New', Courier, monospace",
                       }}>{p}</button>
                     ))}
                   </div>
@@ -616,13 +667,13 @@ export default function AdminDashboard() {
             </div>
             <div style={{ background: "white", borderRadius: 12, border: "1px solid var(--border)", overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "750px" }}>
-                <thead><tr>{["Producto", "Categoría", "Stock", "Precio", "Tallas", "Etiqueta", "Acciones"].map(h => (<th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: "0.75rem", textTransform: "uppercase", color: "var(--gray)", background: "#f8f6f3", borderBottom: "1px solid var(--border)" }}>{h}</th>))}</tr></thead>
+                <thead><tr>{["Producto", "Categoría", "Stock", "Precio", "Variantes", "Acciones"].map(h => (<th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: "0.75rem", textTransform: "uppercase", color: "var(--gray)", background: "#f8f6f3", borderBottom: "1px solid var(--border)" }}>{h}</th>))}</tr></thead>
                 <tbody>
                   {products.map(p => {
                     const firstImage = p.image_urls?.[0] || p.image_url || p.imageUrl;
-                    
                     const rawStock = parseInt(p.stock, 10);
                     const safeStock = isNaN(rawStock) ? 0 : rawStock;
+                    const hasVariants = Array.isArray(p.variants) && p.variants.length > 0;
 
                     return (
                     <tr key={p.id} style={{ borderBottom: "1px solid var(--border)" }}>
@@ -639,12 +690,13 @@ export default function AdminDashboard() {
                         {safeStock}
                       </td>
                       <td style={{ padding: "11px 14px", fontSize: "0.88rem" }}>S/ {p.price?.toFixed(2)}{p.sale_price && <div style={{ color: "var(--danger)", fontSize: "0.78rem" }}>→ S/ {p.sale_price.toFixed(2)}</div>}</td>
-                      <td style={{ padding: "11px 14px", fontSize: "0.82rem", color: "var(--gray)" }}>{p.sizes?.join(", ") || "-"}</td>
-                      <td style={{ padding: "11px 14px" }}>{p.badge ? <span className={`badge-status badge-${p.badge}`}>{p.badge}</span> : "-"}</td>
+                      <td style={{ padding: "11px 14px", fontSize: "0.82rem", color: "var(--gray)" }}>
+                        {hasVariants ? <span style={{ background: "#e6f7ff", color: "#0050b3", padding: "4px 8px", borderRadius: 4, fontWeight: "bold" }}>{p.variants.length} comb.</span> : "-"}
+                      </td>
                       <td style={{ padding: "11px 14px" }}>
                         <div style={{ display: "flex", gap: 6 }}>
                           <button className="btn btn-outline btn-sm" onClick={() => setEditing(p)}>Editar</button>
-                          <button className="btn btn-sm" style={{ border: "1px solid var(--danger)", color: "var(--danger)", background: "none", borderRadius: 999, padding: "5px 12px", fontSize: "0.82rem" }} onClick={() => handleDelete(p.id)}>Eliminar</button>
+                          <button className="btn btn-sm" style={{ border: "1px solid var(--danger)", color: "var(--danger)", background: "none", borderRadius: 999, padding: "5px 12px", fontSize: "0.82rem", cursor: "pointer" }} onClick={() => handleDelete(p.id)}>Eliminar</button>
                         </div>
                       </td>
                     </tr>
@@ -680,8 +732,7 @@ export default function AdminDashboard() {
                 onCancel={() => setEditing(null)} 
                 onSave={async (data) => {
                   await addOrder({ ...data, status: "pendiente", created_at: new Date().toISOString() });
-                  setEditing(null);
-                  showToast("Pedido registrado ✓");
+                  setEditing(null); showToast("Pedido registrado ✓");
                 }} 
                 isMobile={isMobile}
               />
@@ -700,12 +751,7 @@ export default function AdminDashboard() {
                         <div style={{ fontWeight: 600, fontSize: "1.05rem" }}>S/ {o.total?.toFixed(2)}</div>
                         <span className={`badge-status badge-${o.status}`} style={{ marginTop: 4, display: "inline-block" }}>{o.status}</span>
                         <div style={{ marginTop: 8 }}>
-                          <button 
-                            onClick={() => handleDeleteOrder(o.id)}
-                            style={{ background: "none", border: "1px solid var(--danger)", color: "var(--danger)", padding: "2px 8px", borderRadius: 5, fontSize: "0.7rem", cursor: "pointer" }}
-                          >
-                            Eliminar
-                          </button>
+                          <button onClick={() => handleDeleteOrder(o.id)} style={{ background: "none", border: "1px solid var(--danger)", color: "var(--danger)", padding: "2px 8px", borderRadius: 5, fontSize: "0.7rem", cursor: "pointer" }}>Eliminar</button>
                         </div>
                       </div>
                     </div>
