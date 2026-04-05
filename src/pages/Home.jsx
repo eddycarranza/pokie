@@ -5,6 +5,7 @@ import ProductCard from "../components/ProductCard";
 import ProductModal from "../components/ProductModal";
 import CartSidebar from "../components/CartSidebar";
 import { useProducts } from "../hooks/useSupabase";
+import { yapeLogo, plinLogo, olvaLogo, shalomLogo } from "../lib/logos";
 
 const CATALOG_CATS = ["Tops", "Partes de abajo", "Accesorios", "Zapatos"];
 
@@ -199,7 +200,7 @@ function CatalogSection({ products, loading, onSelect, externalCat, onExternalCa
   })).filter(g => g.items.length > 0);
 
   return (
-    <div id="catalog" style={{ background: "white", borderTop: "1px solid var(--border)" }}>
+    <div id="catalog" style={{ background: "white" }}>
       {/* Breadcrumb */}
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "1.2rem 2rem 0" }}>
         <div style={{ fontSize: "0.82rem", color: "var(--gray)", fontFamily: "'Courier New', Courier, monospace" }}>
@@ -262,7 +263,7 @@ function CatalogSection({ products, loading, onSelect, externalCat, onExternalCa
                 <div key={catName} style={{ marginBottom: "3rem" }}>
                   <h3 style={{
                     fontSize: "1rem", fontWeight: 700, marginBottom: "1rem",
-                    paddingBottom: "0.5rem", borderBottom: "1px solid var(--border)",
+                    paddingBottom: "0.5rem",
                     fontFamily: "'Courier New', Courier, monospace", textTransform: "uppercase",
                     letterSpacing: ".08em", color: "var(--dark)",
                   }}>{catName}</h3>
@@ -281,43 +282,47 @@ function CatalogSection({ products, loading, onSelect, externalCat, onExternalCa
 
 // ============ TRUST BANNER ============
 function TrustBanner() {
-  const cardStyle = {
-    background: "white", padding: "2.5rem 2rem", borderRadius: "16px",
-    border: "1px solid var(--border)", display: "flex", flexDirection: "column", alignItems: "center"
-  };
-  const titleStyle = {
-    fontSize: "1.05rem", letterSpacing: "1px", textTransform: "uppercase",
-    marginBottom: "2rem", color: "var(--dark)", fontWeight: 700, textAlign: "center",
-    fontFamily: "'Courier New', Courier, monospace"
-  };
-  const logoStyle = {
-    height: "40px", objectFit: "contain",
-    filter: "drop-shadow(0px 4px 6px rgba(0,0,0,0.05))",
-    transition: "transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)", cursor: "pointer"
+  const logoImg = { objectFit: "contain", cursor: "pointer", transition: "opacity 0.2s" };
+  const sectionTitle = {
+    fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.12em",
+    textTransform: "uppercase", color: "#888",
+    fontFamily: "'Courier New', Courier, monospace",
+    marginBottom: "0.75rem",
   };
   return (
-    <div style={{ background: "#fafafa", padding: "4.5rem 1rem", borderTop: "1px solid var(--border)" }}>
-      <div style={{ maxWidth: 1000, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "2.5rem" }}>
-        <div style={cardStyle}>
-          <h3 style={titleStyle}>Métodos de Pago</h3>
-          <div style={{ display: "flex", justifyContent: "center", gap: "2.5rem", flexWrap: "wrap", alignItems: "center" }}>
-            <img src="https://upload.wikimedia.org/wikipedia/commons/d/d1/Yape_text_logo.png" alt="Yape" style={{ ...logoStyle, height: "35px" }} onMouseEnter={e => e.currentTarget.style.transform = "scale(1.12)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"} />
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Plin_logo.png/320px-Plin_logo.png" alt="Plin" style={{ ...logoStyle, height: "42px" }} onMouseEnter={e => e.currentTarget.style.transform = "scale(1.12)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"} />
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, fontWeight: 600, color: "#555", fontSize: "0.85rem", cursor: "pointer", transition: "transform 0.3s" }} onMouseEnter={e => e.currentTarget.style.transform = "scale(1.12)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
-              Transferencia
+    <div style={{ background: "white", padding: "2rem 2.5rem" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", flexWrap: "wrap", gap: "3rem", alignItems: "flex-start" }}>
+
+        {/* MÉTODOS DE PAGO */}
+        <div>
+          <div style={sectionTitle}>Medios de Pago</div>
+          <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "center" }}>
+            <img src={yapeLogo} alt="Yape" style={{ ...logoImg, height: 40, borderRadius: 10 }} onMouseEnter={e => e.currentTarget.style.opacity="0.75"} onMouseLeave={e => e.currentTarget.style.opacity="1"} />
+            <img src={plinLogo} alt="Plin" style={{ ...logoImg, height: 40, borderRadius: 10 }} onMouseEnter={e => e.currentTarget.style.opacity="0.75"} onMouseLeave={e => e.currentTarget.style.opacity="1"} />
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: "pointer", transition: "opacity 0.2s", color: "#555" }} onMouseEnter={e => e.currentTarget.style.opacity="0.7"} onMouseLeave={e => e.currentTarget.style.opacity="1"}>
+              <div style={{ width: 40, height: 40, background: "#f5f5f5", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+              </div>
+              <span style={{ fontSize: "0.6rem", fontFamily: "'Courier New', Courier, monospace", textTransform: "uppercase", letterSpacing: "0.05em", color: "#888" }}>Transf.</span>
             </div>
           </div>
         </div>
-        <div style={cardStyle}>
-          <h3 style={titleStyle}>Métodos de Envío</h3>
-          <div style={{ display: "flex", justifyContent: "center", gap: "2.5rem", flexWrap: "wrap", alignItems: "center" }}>
-            <img src="https://www.olvacourier.com/wp-content/uploads/2021/10/logo-olva.png" alt="Olva Courier" style={{ ...logoStyle, height: "48px" }} onMouseEnter={e => e.currentTarget.style.transform = "scale(1.12)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"} onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
-            <div style={{ display: 'none', background: "#FFD100", color: "#002D74", padding: "8px 20px", borderRadius: 8, fontWeight: 900, fontStyle: "italic", fontSize: "1.2rem" }}>OLVA</div>
-            <img src="https://shalom.pe/wp-content/uploads/2021/10/logo-shalom.png" alt="Shalom" style={{ ...logoStyle, height: "40px" }} onMouseEnter={e => e.currentTarget.style.transform = "scale(1.12)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"} onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
-            <div style={{ display: 'none', background: "#E3000F", color: "white", padding: "8px 20px", borderRadius: 8, fontWeight: 900, fontStyle: "italic", fontSize: "1.2rem" }}>SHALOM</div>
+
+        {/* MÉTODOS DE ENVÍO */}
+        <div>
+          <div style={sectionTitle}>Medios de Envío</div>
+          <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "center" }}>
+            <img src={olvaLogo} alt="Olva Courier" style={{ ...logoImg, height: 36, borderRadius: 6 }} onMouseEnter={e => e.currentTarget.style.opacity="0.75"} onMouseLeave={e => e.currentTarget.style.opacity="1"} />
+            <img src={shalomLogo} alt="Shalom" style={{ ...logoImg, height: 36 }} onMouseEnter={e => e.currentTarget.style.opacity="0.75"} onMouseLeave={e => e.currentTarget.style.opacity="1"} />
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: "pointer", transition: "opacity 0.2s", color: "#555" }} onMouseEnter={e => e.currentTarget.style.opacity="0.7"} onMouseLeave={e => e.currentTarget.style.opacity="1"}>
+              <div style={{ width: 40, height: 36, background: "#f5f5f5", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="#555"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zm-.5 1.5l1.96 2.5H17V9.5h2.5zM6 18c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm13 0c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/></svg>
+              </div>
+              <span style={{ fontSize: "0.6rem", fontFamily: "'Courier New', Courier, monospace", textTransform: "uppercase", letterSpacing: "0.05em", color: "#888" }}>Express</span>
+            </div>
           </div>
         </div>
+
       </div>
     </div>
   );

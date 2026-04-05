@@ -88,7 +88,7 @@ export default function CartSidebar() {
       <div onClick={closeSidebar} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.3)", zIndex: 9998 }} />
       <div style={{ position: "fixed", right: 0, top: 0, bottom: 0, width: 380, maxWidth: "100vw", background: "white", zIndex: 9999, display: "flex", flexDirection: "column", boxShadow: "-2px 0 20px rgba(0,0,0,.1)" }}>
         <div style={{ padding: "1rem 1.5rem", borderBottom: "1px solid #eee", display: "flex", alignItems: "center", justifyContent: "space-between", fontWeight: 600, fontSize: "0.9rem" }}>
-          <span>MI BOLSA ({count})</span>
+          <span>MI CARRITO ({count})</span>
           <button onClick={closeSidebar} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "1.5rem", color: "#999" }}>✕</button>
         </div>
 

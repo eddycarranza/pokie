@@ -73,7 +73,6 @@ export default function ProductCard({ product, onClick, variant = "grid" }) {
               </>
             ) : `S/ ${Number(effPrice).toFixed(2)}`}
           </div>
-          <div style={{ fontSize: "0.72rem", color: "var(--gray)" }}>10% off abonando por transferencia</div>
         </div>
       </div>
     );
@@ -128,7 +127,6 @@ export default function ProductCard({ product, onClick, variant = "grid" }) {
             </>
           ) : `S/ ${Number(effPrice).toFixed(2)}`}
         </div>
-        <div style={{ fontSize: "0.7rem", color: "var(--gray)", marginTop: 3 }}>10% off abonando por transferencia</div>
       </div>
     </div>
   );
