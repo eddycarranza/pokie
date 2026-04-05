@@ -5,125 +5,129 @@ import ProductCard from "../components/ProductCard";
 import ProductModal from "../components/ProductModal";
 import CartSidebar from "../components/CartSidebar";
 import { useProducts } from "../hooks/useSupabase";
-import { supabase } from "../lib/supabase"; 
 import { yapeLogo, plinLogo, olvaLogo, shalomLogo } from "../lib/logos";
 
 const CATALOG_CATS = ["Tops", "Partes de abajo", "Accesorios", "Zapatos"];
 
 // ============ HERO BANNER ============
+
+// ============ HERO BANNER ============
 function HeroBanner({ onShop }) {
-  const [banners, setBanners] = useState([]);
-  const [currentIdx, setCurrentIdx] = useState(0);
+  const [imgs, setImgs] = useState([]);
+  const [current, setCurrent] = useState(0);
+  const [animating, setAnimating] = useState(false);
 
-  // Cargar los banners desde Supabase (Versión Segura)
   useEffect(() => {
-    const fetchBanners = async () => {
-      try {
-        console.log("Intentando buscar banners..."); 
-        const { data, error } = await supabase.from('banners').select('*');
-        
-        console.log("Respuesta de Supabase:", { data, error }); 
-
-        if (error) {
-          console.error("Error al traer banners:", error);
-          return;
+    // Usar fetch directo igual que el resto del proyecto
+    const url = `${process.env.REACT_APP_SUPABASE_URL}/rest/v1/settings?key=eq.banner_images&select=value&limit=1`;
+    const key = process.env.REACT_APP_SUPABASE_ANON_KEY;
+    fetch(url, { headers: { apikey: key, Authorization: `Bearer ${key}` } })
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data) && data[0]?.value) {
+          try { setImgs(JSON.parse(data[0].value)); } catch (e) {}
         }
-
-        // Verificamos si data es un array y si tiene imágenes
-        if (Array.isArray(data) && data.length > 0) {
-          console.log(`¡${data.length} banners encontrados!`); 
-          setBanners([...data].reverse());
-        } else if (data && !Array.isArray(data) && data.image_url) {
-          // Por si acaso la API devuelve un solo objeto en lugar de un array
-          console.log("¡1 banner encontrado!");
-          setBanners([data]);
-        } else {
-          console.log("No hay banners guardados o la tabla está bloqueada por permisos.");
-        }
-      } catch (err) {
-        console.error("Error ejecutando fetchBanners:", err);
-      }
-    };
-    fetchBanners();
+      })
+      .catch(() => {}); // Si la tabla no existe, muestra fondo rosa
   }, []);
 
-  // Slider automático
   useEffect(() => {
-    if (banners.length <= 1) return;
-    const interval = setInterval(() => {
-      setCurrentIdx((prev) => (prev + 1) % banners.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [banners]);
+    if (imgs.length <= 1) return;
+    const timer = setInterval(() => {
+      setAnimating(true);
+      setTimeout(() => { setCurrent(p => (p + 1) % imgs.length); setAnimating(false); }, 400);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [imgs]);
 
-  // Fallback: Si no hay banners, mostramos el color rosado original
-  if (banners.length === 0) {
+  const goTo = (i) => {
+    if (i === current) return;
+    setAnimating(true);
+    setTimeout(() => { setCurrent(i); setAnimating(false); }, 400);
+  };
+
+  // Sin imágenes: bloque rosa simple
+  if (imgs.length === 0) {
     return (
       <div
         onClick={onShop}
-        style={{
-          width: "100%",
-          height: "94vh",
-          minHeight: 400,
-          background: "#f5e6ea",
-          cursor: "pointer",
-        }}
+        style={{ width: "100%", height: "94vh", minHeight: 400, background: "#f5e6ea", cursor: "pointer" }}
       />
     );
   }
 
   return (
-    <div 
-      onClick={onShop} 
-      style={{ 
-        width: "100%", 
-        height: "94vh", 
-        minHeight: 400, 
-        position: "relative", 
-        overflow: "hidden", 
-        cursor: "pointer", 
-        background: "#f5e6ea" 
+    <div
+      style={{
+        position: "relative", width: "100%",
+        overflow: "hidden", background: "#f5e6ea", cursor: "pointer",
       }}
+      onClick={onShop}
     >
-      {banners.map((b, idx) => (
-        <img 
-          key={b.id || idx} 
-          src={b.image_url} 
-          alt={`Banner ${idx + 1}`} 
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            objectPosition: "center",
-            opacity: idx === currentIdx ? 1 : 0,
-            transition: "opacity 1s ease-in-out"
-          }} 
-        />
-      ))}
+      {/* Imagen activa — se adapta al tamaño natural de la foto */}
+      <img
+        src={imgs[current]}
+        alt="Banner"
+        style={{
+          display: "block",
+          width: "100%",
+          height: "auto",
+          opacity: animating ? 0 : 1,
+          transition: "opacity .5s ease",
+        }}
+      />
 
-      {banners.length > 1 && (
-        <div style={{ position: "absolute", bottom: "2rem", left: "50%", transform: "translateX(-50%)", display: "flex", gap: "8px", zIndex: 10 }}>
-          {banners.map((_, idx) => (
-            <div 
-              key={idx} 
-              style={{
-                width: "8px", height: "8px", borderRadius: "50%",
-                background: idx === currentIdx ? "white" : "rgba(255,255,255,0.5)",
-                transition: "background 0.3s ease"
-              }}
-            />
+      {/* Dots de navegación */}
+      {imgs.length > 1 && (
+        <div style={{
+          position: "absolute", bottom: "1.2rem", left: "50%", transform: "translateX(-50%)",
+          display: "flex", gap: 8, zIndex: 3,
+        }}
+          onClick={e => e.stopPropagation()}
+        >
+          {imgs.map((_, i) => (
+            <button key={i} onClick={() => goTo(i)} style={{
+              width: i === current ? 28 : 8, height: 8, borderRadius: 999, border: "none",
+              cursor: "pointer", padding: 0,
+              background: i === current ? "rgba(0,0,0,0.6)" : "rgba(0,0,0,0.25)",
+              transition: "all .35s ease",
+            }} />
           ))}
         </div>
+      )}
+
+      {/* Flechas */}
+      {imgs.length > 1 && (
+        <>
+          <button
+            onClick={e => { e.stopPropagation(); goTo((current - 1 + imgs.length) % imgs.length); }}
+            style={{
+              position: "absolute", left: "1.2rem", top: "50%", transform: "translateY(-50%)",
+              width: 40, height: 40, borderRadius: "50%", border: "none", zIndex: 3,
+              background: "rgba(255,255,255,0.8)", cursor: "pointer", fontSize: "1.4rem",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+            }}
+          >‹</button>
+          <button
+            onClick={e => { e.stopPropagation(); goTo((current + 1) % imgs.length); }}
+            style={{
+              position: "absolute", right: "1.2rem", top: "50%", transform: "translateY(-50%)",
+              width: 40, height: 40, borderRadius: "50%", border: "none", zIndex: 3,
+              background: "rgba(255,255,255,0.8)", cursor: "pointer", fontSize: "1.4rem",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+            }}
+          >›</button>
+        </>
       )}
     </div>
   );
 }
 
-// ============ NEW IN ============
+// ============ NEW IN — grid 3 columnas estilo imagen 3 ============
 function NewInCarousel({ items, onSelect }) {
+  // Mostrar solo los primeros 3
   const display = items.slice(0, 3);
 
   return (
@@ -139,6 +143,7 @@ function NewInCarousel({ items, onSelect }) {
           alignItems: "start",
         }}>
           {display.map((p, idx) => {
+            // Card central levemente más grande (como imagen 3)
             const isCenter = idx === 1;
             let image = "";
             if (Array.isArray(p.image_urls) && p.image_urls.length > 0) image = p.image_urls[0];
@@ -163,6 +168,7 @@ function NewInCarousel({ items, onSelect }) {
                 onMouseEnter={e => e.currentTarget.style.transform = isCenter ? "scale(1.07)" : "scale(1.03)"}
                 onMouseLeave={e => e.currentTarget.style.transform = isCenter ? "scale(1.04)" : "scale(1)"}
               >
+                {/* Imagen sin bordes, sin card */}
                 <div style={{
                   width: "100%",
                   aspectRatio: "2/3",
@@ -178,6 +184,7 @@ function NewInCarousel({ items, onSelect }) {
                     </div>
                   )}
                 </div>
+                {/* Info debajo */}
                 <div style={{ textAlign: "center", marginTop: "0.75rem", width: "100%" }}>
                   <div style={{ fontSize: "0.95rem", fontWeight: 500, fontFamily: "'Courier New', Courier, monospace", marginBottom: 4 }}>{p.name}</div>
                   <div style={{ fontSize: "0.88rem", color: "#555", fontFamily: "'Courier New', Courier, monospace" }}>
@@ -198,10 +205,11 @@ function NewInCarousel({ items, onSelect }) {
   );
 }
 
-// ============ CATALOG ============
+// ============ CATALOG — estilo imagen 2: sidebar izq + grid derecho ============
 function CatalogSection({ products, loading, onSelect, externalCat, onExternalCatConsumed }) {
   const [activeCat, setActiveCat] = useState("Todos");
 
+  // Cuando llega una categoría desde el navbar, aplicarla
   useEffect(() => {
     if (externalCat) {
       setActiveCat(externalCat);
@@ -212,22 +220,26 @@ function CatalogSection({ products, loading, onSelect, externalCat, onExternalCa
   const allCats = ["Todos", ...CATALOG_CATS];
   const filtered = activeCat === "Todos" ? products : products.filter(p => p.cat === activeCat);
 
+  // Agrupar por categoría en orden cuando es "Todos"
   const grouped = CATALOG_CATS.map(c => ({
     cat: c, items: products.filter(p => p.cat === c),
   })).filter(g => g.items.length > 0);
 
   return (
     <div id="catalog" style={{ background: "white" }}>
+      {/* Breadcrumb */}
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "1.2rem 2rem 0" }}>
         <div style={{ fontSize: "0.82rem", color: "var(--gray)", fontFamily: "'Courier New', Courier, monospace" }}>
           <span style={{ cursor: "pointer", textDecoration: "underline" }} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>Inicio</span>
           {" / "}
-          <span>Productos</span>
+          <span style={{ cursor: "pointer", textDecoration: "underline" }} onClick={() => { setActiveCat("Todos"); }}>Catálogo</span>
           {activeCat !== "Todos" && <span style={{ color: "var(--dark)", fontWeight: 600 }}> / {activeCat}</span>}
         </div>
       </div>
 
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "1.5rem 2rem 4rem", display: "flex", gap: "2.5rem", alignItems: "flex-start" }} className="catalog-main-wrapper">
+
+        {/* Sidebar izquierdo — igual que imagen 2 */}
         <div style={{ width: 160, flexShrink: 0, paddingTop: "0.5rem" }} className="catalog-sidebar">
           <div style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".12em", color: "var(--gray)", marginBottom: "1rem", fontFamily: "'Courier New', Courier, monospace" }}>
             Categorias
@@ -252,6 +264,7 @@ function CatalogSection({ products, loading, onSelect, externalCat, onExternalCa
           </div>
         </div>
 
+        {/* Grid principal */}
         <div style={{ flex: 1, minWidth: 0 }}>
           {loading ? (
             <div style={{ textAlign: "center", padding: "4rem", color: "var(--gray)" }}>
@@ -305,6 +318,8 @@ function TrustBanner() {
   return (
     <div style={{ background: "white", padding: "2rem 2.5rem" }} className="trust-banner">
       <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", flexWrap: "wrap", gap: "3rem", alignItems: "flex-start" }}>
+
+        {/* MÉTODOS DE PAGO */}
         <div>
           <div style={sectionTitle}>Medios de Pago</div>
           <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "center" }}>
@@ -319,6 +334,7 @@ function TrustBanner() {
           </div>
         </div>
 
+        {/* MÉTODOS DE ENVÍO */}
         <div>
           <div style={sectionTitle}>Medios de Envío</div>
           <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "center" }}>
@@ -332,6 +348,7 @@ function TrustBanner() {
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );
@@ -342,7 +359,7 @@ export default function Home() {
   const { products, loading } = useProducts();
   const [selected, setSelected] = useState(null);
   const [showWsp, setShowWsp] = useState(false);
-  const [navCat, setNavCat] = useState(null);
+  const [navCat, setNavCat] = useState(null); // categoría que viene desde el navbar
 
   useEffect(() => {
     const handleScroll = () => setShowWsp(window.scrollY > 400);

@@ -150,11 +150,14 @@ export default function CartSidebar() {
               <div className="form-group">
                 <label className="form-label">Método de envío</label>
                 <select className="form-input" value={form.shipping} onChange={e => setForm(p => ({ ...p, shipping: e.target.value }))}>
-                  <option>Agencia Shalom</option><option>Agencia Olva Courier</option>
+                  <option>Agencia Shalom</option>
+                  <option>Agencia Olva Courier</option>
+                  <option>Olva Courier A Domicilio</option>
+                  <option>Motorizado Express</option>
                 </select>
               </div>
               <div className="form-group">
-                <label className="form-label">Agencia de destino *</label>
+                <label className="form-label">Dirección o Agencia de destino *</label>
                 <input className="form-input" value={form.address} onChange={e => setForm(p => ({ ...p, address: sanitizeAddress(e.target.value) }))} />
                 {errors.address && <span style={{color: "var(--danger)", fontSize: "0.8rem"}}>⚠ {errors.address}</span>}
               </div>

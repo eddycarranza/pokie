@@ -98,7 +98,7 @@ export function CartProvider({ children }) {
       ``,
       `Total: S/.${total.toFixed(2)}`,
       ``,
-      `El pago del envío es adicional y a calcular`
+      `_*El pago del envío es adicional y a calcular*_`
     ];
     
     const msg = encodeURIComponent(lines.join("\n"));
