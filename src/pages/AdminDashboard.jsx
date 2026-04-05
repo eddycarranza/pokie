@@ -375,6 +375,175 @@ function OrderForm({ products, onSave, onCancel, isMobile }) {
   );
 }
 
+// ============ BANNER PANEL ============
+function BannerPanel({ showToast }) {
+  const [bannerImgs, setBannerImgs] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const inputRef = useRef();
+
+  const API = process.env.REACT_APP_SUPABASE_URL + "/rest/v1";
+  const KEY = process.env.REACT_APP_SUPABASE_ANON_KEY;
+  const token = localStorage.getItem("admin_token") || KEY;
+  const headers = { apikey: KEY, Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+
+  useEffect(() => { loadBanner(); }, []);
+
+  const loadBanner = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API}/settings?key=eq.banner_images&select=value&limit=1`, { headers });
+      const data = await res.json();
+      if (Array.isArray(data) && data[0]?.value) {
+        try { setBannerImgs(JSON.parse(data[0].value)); } catch (e) {}
+      }
+    } catch (e) {}
+    setLoading(false);
+  };
+
+  const saveBanner = async (imgs) => {
+    const value = JSON.stringify(imgs);
+    // Intentar update primero, si no existe hacer insert
+    const checkRes = await fetch(`${API}/settings?key=eq.banner_images&select=key&limit=1`, { headers });
+    const existing = await checkRes.json();
+    let res;
+    if (Array.isArray(existing) && existing.length > 0) {
+      res = await fetch(`${API}/settings?key=eq.banner_images`, {
+        method: "PATCH",
+        headers: { ...headers, Prefer: "return=representation" },
+        body: JSON.stringify({ value }),
+      });
+    } else {
+      res = await fetch(`${API}/settings`, {
+        method: "POST",
+        headers: { ...headers, Prefer: "return=representation" },
+        body: JSON.stringify({ key: "banner_images", value }),
+      });
+    }
+    return res.ok;
+  };
+
+  const handleUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    const remaining = 3 - bannerImgs.length;
+    if (remaining <= 0) { showToast("Máximo 3 imágenes en el banner"); return; }
+    const toUpload = files.slice(0, remaining);
+    setUploading(true);
+    try {
+      const urls = [];
+      for (const file of toUpload) {
+        const fileName = `banner_${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
+        const res = await fetch(`${process.env.REACT_APP_SUPABASE_URL}/storage/v1/object/products/${fileName}`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${KEY}`, "Content-Type": file.type, "x-upsert": "true" },
+          body: file,
+        });
+        if (!res.ok) throw new Error("Error subiendo imagen");
+        urls.push(`${process.env.REACT_APP_SUPABASE_URL}/storage/v1/object/public/products/${fileName}`);
+      }
+      const newImgs = [...bannerImgs, ...urls];
+      setBannerImgs(newImgs);
+      const ok = await saveBanner(newImgs);
+      if (ok) showToast(`${urls.length} imagen(es) añadida(s) al banner`);
+      else showToast("Error al guardar. ¿Creaste la tabla settings?");
+    } catch (err) {
+      showToast("Error: " + err.message);
+    }
+    setUploading(false);
+    e.target.value = "";
+  };
+
+  const handleRemove = async (idx) => {
+    const newImgs = bannerImgs.filter((_, i) => i !== idx);
+    setBannerImgs(newImgs);
+    const ok = await saveBanner(newImgs);
+    if (ok) showToast("Imagen eliminada del banner");
+  };
+
+  const handleMove = async (idx, dir) => {
+    const newImgs = [...bannerImgs];
+    const target = idx + dir;
+    if (target < 0 || target >= newImgs.length) return;
+    [newImgs[idx], newImgs[target]] = [newImgs[target], newImgs[idx]];
+    setBannerImgs(newImgs);
+    await saveBanner(newImgs);
+  };
+
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem", flexWrap: "wrap", gap: 12 }}>
+        <div>
+          <h2 className="serif" style={{ fontSize: "1.7rem", margin: 0 }}>Banner principal</h2>
+          <p style={{ color: "var(--gray)", fontSize: "0.85rem", marginTop: 4 }}>Máximo 3 imágenes. Rotan automáticamente en la tienda.</p>
+        </div>
+        {bannerImgs.length < 3 && (
+          <button onClick={() => inputRef.current?.click()} disabled={uploading}
+            style={{ background: "var(--dark)", color: "white", border: "none", padding: "10px 20px", borderRadius: 10, cursor: "pointer", fontSize: "0.88rem", fontWeight: 600, display: "flex", alignItems: "center", gap: 8, opacity: uploading ? 0.6 : 1 }}>
+            {uploading ? "Subiendo..." : `+ Agregar imagen (${bannerImgs.length}/3)`}
+          </button>
+        )}
+        <input ref={inputRef} type="file" accept="image/*" multiple onChange={handleUpload} style={{ display: "none" }} />
+      </div>
+
+      {loading ? (
+        <div style={{ textAlign: "center", padding: "3rem", color: "var(--gray)" }}>Cargando...</div>
+      ) : bannerImgs.length === 0 ? (
+        <div onClick={() => inputRef.current?.click()}
+          style={{ border: "2px dashed var(--border)", borderRadius: 16, padding: "4rem", textAlign: "center", cursor: "pointer", background: "white" }}
+          onMouseEnter={e => e.currentTarget.style.borderColor = "var(--dark)"}
+          onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border)"}
+        >
+          <div style={{ fontSize: "3rem", marginBottom: 12 }}>🖼️</div>
+          <div style={{ fontWeight: 600, marginBottom: 6 }}>No hay imágenes en el banner</div>
+          <div style={{ color: "var(--gray)", fontSize: "0.85rem" }}>Haz clic para subir hasta 3 imágenes</div>
+        </div>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1.5rem" }}>
+          {bannerImgs.map((url, idx) => (
+            <div key={idx} style={{ background: "white", borderRadius: 12, overflow: "hidden", border: "1px solid var(--border)", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+              <div style={{ width: "100%", aspectRatio: "16/9", overflow: "hidden", position: "relative", background: "#f5f5f5" }}>
+                <img src={url} alt={`Banner ${idx + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <div style={{ position: "absolute", top: 8, left: 8, background: "rgba(0,0,0,0.55)", color: "white", borderRadius: 6, padding: "3px 10px", fontSize: "0.75rem", fontWeight: 700 }}>
+                  {idx + 1} / {bannerImgs.length}
+                </div>
+              </div>
+              <div style={{ padding: "0.75rem 1rem", display: "flex", gap: 8, alignItems: "center" }}>
+                <button onClick={() => handleMove(idx, -1)} disabled={idx === 0}
+                  style={{ flex: 1, padding: "7px", border: "1px solid var(--border)", borderRadius: 8, background: "none", cursor: idx === 0 ? "not-allowed" : "pointer", opacity: idx === 0 ? 0.3 : 1, fontSize: "0.82rem" }}>← Anterior</button>
+                <button onClick={() => handleMove(idx, 1)} disabled={idx === bannerImgs.length - 1}
+                  style={{ flex: 1, padding: "7px", border: "1px solid var(--border)", borderRadius: 8, background: "none", cursor: idx === bannerImgs.length - 1 ? "not-allowed" : "pointer", opacity: idx === bannerImgs.length - 1 ? 0.3 : 1, fontSize: "0.82rem" }}>Siguiente →</button>
+                <button onClick={() => { if (window.confirm("¿Eliminar esta imagen del banner?")) handleRemove(idx); }}
+                  style={{ padding: "7px 12px", border: "1px solid var(--danger)", borderRadius: 8, background: "none", color: "var(--danger)", cursor: "pointer", fontSize: "0.85rem", fontWeight: 600 }}>✕</button>
+              </div>
+            </div>
+          ))}
+          {bannerImgs.length < 3 && (
+            <div onClick={() => inputRef.current?.click()}
+              style={{ border: "2px dashed var(--border)", borderRadius: 12, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, cursor: "pointer", minHeight: 180, background: "white" }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = "var(--dark)"}
+              onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border)"}
+            >
+              <span style={{ fontSize: "2rem" }}>+</span>
+              <span style={{ fontSize: "0.82rem", color: "var(--gray)" }}>Agregar imagen</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {bannerImgs.length > 0 && (
+        <div style={{ marginTop: "2rem" }}>
+          <div style={{ fontSize: "0.82rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".1em", color: "var(--gray)", marginBottom: "1rem" }}>Vista previa</div>
+          <div style={{ width: "100%", aspectRatio: "21/9", borderRadius: 12, overflow: "hidden", border: "1px solid var(--border)" }}>
+            <img src={bannerImgs[0]} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          </div>
+          <div style={{ fontSize: "0.75rem", color: "var(--gray)", marginTop: 6 }}>* Vista previa de la primera imagen. En la tienda rotarán automáticamente.</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const { logout } = useAuth();
   const nav = useNavigate();
@@ -519,7 +688,7 @@ export default function AdminDashboard() {
             <span className="serif" style={{ fontSize: "1.1rem" }}>Pookiecat</span>
           </div>
         )}
-        {[{ key: "dashboard", icon: "📊", label: "Dashboard" }, { key: "productos", icon: "👗", label: "Productos" }, { key: "pedidos", icon: "📦", label: "Pedidos" }, { key: "egresos", icon: "💸", label: "Egresos" }].map(item => (
+        {[{ key: "dashboard", icon: "📊", label: "Dashboard" }, { key: "productos", icon: "👗", label: "Productos" }, { key: "pedidos", icon: "📦", label: "Pedidos" }, { key: "egresos", icon: "💸", label: "Egresos" }, { key: "banner", icon: "🖼️", label: "Banner" }].map(item => (
           <button key={item.key} onClick={() => { setPanel(item.key); setEditing(null); if(isMobile) setMenuOpen(false); }} style={{
             display: "flex", alignItems: "center", gap: 10, background: panel === item.key ? "rgba(255,255,255,.12)" : "none",
             border: "none", color: panel === item.key ? "white" : "rgba(255,255,255,.55)",
@@ -835,6 +1004,7 @@ export default function AdminDashboard() {
             </div>
           </>
         )}
+        {panel === "banner" && <BannerPanel showToast={showToast} />}
       </main>
 
       {toast && (

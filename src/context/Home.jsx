@@ -5,263 +5,385 @@ import ProductCard from "../components/ProductCard";
 import ProductModal from "../components/ProductModal";
 import CartSidebar from "../components/CartSidebar";
 import { useProducts } from "../hooks/useSupabase";
+import { supabase } from "../lib/supabase"; 
+import { yapeLogo, plinLogo, olvaLogo, shalomLogo } from "../lib/logos";
 
-const CATS = ["Todos", "Tops", "Pantalones", "Faldas", "Accesorios"];
+const CATALOG_CATS = ["Tops", "Partes de abajo", "Accesorios", "Zapatos"];
 
 // ============ HERO BANNER ============
-const SLIDES = [
-  {
-    bg: "#1a1a1a",
-    tag: "Nueva colección",
-    title: "Moda porque estamos en tendencia",
-    sub: "con estilo",
-    cta: "Ver colección",
-    img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1400&q=80",
-    accent: "#f2a7c3",
-    light: true,
-  },
-  {
-    bg: "#f5f0eb",
-    tag: "Tops & Vestidos",
-    title: "Ropa femenina",
-    sub: "con personalidad",
-    cta: "Ver catálogo",
-    img: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=1400&q=80",
-    accent: "#c9607f",
-    light: false,
-  },
-  {
-    bg: "#1a1a1a",
-    tag: "Envíos a todo el Perú",
-    title: "Calidad peruana",
-    sub: "al mejor precio",
-    cta: "Comprar ahora",
-    img: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1400&q=80",
-    accent: "#f2a7c3",
-    light: true,
-  },
-];
-
 function HeroBanner({ onShop }) {
-  const [current, setCurrent] = useState(0);
-  const [animating, setAnimating] = useState(false);
+  const [banners, setBanners] = useState([]);
+  const [currentIdx, setCurrentIdx] = useState(0);
 
+  // Cargar los banners desde Supabase (Versión Segura)
   useEffect(() => {
-    const timer = setInterval(() => {
-      setAnimating(true);
-      setTimeout(() => {
-        setCurrent(p => (p + 1) % SLIDES.length);
-        setAnimating(false);
-      }, 400);
-    }, 4500);
-    return () => clearInterval(timer);
+    const fetchBanners = async () => {
+      try {
+        console.log("Intentando buscar banners..."); 
+        const { data, error } = await supabase.from('banners').select('*');
+        
+        console.log("Respuesta de Supabase:", { data, error }); 
+
+        if (error) {
+          console.error("Error al traer banners:", error);
+          return;
+        }
+
+        // Verificamos si data es un array y si tiene imágenes
+        if (Array.isArray(data) && data.length > 0) {
+          console.log(`¡${data.length} banners encontrados!`); 
+          setBanners([...data].reverse());
+        } else if (data && !Array.isArray(data) && data.image_url) {
+          // Por si acaso la API devuelve un solo objeto en lugar de un array
+          console.log("¡1 banner encontrado!");
+          setBanners([data]);
+        } else {
+          console.log("No hay banners guardados o la tabla está bloqueada por permisos.");
+        }
+      } catch (err) {
+        console.error("Error ejecutando fetchBanners:", err);
+      }
+    };
+    fetchBanners();
   }, []);
 
-  const goTo = (i) => {
-    if (i === current) return;
-    setAnimating(true);
-    setTimeout(() => { setCurrent(i); setAnimating(false); }, 400);
-  };
+  // Slider automático
+  useEffect(() => {
+    if (banners.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentIdx((prev) => (prev + 1) % banners.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [banners]);
 
-  const slide = SLIDES[current];
+  // Fallback: Si no hay banners, mostramos el color rosado original
+  if (banners.length === 0) {
+    return (
+      <div
+        onClick={onShop}
+        style={{
+          width: "100%",
+          height: "94vh",
+          minHeight: 400,
+          background: "#f5e6ea",
+          cursor: "pointer",
+        }}
+      />
+    );
+  }
 
   return (
-    <div style={{
-      position: "relative", width: "100%", height: "94vh", minHeight: 560,
-      background: slide.bg, overflow: "hidden",
-      display: "flex", alignItems: "flex-end",
-    }}>
-      {slide.img && (
-        <img src={slide.img} alt="" style={{
-          position: "absolute", inset: 0, width: "100%", height: "100%",
-          objectFit: "cover", objectPosition: "center top",
-          opacity: animating ? 0 : 1,
-          transition: "opacity .5s ease",
-        }} />
-      )}
-      <div style={{
-        position: "absolute", inset: 0,
-        background: "linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.15) 50%, transparent 100%)",
-      }} />
-      <div style={{
-        position: "relative", zIndex: 2,
-        padding: "0 4rem 4rem",
-        opacity: animating ? 0 : 1,
-        transform: animating ? "translateY(20px)" : "translateY(0)",
-        transition: "opacity .45s ease, transform .45s ease",
-        maxWidth: 680,
-      }}>
-        <div style={{
-          display: "inline-block",
-          color: slide.accent, fontSize: "0.72rem",
-          letterSpacing: ".15em", textTransform: "uppercase",
-          marginBottom: "1rem",
-          fontFamily: "'Courier New', Courier, monospace",
-          borderBottom: `1px solid ${slide.accent}`,
-          paddingBottom: 4,
-        }}>
-          {slide.tag}
+    <div 
+      onClick={onShop} 
+      style={{ 
+        width: "100%", 
+        height: "94vh", 
+        minHeight: 400, 
+        position: "relative", 
+        overflow: "hidden", 
+        cursor: "pointer", 
+        background: "#f5e6ea" 
+      }}
+    >
+      {banners.map((b, idx) => (
+        <img 
+          key={b.id || idx} 
+          src={b.image_url} 
+          alt={`Banner ${idx + 1}`} 
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "center",
+            opacity: idx === currentIdx ? 1 : 0,
+            transition: "opacity 1s ease-in-out"
+          }} 
+        />
+      ))}
+
+      {banners.length > 1 && (
+        <div style={{ position: "absolute", bottom: "2rem", left: "50%", transform: "translateX(-50%)", display: "flex", gap: "8px", zIndex: 10 }}>
+          {banners.map((_, idx) => (
+            <div 
+              key={idx} 
+              style={{
+                width: "8px", height: "8px", borderRadius: "50%",
+                background: idx === currentIdx ? "white" : "rgba(255,255,255,0.5)",
+                transition: "background 0.3s ease"
+              }}
+            />
+          ))}
         </div>
-        <h1 style={{
-          fontFamily: "'Courier New', Courier, monospace",
-          fontSize: "clamp(2.6rem, 5.5vw, 4.8rem)",
-          fontWeight: 700, lineHeight: 1.0,
-          color: "white", marginBottom: "0.3rem",
-          textShadow: "0 2px 20px rgba(0,0,0,0.3)",
-        }}>
-          {slide.title}
-        </h1>
-        <h2 style={{
-          fontFamily: "'Courier New', Courier, monospace",
-          fontSize: "clamp(2rem, 4.5vw, 3.8rem)",
-          fontWeight: 400, lineHeight: 1.1,
-          color: slide.accent, marginBottom: "2rem",
-          fontStyle: "italic",
-        }}>
-          {slide.sub}
+      )}
+    </div>
+  );
+}
+
+// ============ NEW IN ============
+function NewInCarousel({ items, onSelect }) {
+  const display = items.slice(0, 3);
+
+  return (
+    <div style={{ background: "white", padding: "4rem 2rem 3rem" }} className="new-in-section">
+      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <h2 className="serif" style={{ fontSize: "2rem", textAlign: "center", marginBottom: "2.5rem", fontWeight: 400, letterSpacing: ".04em" }}>
+          New in
         </h2>
-        <button onClick={onShop} style={{
-          background: "white", color: "#1a1a1a", border: "none",
-          padding: "13px 30px", borderRadius: 999, cursor: "pointer",
-          fontFamily: "'Courier New', Courier, monospace",
-          fontSize: "0.88rem", letterSpacing: ".05em", fontWeight: 600,
-          transition: "all .2s",
-        }}
-          onMouseEnter={e => { e.currentTarget.style.background = slide.accent; e.currentTarget.style.color = "white"; }}
-          onMouseLeave={e => { e.currentTarget.style.background = "white"; e.currentTarget.style.color = "#1a1a1a"; }}
-        >
-          {slide.cta} →
-        </button>
-      </div>
-      <div style={{
-        position: "absolute", bottom: "2.2rem", right: "3rem",
-        display: "flex", gap: 8, zIndex: 3, alignItems: "center",
-      }}>
-        {SLIDES.map((_, i) => (
-          <button key={i} onClick={() => goTo(i)} style={{
-            width: i === current ? 28 : 8, height: 8,
-            borderRadius: 999, border: "none", cursor: "pointer",
-            background: i === current ? "white" : "rgba(255,255,255,0.4)",
-            transition: "all .35s ease", padding: 0,
-          }} />
-        ))}
-      </div>
-      <div style={{
-        position: "absolute", right: "3rem", top: "50%", transform: "translateY(-50%)",
-        color: "rgba(255,255,255,0.5)", fontSize: "0.75rem", letterSpacing: ".1em",
-        fontFamily: "'Courier New', Courier, monospace", zIndex: 3,
-        writingMode: "vertical-rl",
-      }}>
-        {String(current + 1).padStart(2,"0")} / {String(SLIDES.length).padStart(2,"0")}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: "1.5rem",
+          alignItems: "start",
+        }}>
+          {display.map((p, idx) => {
+            const isCenter = idx === 1;
+            let image = "";
+            if (Array.isArray(p.image_urls) && p.image_urls.length > 0) image = p.image_urls[0];
+            else if (p.image_url) image = p.image_url;
+            else if (p.imageUrl) image = p.imageUrl;
+
+            const salePrice = p.salePrice || p.sale_price;
+            const price = salePrice || p.price || 0;
+
+            return (
+              <div
+                key={p.id}
+                onClick={() => onSelect(p)}
+                style={{
+                  cursor: "pointer",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  transform: isCenter ? "scale(1.04)" : "scale(1)",
+                  transition: "transform .25s",
+                }}
+                onMouseEnter={e => e.currentTarget.style.transform = isCenter ? "scale(1.07)" : "scale(1.03)"}
+                onMouseLeave={e => e.currentTarget.style.transform = isCenter ? "scale(1.04)" : "scale(1)"}
+              >
+                <div style={{
+                  width: "100%",
+                  aspectRatio: "2/3",
+                  overflow: "hidden",
+                  borderRadius: "4px",
+                  background: "#f5f5f5",
+                }}>
+                  {image ? (
+                    <img src={image} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }} />
+                  ) : (
+                    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "4rem" }}>
+                      {p.emoji || "👗"}
+                    </div>
+                  )}
+                </div>
+                <div style={{ textAlign: "center", marginTop: "0.75rem", width: "100%" }}>
+                  <div style={{ fontSize: "0.95rem", fontWeight: 500, fontFamily: "'Courier New', Courier, monospace", marginBottom: 4 }}>{p.name}</div>
+                  <div style={{ fontSize: "0.88rem", color: "#555", fontFamily: "'Courier New', Courier, monospace" }}>
+                    {salePrice ? (
+                      <>
+                        <span style={{ textDecoration: "line-through", color: "#aaa", marginRight: 6 }}>S/ {Number(p.price).toFixed(2)}</span>
+                        <span style={{ color: "#e00" }}>S/ {Number(salePrice).toFixed(2)}</span>
+                      </>
+                    ) : `S/ ${Number(price).toFixed(2)}`}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
 }
-// =====================================
 
-export default function Home() {
-  const { products, loading } = useProducts();
-  const [cat, setCat] = useState("Todos");
-  const [selected, setSelected] = useState(null);
-  const [showWsp, setShowWsp] = useState(false);
+// ============ CATALOG ============
+function CatalogSection({ products, loading, onSelect, externalCat, onExternalCatConsumed }) {
+  const [activeCat, setActiveCat] = useState("Todos");
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 400) { setShowWsp(true); } 
-      else { setShowWsp(false); }
-    };
+    if (externalCat) {
+      setActiveCat(externalCat);
+      onExternalCatConsumed?.();
+    }
+  }, [externalCat]);
+
+  const allCats = ["Todos", ...CATALOG_CATS];
+  const filtered = activeCat === "Todos" ? products : products.filter(p => p.cat === activeCat);
+
+  const grouped = CATALOG_CATS.map(c => ({
+    cat: c, items: products.filter(p => p.cat === c),
+  })).filter(g => g.items.length > 0);
+
+  return (
+    <div id="catalog" style={{ background: "white" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "1.2rem 2rem 0" }}>
+        <div style={{ fontSize: "0.82rem", color: "var(--gray)", fontFamily: "'Courier New', Courier, monospace" }}>
+          <span style={{ cursor: "pointer", textDecoration: "underline" }} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>Inicio</span>
+          {" / "}
+          <span>Productos</span>
+          {activeCat !== "Todos" && <span style={{ color: "var(--dark)", fontWeight: 600 }}> / {activeCat}</span>}
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "1.5rem 2rem 4rem", display: "flex", gap: "2.5rem", alignItems: "flex-start" }} className="catalog-main-wrapper">
+        <div style={{ width: 160, flexShrink: 0, paddingTop: "0.5rem" }} className="catalog-sidebar">
+          <div style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".12em", color: "var(--gray)", marginBottom: "1rem", fontFamily: "'Courier New', Courier, monospace" }}>
+            Categorias
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {allCats.map(c => (
+              <button key={c} onClick={() => setActiveCat(c)} style={{
+                display: "block", textAlign: "left", padding: "7px 0",
+                background: "none", border: "none", cursor: "pointer",
+                fontFamily: "'Courier New', Courier, monospace",
+                fontSize: "0.88rem",
+                color: c === activeCat ? "var(--dark)" : "var(--gray)",
+                fontWeight: c === activeCat ? 700 : 400,
+                borderLeft: c === activeCat ? "2px solid var(--dark)" : "2px solid transparent",
+                paddingLeft: "10px",
+                transition: "all .15s",
+              }}
+                onMouseEnter={e => { if (c !== activeCat) e.currentTarget.style.color = "var(--dark)"; }}
+                onMouseLeave={e => { if (c !== activeCat) e.currentTarget.style.color = "var(--gray)"; }}
+              >{c}</button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {loading ? (
+            <div style={{ textAlign: "center", padding: "4rem", color: "var(--gray)" }}>
+              <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>🐱</div>
+              Cargando productos...
+            </div>
+          ) : activeCat !== "Todos" ? (
+            filtered.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "4rem", color: "var(--gray)" }}>
+                No hay productos en esta categoría aún.
+              </div>
+            ) : (
+              <div className="catalog-grid">
+                {filtered.map(p => <ProductCard key={p.id} product={p} onClick={onSelect} variant="grid" />)}
+              </div>
+            )
+          ) : (
+            grouped.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "4rem", color: "var(--gray)" }}>No hay productos aún.</div>
+            ) : (
+              grouped.map(({ cat: catName, items }) => (
+                <div key={catName} style={{ marginBottom: "3rem" }}>
+                  <h3 style={{
+                    fontSize: "1rem", fontWeight: 700, marginBottom: "1rem",
+                    paddingBottom: "0.5rem",
+                    fontFamily: "'Courier New', Courier, monospace", textTransform: "uppercase",
+                    letterSpacing: ".08em", color: "var(--dark)",
+                  }}>{catName}</h3>
+                  <div className="catalog-grid">
+                    {items.map(p => <ProductCard key={p.id} product={p} onClick={onSelect} variant="grid" />)}
+                  </div>
+                </div>
+              ))
+            )
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============ TRUST BANNER ============
+function TrustBanner() {
+  const logoImg = { objectFit: "contain", cursor: "pointer", transition: "opacity 0.2s" };
+  const sectionTitle = {
+    fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.12em",
+    textTransform: "uppercase", color: "#888",
+    fontFamily: "'Courier New', Courier, monospace",
+    marginBottom: "0.75rem",
+  };
+  return (
+    <div style={{ background: "white", padding: "2rem 2.5rem" }} className="trust-banner">
+      <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", flexWrap: "wrap", gap: "3rem", alignItems: "flex-start" }}>
+        <div>
+          <div style={sectionTitle}>Medios de Pago</div>
+          <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "center" }}>
+            <img src={yapeLogo} alt="Yape" style={{ ...logoImg, height: 40, borderRadius: 10 }} onMouseEnter={e => e.currentTarget.style.opacity="0.75"} onMouseLeave={e => e.currentTarget.style.opacity="1"} />
+            <img src={plinLogo} alt="Plin" style={{ ...logoImg, height: 40, borderRadius: 10 }} onMouseEnter={e => e.currentTarget.style.opacity="0.75"} onMouseLeave={e => e.currentTarget.style.opacity="1"} />
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: "pointer", transition: "opacity 0.2s", color: "#555" }} onMouseEnter={e => e.currentTarget.style.opacity="0.7"} onMouseLeave={e => e.currentTarget.style.opacity="1"}>
+              <div style={{ width: 40, height: 40, background: "#f5f5f5", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+              </div>
+              <span style={{ fontSize: "0.6rem", fontFamily: "'Courier New', Courier, monospace", textTransform: "uppercase", letterSpacing: "0.05em", color: "#888" }}>Transf.</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div style={sectionTitle}>Medios de Envío</div>
+          <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "center" }}>
+            <img src={olvaLogo} alt="Olva Courier" style={{ ...logoImg, height: 36, borderRadius: 6 }} onMouseEnter={e => e.currentTarget.style.opacity="0.75"} onMouseLeave={e => e.currentTarget.style.opacity="1"} />
+            <img src={shalomLogo} alt="Shalom" style={{ ...logoImg, height: 36 }} onMouseEnter={e => e.currentTarget.style.opacity="0.75"} onMouseLeave={e => e.currentTarget.style.opacity="1"} />
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: "pointer", transition: "opacity 0.2s", color: "#555" }} onMouseEnter={e => e.currentTarget.style.opacity="0.7"} onMouseLeave={e => e.currentTarget.style.opacity="1"}>
+              <div style={{ width: 40, height: 36, background: "#f5f5f5", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="#555"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zm-.5 1.5l1.96 2.5H17V9.5h2.5zM6 18c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm13 0c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/></svg>
+              </div>
+              <span style={{ fontSize: "0.6rem", fontFamily: "'Courier New', Courier, monospace", textTransform: "uppercase", letterSpacing: "0.05em", color: "#888" }}>Express</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============ MAIN ============
+export default function Home() {
+  const { products, loading } = useProducts();
+  const [selected, setSelected] = useState(null);
+  const [showWsp, setShowWsp] = useState(false);
+  const [navCat, setNavCat] = useState(null);
+
+  useEffect(() => {
+    const handleScroll = () => setShowWsp(window.scrollY > 400);
     window.addEventListener("scroll", handleScroll);
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // 1. SEGURIDAD: Forzar que siempre sea un array
   const safeProducts = Array.isArray(products) ? products : [];
 
-  // 2. Usar safeProducts para los filtros
-  const filtered = cat === "Todos" ? safeProducts : safeProducts.filter(p => p.cat === cat);
-  
-  // Buscar el más vendido (Aquel que tenga mayor valor en ventas_totales y que tenga stock)
-  const bestSeller = safeProducts.length > 0 
-    ? [...safeProducts].filter(p => p.stock > 0).sort((a, b) => (b.ventas_totales || 0) - (a.ventas_totales || 0))[0] 
-    : null;
+  const newInItems = safeProducts.length > 0
+    ? [...safeProducts].filter(p => p.stock > 0)
+        .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
+        .slice(0, 10)
+    : [];
 
   return (
     <>
-      <Navbar activecat={cat} onCatChange={setCat} />
+      <Navbar onCatChange={(cat) => {
+        setNavCat(cat);
+        setTimeout(() => document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" }), 80);
+      }} />
       <CartSidebar />
 
-      {/* Hero Carrusel */}
       <HeroBanner onShop={() => document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" })} />
 
-      {/* PRODUCTO MÁS VENDIDO */}
-      {!loading && bestSeller && (
-        <div style={{ maxWidth: 1000, margin: "3rem auto 1rem", padding: "0 1rem" }}>
-          <div style={{ background: "white", border: "1px solid var(--border)", borderRadius: 20, display: "flex", flexWrap: "wrap", overflow: "hidden", boxShadow: "0 10px 30px rgba(0,0,0,0.05)" }}>
-            <div style={{ flex: "1 1 300px", background: "var(--pink-light)", position: "relative" }}>
-               <img 
-                 src={bestSeller.image_urls?.[0] || bestSeller.image_url} 
-                 alt={bestSeller.name} 
-                 style={{ width: "100%", height: "100%", minHeight: 300, objectFit: "cover" }} 
-               />
-            </div>
-            <div style={{ flex: "1 1 300px", padding: "2.5rem", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-               <div style={{ alignSelf: "flex-start", background: "var(--dark)", color: "white", padding: "4px 12px", borderRadius: 20, fontSize: "0.75rem", fontWeight: 600, letterSpacing: 1, marginBottom: 16 }}>
-                 🔥 MÁS VENDIDO
-               </div>
-               <h2 className="serif" style={{ fontSize: "2.2rem", margin: "0 0 10px 0", lineHeight: 1.1 }}>{bestSeller.name}</h2>
-               <p style={{ color: "var(--gray)", fontSize: "0.95rem", marginBottom: "1.5rem" }}>
-                 {bestSeller.description || "El favorito de nuestras clientas. ¡Asegura el tuyo antes de que se agote!"}
-               </p>
-               <h3 style={{ fontSize: "1.5rem", marginBottom: "1.5rem" }}>S/ {bestSeller.sale_price || bestSeller.price}</h3>
-               <button className="btn btn-dark" onClick={() => setSelected(bestSeller)} style={{ alignSelf: "flex-start" }}>
-                 Comprar ahora
-               </button>
-            </div>
-          </div>
-        </div>
+      {!loading && newInItems.length > 0 && (
+        <NewInCarousel items={newInItems} onSelect={setSelected} />
       )}
 
-      {/* Catálogo */}
-      <div id="catalog" style={{ maxWidth: 1200, margin: "0 auto", padding: "3rem 1rem 0" }}>
-        <h2 className="serif" style={{ fontSize: "1.8rem", marginBottom: 4 }}>Catálogo</h2>
-        <p style={{ color: "var(--gray)", fontSize: "0.88rem", marginBottom: "1.5rem" }}>
-          {cat === "Todos" ? "Todos los productos" : cat} — {filtered.length} producto{filtered.length !== 1 ? "s" : ""}
-        </p>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: "2rem" }}>
-          {CATS.map(c => (
-            <button key={c} onClick={() => setCat(c)} style={{
-              padding: "8px 20px", borderRadius: 999,
-              border: `1px solid ${c === cat ? "var(--dark)" : "var(--border)"}`,
-              background: c === cat ? "var(--dark)" : "white",
-              color: c === cat ? "white" : "var(--dark)",
-              fontSize: "0.88rem", cursor: "pointer", transition: "all .2s",
-              fontFamily: "'Courier New', Courier, monospace"
-            }}>{c}</button>
-          ))}
-        </div>
-      </div>
+      <CatalogSection
+        products={safeProducts}
+        loading={loading}
+        onSelect={setSelected}
+        externalCat={navCat}
+        onExternalCatConsumed={() => setNavCat(null)}
+      />
 
-      {/* Grid productos */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 1rem 3rem" }}>
-        {loading ? (
-          <div style={{ textAlign: "center", padding: "4rem", color: "var(--gray)" }}>
-            <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>🐱</div>
-            Cargando productos...
-          </div>
-        ) : filtered.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "4rem", color: "var(--gray)" }}>
-            <p>No hay productos en esta categoría aún.</p>
-          </div>
-        ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "1rem" }}>
-            {filtered.map(p => <ProductCard key={p.id} product={p} onClick={setSelected} />)}
-          </div>
-        )}
-      </div>
+      <TrustBanner />
 
-      {/* Footer */}
-      <footer style={{ background: "var(--dark)", color: "white", textAlign: "center", padding: "1.5rem" }}>
+      <footer style={{ background: "var(--dark)", color: "white", textAlign: "center", padding: "2rem 1rem" }}>
         <p style={{ fontSize: "0.85rem", opacity: 0.8, fontFamily: "'Courier New', Courier, monospace" }}>
           Envíos a todo el Perú · WhatsApp: 927 112 114 · pookiecat.pe
         </p>
@@ -269,34 +391,18 @@ export default function Home() {
 
       {selected && <ProductModal product={selected} onClose={() => setSelected(null)} />}
 
-      {/* Botón flotante WhatsApp animado */}
-      <a
-        href="https://wa.me/51927112114?text=Hola!%20Quisiera%20consultar%20sobre%20un%20producto%20"
-        target="_blank"
-        rel="noopener noreferrer"
+      <a href="https://wa.me/51927112114?text=Hola!%20Quisiera%20consultar%20sobre%20un%20producto%20"
+        target="_blank" rel="noopener noreferrer"
         style={{
           position: "fixed", bottom: "2rem", right: "2rem", zIndex: 9000,
           width: 58, height: 58, borderRadius: "50%",
           background: "#25D366", color: "white",
           display: "flex", alignItems: "center", justifyContent: "center",
-          textDecoration: "none", 
-          opacity: showWsp ? 1 : 0,
-          visibility: showWsp ? "visible" : "hidden",
+          textDecoration: "none",
+          opacity: showWsp ? 1 : 0, visibility: showWsp ? "visible" : "hidden",
           transform: showWsp ? "translateY(0) scale(1)" : "translateY(20px) scale(0.8)",
           boxShadow: showWsp ? "0 4px 20px rgba(37,211,102,.45)" : "none",
-          transition: "all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s",
-        }}
-        onMouseEnter={e => { 
-          if(showWsp) {
-            e.currentTarget.style.transform = "translateY(0) scale(1.1)"; 
-            e.currentTarget.style.boxShadow = "0 6px 28px rgba(37,211,102,.6)"; 
-          }
-        }}
-        onMouseLeave={e => { 
-          if(showWsp) {
-            e.currentTarget.style.transform = "translateY(0) scale(1)"; 
-            e.currentTarget.style.boxShadow = "0 4px 20px rgba(37,211,102,.45)"; 
-          }
+          transition: "all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
         }}
         title="Consultas por WhatsApp"
       >

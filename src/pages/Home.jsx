@@ -11,18 +11,117 @@ const CATALOG_CATS = ["Tops", "Partes de abajo", "Accesorios", "Zapatos"];
 
 // ============ HERO BANNER ============
 
+// ============ HERO BANNER ============
 function HeroBanner({ onShop }) {
+  const [imgs, setImgs] = useState([]);
+  const [current, setCurrent] = useState(0);
+  const [animating, setAnimating] = useState(false);
+
+  useEffect(() => {
+    // Usar fetch directo igual que el resto del proyecto
+    const url = `${process.env.REACT_APP_SUPABASE_URL}/rest/v1/settings?key=eq.banner_images&select=value&limit=1`;
+    const key = process.env.REACT_APP_SUPABASE_ANON_KEY;
+    fetch(url, { headers: { apikey: key, Authorization: `Bearer ${key}` } })
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data) && data[0]?.value) {
+          try { setImgs(JSON.parse(data[0].value)); } catch (e) {}
+        }
+      })
+      .catch(() => {}); // Si la tabla no existe, muestra fondo rosa
+  }, []);
+
+  useEffect(() => {
+    if (imgs.length <= 1) return;
+    const timer = setInterval(() => {
+      setAnimating(true);
+      setTimeout(() => { setCurrent(p => (p + 1) % imgs.length); setAnimating(false); }, 400);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [imgs]);
+
+  const goTo = (i) => {
+    if (i === current) return;
+    setAnimating(true);
+    setTimeout(() => { setCurrent(i); setAnimating(false); }, 400);
+  };
+
+  // Sin imágenes: bloque rosa simple
+  if (imgs.length === 0) {
+    return (
+      <div
+        onClick={onShop}
+        style={{ width: "100%", height: "94vh", minHeight: 400, background: "#f5e6ea", cursor: "pointer" }}
+      />
+    );
+  }
+
   return (
     <div
-      onClick={onShop}
       style={{
-        width: "100%",
-        height: "94vh",
-        minHeight: 400,
-        background: "#f5e6ea",
-        cursor: "pointer",
+        position: "relative", width: "100%",
+        overflow: "hidden", background: "#f5e6ea", cursor: "pointer",
       }}
-    />
+      onClick={onShop}
+    >
+      {/* Imagen activa — se adapta al tamaño natural de la foto */}
+      <img
+        src={imgs[current]}
+        alt="Banner"
+        style={{
+          display: "block",
+          width: "100%",
+          height: "auto",
+          opacity: animating ? 0 : 1,
+          transition: "opacity .5s ease",
+        }}
+      />
+
+      {/* Dots de navegación */}
+      {imgs.length > 1 && (
+        <div style={{
+          position: "absolute", bottom: "1.2rem", left: "50%", transform: "translateX(-50%)",
+          display: "flex", gap: 8, zIndex: 3,
+        }}
+          onClick={e => e.stopPropagation()}
+        >
+          {imgs.map((_, i) => (
+            <button key={i} onClick={() => goTo(i)} style={{
+              width: i === current ? 28 : 8, height: 8, borderRadius: 999, border: "none",
+              cursor: "pointer", padding: 0,
+              background: i === current ? "rgba(0,0,0,0.6)" : "rgba(0,0,0,0.25)",
+              transition: "all .35s ease",
+            }} />
+          ))}
+        </div>
+      )}
+
+      {/* Flechas */}
+      {imgs.length > 1 && (
+        <>
+          <button
+            onClick={e => { e.stopPropagation(); goTo((current - 1 + imgs.length) % imgs.length); }}
+            style={{
+              position: "absolute", left: "1.2rem", top: "50%", transform: "translateY(-50%)",
+              width: 40, height: 40, borderRadius: "50%", border: "none", zIndex: 3,
+              background: "rgba(255,255,255,0.8)", cursor: "pointer", fontSize: "1.4rem",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+            }}
+          >‹</button>
+          <button
+            onClick={e => { e.stopPropagation(); goTo((current + 1) % imgs.length); }}
+            style={{
+              position: "absolute", right: "1.2rem", top: "50%", transform: "translateY(-50%)",
+              width: 40, height: 40, borderRadius: "50%", border: "none", zIndex: 3,
+              background: "rgba(255,255,255,0.8)", cursor: "pointer", fontSize: "1.4rem",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+            }}
+          >›</button>
+        </>
+      )}
+    </div>
   );
 }
 
