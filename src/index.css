@@ -108,12 +108,60 @@ input, select, textarea { font-family: 'Courier New', Courier, monospace; }
 
 @media (max-width: 768px) {
   .catalog-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.8rem 0.5rem !important; }
-  /* Ocultar sidebar en móvil */
   .catalog-sidebar { display: none !important; }
+
+  /* Catalog main padding mobile */
+  .catalog-main-wrapper {
+    padding: 1rem 1rem 3rem !important;
+    gap: 0 !important;
+  }
+
+  /* New In grid mobile */
+  .new-in-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  @media (max-width: 768px) {
+    .new-in-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 1rem !important;
+    }
+    .new-in-section {
+      padding: 2rem 1rem 1.5rem !important;
+    }
+  }
+
+  /* TrustBanner mobile */
+  .trust-banner {
+    padding: 1.5rem 1rem !important;
+  }
+
+  /* Hero banner text mobile */
+  .hero-text {
+    padding: 0 1.5rem 3rem !important;
+  }
+
+  /* ProductModal mobile */
+  .product-modal-inner {
+    flex-direction: column !important;
+  }
+  .product-modal-left {
+    padding: 0.75rem 1rem 0 !important;
+  }
+  .product-modal-right {
+    padding: 0.5rem 1rem 2rem !important;
+    border-left: none !important;
+  }
+  .product-modal-breadcrumb {
+    padding: 0.75rem 1rem !important;
+    font-size: 0.75rem !important;
+  }
 }
 
 @media (max-width: 480px) {
   .catalog-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.6rem 0.4rem !important; }
+  .catalog-main-wrapper { padding: 0.75rem 0.75rem 2rem !important; }
+  .trust-banner { padding: 1.2rem 0.75rem !important; }
 }
 
 /* ===== NEW IN CAROUSEL — hide scrollbar ===== */

@@ -1,5 +1,5 @@
 // src/pages/Home.jsx
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import ProductCard from "../components/ProductCard";
 import ProductModal from "../components/ProductModal";
@@ -10,171 +10,98 @@ import { yapeLogo, plinLogo, olvaLogo, shalomLogo } from "../lib/logos";
 const CATALOG_CATS = ["Tops", "Partes de abajo", "Accesorios", "Zapatos"];
 
 // ============ HERO BANNER ============
-const SLIDES = [
-  {
-    bg: "#1a1a1a", tag: "Nueva colección",
-    title: "Moda porque estamos en tendencia", sub: "con estilo", cta: "Ver colección",
-    img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1400&q=80",
-    accent: "#f2a7c3",
-  },
-  {
-    bg: "#f5f0eb", tag: "Tops & Vestidos",
-    title: "Ropa femenina", sub: "con personalidad", cta: "Ver catálogo",
-    img: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=1400&q=80",
-    accent: "#c9607f",
-  },
-  {
-    bg: "#1a1a1a", tag: "Envíos a todo el Perú",
-    title: "Calidad peruana", sub: "al mejor precio", cta: "Comprar ahora",
-    img: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1400&q=80",
-    accent: "#f2a7c3",
-  },
-];
 
 function HeroBanner({ onShop }) {
-  const [current, setCurrent] = useState(0);
-  const [animating, setAnimating] = useState(false);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setAnimating(true);
-      setTimeout(() => { setCurrent(p => (p + 1) % SLIDES.length); setAnimating(false); }, 400);
-    }, 4500);
-    return () => clearInterval(timer);
-  }, []);
-
-  const goTo = (i) => {
-    if (i === current) return;
-    setAnimating(true);
-    setTimeout(() => { setCurrent(i); setAnimating(false); }, 400);
-  };
-
-  const slide = SLIDES[current];
-
   return (
-    <div style={{
-      position: "relative", width: "100%", height: "94vh", minHeight: 560,
-      background: slide.bg, overflow: "hidden", display: "flex", alignItems: "flex-end",
-    }}>
-      <img src={slide.img} alt="" style={{
-        position: "absolute", inset: 0, width: "100%", height: "100%",
-        objectFit: "cover", objectPosition: "center top",
-        opacity: animating ? 0 : 1, transition: "opacity .5s ease",
-      }} />
-      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.15) 50%, transparent 100%)" }} />
-      <div style={{
-        position: "relative", zIndex: 2, padding: "0 4rem 4rem",
-        opacity: animating ? 0 : 1,
-        transform: animating ? "translateY(20px)" : "translateY(0)",
-        transition: "opacity .45s ease, transform .45s ease", maxWidth: 680,
-      }}>
-        <div style={{
-          display: "inline-block", color: slide.accent, fontSize: "0.72rem",
-          letterSpacing: ".15em", textTransform: "uppercase", marginBottom: "1rem",
-          fontFamily: "'Courier New', Courier, monospace",
-          borderBottom: `1px solid ${slide.accent}`, paddingBottom: 4,
-        }}>{slide.tag}</div>
-        <h1 style={{
-          fontFamily: "'Courier New', Courier, monospace",
-          fontSize: "clamp(2.6rem, 5.5vw, 4.8rem)", fontWeight: 700, lineHeight: 1.0,
-          color: "white", marginBottom: "0.3rem", textShadow: "0 2px 20px rgba(0,0,0,0.3)",
-        }}>{slide.title}</h1>
-        <h2 style={{
-          fontFamily: "'Courier New', Courier, monospace",
-          fontSize: "clamp(2rem, 4.5vw, 3.8rem)", fontWeight: 400, lineHeight: 1.1,
-          color: slide.accent, marginBottom: "2rem", fontStyle: "italic",
-        }}>{slide.sub}</h2>
-        <button onClick={onShop} style={{
-          background: "white", color: "#1a1a1a", border: "none",
-          padding: "13px 30px", borderRadius: 999, cursor: "pointer",
-          fontFamily: "'Courier New', Courier, monospace",
-          fontSize: "0.88rem", letterSpacing: ".05em", fontWeight: 600, transition: "all .2s",
-        }}
-          onMouseEnter={e => { e.currentTarget.style.background = slide.accent; e.currentTarget.style.color = "white"; }}
-          onMouseLeave={e => { e.currentTarget.style.background = "white"; e.currentTarget.style.color = "#1a1a1a"; }}
-        >{slide.cta} →</button>
-      </div>
-      <div style={{ position: "absolute", bottom: "2.2rem", right: "3rem", display: "flex", gap: 8, zIndex: 3 }}>
-        {SLIDES.map((_, i) => (
-          <button key={i} onClick={() => goTo(i)} style={{
-            width: i === current ? 28 : 8, height: 8, borderRadius: 999,
-            border: "none", cursor: "pointer",
-            background: i === current ? "white" : "rgba(255,255,255,0.4)",
-            transition: "all .35s ease", padding: 0,
-          }} />
-        ))}
-      </div>
-      <div style={{
-        position: "absolute", right: "3rem", top: "50%", transform: "translateY(-50%)",
-        color: "rgba(255,255,255,0.5)", fontSize: "0.75rem", letterSpacing: ".1em",
-        fontFamily: "'Courier New', Courier, monospace", zIndex: 3, writingMode: "vertical-rl",
-      }}>
-        {String(current + 1).padStart(2, "0")} / {String(SLIDES.length).padStart(2, "0")}
-      </div>
-    </div>
+    <div
+      onClick={onShop}
+      style={{
+        width: "100%",
+        height: "94vh",
+        minHeight: 400,
+        background: "#f5e6ea",
+        cursor: "pointer",
+      }}
+    />
   );
 }
 
-// ============ NEW IN — carrusel horizontal con cards rectangulares ============
+// ============ NEW IN — grid 3 columnas estilo imagen 3 ============
 function NewInCarousel({ items, onSelect }) {
-  const trackRef = useRef(null);
-  const [canLeft, setCanLeft] = useState(false);
-  const [canRight, setCanRight] = useState(true);
-
-  const checkScroll = () => {
-    const el = trackRef.current;
-    if (!el) return;
-    setCanLeft(el.scrollLeft > 4);
-    setCanRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
-  };
-
-  const scroll = (dir) => {
-    trackRef.current?.scrollBy({ left: dir * 300, behavior: "smooth" });
-  };
+  // Mostrar solo los primeros 3
+  const display = items.slice(0, 3);
 
   return (
-    <div style={{ background: "white", padding: "4rem 0 2rem" }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 2rem" }}>
-        <h2 className="serif" style={{ fontSize: "2rem", textAlign: "center", marginBottom: "2.5rem", fontWeight: 600 }}>
+    <div style={{ background: "white", padding: "4rem 2rem 3rem" }} className="new-in-section">
+      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <h2 className="serif" style={{ fontSize: "2rem", textAlign: "center", marginBottom: "2.5rem", fontWeight: 400, letterSpacing: ".04em" }}>
           New in
         </h2>
-        <div style={{ position: "relative" }}>
-          {/* Arrow left */}
-          <button onClick={() => scroll(-1)} style={{
-            position: "absolute", left: -24, top: "40%", transform: "translateY(-50%)",
-            zIndex: 10, width: 40, height: 40, borderRadius: "50%",
-            background: "white", border: "1px solid var(--border)", cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
-            opacity: canLeft ? 1 : 0.3, transition: "opacity .2s",
-          }} aria-label="Anterior">‹</button>
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: "1.5rem",
+          alignItems: "start",
+        }}>
+          {display.map((p, idx) => {
+            // Card central levemente más grande (como imagen 3)
+            const isCenter = idx === 1;
+            let image = "";
+            if (Array.isArray(p.image_urls) && p.image_urls.length > 0) image = p.image_urls[0];
+            else if (p.image_url) image = p.image_url;
+            else if (p.imageUrl) image = p.imageUrl;
 
-          {/* Track */}
-          <div ref={trackRef} onScroll={checkScroll} style={{
-            display: "flex", gap: "1.2rem",
-            overflowX: "auto", scrollSnapType: "x mandatory",
-            paddingBottom: "0.5rem",
-            scrollbarWidth: "none", msOverflowStyle: "none",
-          }}>
-            {items.map(p => (
-              <div key={p.id} style={{ scrollSnapAlign: "start", flexShrink: 0 }}>
-                <ProductCard product={p} onClick={onSelect} variant="newIn" />
+            const salePrice = p.salePrice || p.sale_price;
+            const price = salePrice || p.price || 0;
+
+            return (
+              <div
+                key={p.id}
+                onClick={() => onSelect(p)}
+                style={{
+                  cursor: "pointer",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  transform: isCenter ? "scale(1.04)" : "scale(1)",
+                  transition: "transform .25s",
+                }}
+                onMouseEnter={e => e.currentTarget.style.transform = isCenter ? "scale(1.07)" : "scale(1.03)"}
+                onMouseLeave={e => e.currentTarget.style.transform = isCenter ? "scale(1.04)" : "scale(1)"}
+              >
+                {/* Imagen sin bordes, sin card */}
+                <div style={{
+                  width: "100%",
+                  aspectRatio: "2/3",
+                  overflow: "hidden",
+                  borderRadius: "4px",
+                  background: "#f5f5f5",
+                }}>
+                  {image ? (
+                    <img src={image} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }} />
+                  ) : (
+                    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "4rem" }}>
+                      {p.emoji || "👗"}
+                    </div>
+                  )}
+                </div>
+                {/* Info debajo */}
+                <div style={{ textAlign: "center", marginTop: "0.75rem", width: "100%" }}>
+                  <div style={{ fontSize: "0.95rem", fontWeight: 500, fontFamily: "'Courier New', Courier, monospace", marginBottom: 4 }}>{p.name}</div>
+                  <div style={{ fontSize: "0.88rem", color: "#555", fontFamily: "'Courier New', Courier, monospace" }}>
+                    {salePrice ? (
+                      <>
+                        <span style={{ textDecoration: "line-through", color: "#aaa", marginRight: 6 }}>S/ {Number(p.price).toFixed(2)}</span>
+                        <span style={{ color: "#e00" }}>S/ {Number(salePrice).toFixed(2)}</span>
+                      </>
+                    ) : `S/ ${Number(price).toFixed(2)}`}
+                  </div>
+                </div>
               </div>
-            ))}
-          </div>
-
-          {/* Arrow right */}
-          <button onClick={() => scroll(1)} style={{
-            position: "absolute", right: -24, top: "40%", transform: "translateY(-50%)",
-            zIndex: 10, width: 40, height: 40, borderRadius: "50%",
-            background: "white", border: "1px solid var(--border)", cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
-            opacity: canRight ? 1 : 0.3, transition: "opacity .2s",
-          }} aria-label="Siguiente">›</button>
+            );
+          })}
         </div>
       </div>
-      <style>{`div[style*="overflowX"]::-webkit-scrollbar{display:none}`}</style>
     </div>
   );
 }
@@ -211,7 +138,7 @@ function CatalogSection({ products, loading, onSelect, externalCat, onExternalCa
         </div>
       </div>
 
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "1.5rem 2rem 4rem", display: "flex", gap: "2.5rem", alignItems: "flex-start" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "1.5rem 2rem 4rem", display: "flex", gap: "2.5rem", alignItems: "flex-start" }} className="catalog-main-wrapper">
 
         {/* Sidebar izquierdo — igual que imagen 2 */}
         <div style={{ width: 160, flexShrink: 0, paddingTop: "0.5rem" }} className="catalog-sidebar">
@@ -290,7 +217,7 @@ function TrustBanner() {
     marginBottom: "0.75rem",
   };
   return (
-    <div style={{ background: "white", padding: "2rem 2.5rem" }}>
+    <div style={{ background: "white", padding: "2rem 2.5rem" }} className="trust-banner">
       <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", flexWrap: "wrap", gap: "3rem", alignItems: "flex-start" }}>
 
         {/* MÉTODOS DE PAGO */}

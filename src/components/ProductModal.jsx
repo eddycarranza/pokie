@@ -98,7 +98,7 @@ export default function ProductModal({ product, onClose }) {
         }}
       >
         {/* Top bar / breadcrumb */}
-        <div style={{
+        <div className="product-modal-breadcrumb" style={{
           padding: "0.9rem 2rem",
           display: "flex",
           alignItems: "center",
@@ -126,10 +126,10 @@ export default function ProductModal({ product, onClose }) {
         </div>
 
         {/* Main content: 2 columns */}
-        <div style={{ display: "flex", flexWrap: "wrap", flex: 1 }}>
+        <div className="product-modal-inner" style={{ display: "flex", flexWrap: "wrap", flex: 1 }}>
 
           {/* LEFT: Image Gallery */}
-          <div style={{ flex: "1 1 420px", padding: "1rem 2rem 2rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <div className="product-modal-left" style={{ flex: "1 1 420px", padding: "1rem 2rem 2rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
             <div style={{
               width: "100%", aspectRatio: "3/4", borderRadius: "8px",
               overflow: "hidden", background: "#f5f5f5", position: "relative",
@@ -180,7 +180,7 @@ export default function ProductModal({ product, onClose }) {
           </div>
 
           {/* RIGHT: Product Info */}
-          <div style={{ flex: "1 1 360px", padding: "1rem 2rem 2rem", display: "flex", flexDirection: "column", gap: "1.4rem" }}>
+          <div className="product-modal-right" style={{ flex: "1 1 360px", padding: "1rem 2rem 2rem", display: "flex", flexDirection: "column", gap: "1.4rem" }}>
 
             {/* Category + Name + Price */}
             <div>
