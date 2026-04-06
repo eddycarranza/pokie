@@ -174,11 +174,10 @@ export default function ProductModal({ product, onClose }) {
               </div>
             )}
 
+            {/* Descripción debajo de las fotos */}
             {product.description && (
-              <div style={{ marginTop: "0.5rem" }}>
-                <p style={{ fontFamily: "'Courier New', Courier, monospace", fontSize: "0.88rem", lineHeight: 1.8, color: "#444", margin: 0, whiteSpace: "pre-wrap", wordBreak: "break-word", overflowWrap: "break-word" }}>
-                  {product.description}
-                </p>
+              <div style={{ marginTop: "0.5rem", fontSize: "0.9rem", lineHeight: 1.9, color: "#333", fontFamily: "'Courier New', Courier, monospace", whiteSpace: "pre-wrap", wordBreak: "break-word", overflowWrap: "break-word" }}>
+                {product.description}
               </div>
             )}
           </div>
@@ -261,6 +260,14 @@ export default function ProductModal({ product, onClose }) {
                 AGREGAR AL CARRITO
               </button>
             )}
+
+            {/* Nota de demora */}
+            <div style={{ display: "flex", gap: 10, alignItems: "flex-start", background: "#f9f9f9", border: "1px solid #eee", borderRadius: 10, padding: "12px 14px" }}>
+              <span style={{ fontSize: "0.85rem", color: "#888", flexShrink: 0, marginTop: 1 }}>ⓘ</span>
+              <span style={{ fontSize: "0.82rem", color: "#555", lineHeight: 1.65, fontFamily: "'Courier New', Courier, monospace" }}>
+                todos los productos tienen de 7 a 21 días (aprox) de demora a partir de la compra, ya que cada producto está confeccionado con amor y dedicación desde cero (◕‿◕)
+              </span>
+            </div>
 
           </div>
         </div>
