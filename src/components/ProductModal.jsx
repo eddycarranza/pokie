@@ -261,11 +261,11 @@ export default function ProductModal({ product, onClose }) {
               </button>
             )}
 
-            {/* Nota de demora */}
+            {/* Nota de demora / MENSAJE PERSONALIZADO */}
             <div style={{ display: "flex", gap: 10, alignItems: "flex-start", background: "#f9f9f9", border: "1px solid #eee", borderRadius: 10, padding: "12px 14px" }}>
               <span style={{ fontSize: "0.85rem", color: "#888", flexShrink: 0, marginTop: 1 }}>ⓘ</span>
               <span style={{ fontSize: "0.82rem", color: "#555", lineHeight: 1.65, fontFamily: "'Courier New', Courier, monospace" }}>
-                todos los productos tienen de 7 a 21 días (aprox) de demora a partir de la compra, ya que cada producto está confeccionado con amor y dedicación desde cero (◕‿◕)
+                {product.shipping_message || "todos los productos tienen de 7 a 21 días (aprox) de demora a partir de la compra, ya que cada producto está confeccionado con amor y dedicación desde cero (◕‿◕)"}
               </span>
             </div>
 

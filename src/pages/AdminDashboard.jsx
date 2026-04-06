@@ -122,7 +122,7 @@ function ImageUploader({ onUploaded }) {
 function ProductForm({ initial, onSave, onCancel, isMobile }) {
   const [form, setForm] = useState(() => {
     if (!initial) {
-      return { name: "", cat: "", price: "", salePrice: "", stock: 0, description: "", badge: "", imageUrls: [], sizes: [], colors: [], variants: [] };
+      return { name: "", cat: "", price: "", salePrice: "", stock: 0, description: "", badge: "", imageUrls: [], sizes: [], colors: [], variants: [], shipping_message: "" };
     }
     let urls = [];
     if (initial.image_urls && initial.image_urls.length > 0) urls = initial.image_urls;
@@ -135,7 +135,8 @@ function ProductForm({ initial, onSave, onCancel, isMobile }) {
       stock: isNaN(initialStock) ? 0 : initialStock,
       sizes: initial.sizes || [],
       colors: initial.colors || [],
-      variants: Array.isArray(initial.variants) ? initial.variants : []
+      variants: Array.isArray(initial.variants) ? initial.variants : [],
+      shipping_message: initial.shipping_message || ""
     };
   });
 
@@ -146,7 +147,6 @@ function ProductForm({ initial, onSave, onCancel, isMobile }) {
     set("colors", form.colors.includes(colorName) ? form.colors.filter(c => c !== colorName) : [...form.colors, colorName]);
   };
 
-  // ÚNICA FORMA DE CREAR FILAS: El Generador Automático (Ahora es un Añadidor Inteligente)
   const handleGenerateVariants = () => {
     if (form.sizes.length === 0 && form.colors.length === 0) {
       return alert("Primero debes seleccionar al menos una Talla o un Color arriba para generar combinaciones.");
@@ -160,10 +160,8 @@ function ProductForm({ initial, onSave, onCancel, isMobile }) {
 
     sizesToUse.forEach(s => {
       colorsToUse.forEach(c => {
-        // Verifica si la combinación EXACTA ya existe en la tabla
         const exists = currentVariants.some(v => v.size === s && v.color === c);
         
-        // Si no existe, la añade. Si ya existe, la ignora para no borrar tu stock.
         if (!exists) {
           currentVariants.push({ size: s, color: c, stock: 0 });
           itemsAdded++;
@@ -192,7 +190,6 @@ function ProductForm({ initial, onSave, onCancel, isMobile }) {
     if (!form.name || !form.cat || !form.price) return alert("Nombre, categoría y precio son obligatorios");
     setSaving(true);
     
-    // Auto-calculamos el stock total en base a lo que escribas en la cuadrícula
     const totalStock = form.variants?.length > 0 
       ? form.variants.reduce((acc, curr) => acc + (curr.stock || 0), 0)
       : parseInt(form.stock, 10) || 0;
@@ -202,7 +199,8 @@ function ProductForm({ initial, onSave, onCancel, isMobile }) {
       price: parseFloat(form.price), 
       salePrice: form.salePrice ? parseFloat(form.salePrice) : null,
       stock: totalStock,
-      variants: form.variants
+      variants: form.variants,
+      shipping_message: form.shipping_message
     });
     setSaving(false);
   };
@@ -257,7 +255,28 @@ function ProductForm({ initial, onSave, onCancel, isMobile }) {
         
         <div className="form-group" style={{ gridColumn: "1/-1" }}>
           <label className="form-label">Descripción</label>
-          <textarea className="form-input" value={form.description || ""} onChange={e => set("description", sanitizeText(e.target.value))} rows={3} placeholder="Material, cuidados, detalles..." style={{ resize: "vertical" }} />
+          <textarea 
+            className="form-input" 
+            value={form.description || ""} 
+            onChange={e => set("description", sanitizeText(e.target.value))} 
+            rows={7} 
+            placeholder="Material, cuidados, detalles..." 
+            style={{ resize: "vertical", minHeight: "150px" }} 
+          />
+        </div>
+
+        {/* CAMPO NUEVO PARA EL MENSAJE PERSONALIZADO */}
+        <div className="form-group" style={{ gridColumn: "1/-1" }}>
+          <label className="form-label">Mensaje personalizado en Vista de Producto (Opcional)</label>
+          <textarea 
+            className="form-input" 
+            value={form.shipping_message || ""} 
+            onChange={e => set("shipping_message", sanitizeText(e.target.value))} 
+            rows={4} 
+            placeholder="Ej: todos los productos tienen de 7 a 21 días (aprox) de demora a partir de la compra..." 
+            style={{ resize: "vertical" }} 
+          />
+          <span style={{fontSize: "0.75rem", color: "var(--gray)"}}>Si lo dejas vacío, se mostrará el mensaje por defecto.</span>
         </div>
 
         <div className="form-group">
@@ -290,9 +309,6 @@ function ProductForm({ initial, onSave, onCancel, isMobile }) {
           )}
         </div>
 
-        {/* ======================================================== */}
-        {/* INVENTARIO EXACTO - SOLO SE CREA CON EL BOTÓN */}
-        {/* ======================================================== */}
         <div style={{ gridColumn: "1/-1", background: "var(--gray-light)", border: "1px solid var(--border)", borderRadius: 12, padding: "1.5rem", marginTop: "0.5rem" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", flexWrap: "wrap", gap: 10 }}>
             <div>
@@ -403,7 +419,6 @@ function BannerPanel({ showToast }) {
 
   const saveBanner = async (imgs) => {
     const value = JSON.stringify(imgs);
-    // Intentar update primero, si no existe hacer insert
     const checkRes = await fetch(`${API}/settings?key=eq.banner_images&select=key&limit=1`, { headers });
     const existing = await checkRes.json();
     let res;
@@ -624,7 +639,8 @@ export default function AdminDashboard() {
       description: data.description || "", badge: data.badge || null,
       sizes: data.sizes || [], colors: data.colors || [], 
       image_urls: data.imageUrls || [], stock: data.stock || 0,
-      variants: data.variants || []
+      variants: data.variants || [],
+      shipping_message: data.shipping_message || null
     };
     if (editing && editing !== "new") { await updateProduct(editing.id, supabaseData); showToast("Producto actualizado ✓"); }
     else { await addProduct(supabaseData); showToast("Producto agregado ✓"); }
