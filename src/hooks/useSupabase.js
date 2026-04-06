@@ -1,6 +1,6 @@
 // src/hooks/useSupabase.js
 import { useState, useEffect } from "react";
-import { supabase } from "../lib/supabase";
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from "../lib/supabase";
 
 // ============ LÓGICA DE SEGURIDAD GLOBAL ============
 // Esta función revisa si Supabase nos bloquea porque el pase VIP (JWT) caducó.
@@ -84,9 +84,27 @@ export function useOrders() {
   };
 
   const deleteOrder = async (id) => {
-    const { error } = await supabase.from("orders").delete("id", id);
-    if (error) alert("Error al eliminar pedido: " + JSON.stringify(error));
-    fetchOrders();
+    try {
+      const token = localStorage.getItem("admin_token") || SUPABASE_ANON_KEY;
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/orders?id=eq.${id}`, {
+        method: "DELETE",
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${token}`,
+          Prefer: "return=minimal",
+        },
+      });
+
+      if (res.ok || res.status === 204) {
+        // Eliminar directo del estado local sin refetch
+        setOrders(prev => prev.filter(o => o.id !== id));
+      } else {
+        const text = await res.text();
+        alert("Error al eliminar: " + text);
+      }
+    } catch (e) {
+      alert("Error al eliminar pedido: " + e.message);
+    }
   };
 
   return { orders, loading, addOrder, updateOrder, deleteOrder };

@@ -57,7 +57,12 @@ export default function ProductCard({ product, onClick, variant = "grid" }) {
               <span className="badge-status badge-cancelado" style={{ padding: "4px 8px", fontSize: "0.7rem", fontWeight: "bold" }}>AGOTADO</span>
             </div>
           )}
-          {salePrice && !isOutOfStock && (
+          {product.badge === "preventa" && !isOutOfStock && (
+            <div style={{ position: "absolute", top: 10, left: 10 }}>
+              <span className="badge-status badge-preventa" style={{ padding: "4px 8px", fontSize: "0.7rem", fontWeight: "bold" }}>PREVENTA</span>
+            </div>
+          )}
+          {salePrice && !isOutOfStock && product.badge !== "preventa" && (
             <div style={{ position: "absolute", top: 10, right: 10 }}>
               <span className="badge-status badge-sale" style={{ padding: "4px 8px", fontSize: "0.7rem", fontWeight: "bold" }}>OFERTA</span>
             </div>
@@ -110,7 +115,12 @@ export default function ProductCard({ product, onClick, variant = "grid" }) {
             <span className="badge-status badge-cancelado" style={{ padding: "4px 8px", fontSize: "0.7rem", fontWeight: "bold" }}>AGOTADO</span>
           </div>
         )}
-        {salePrice && !isOutOfStock && (
+        {product.badge === "preventa" && !isOutOfStock && (
+          <div style={{ position: "absolute", top: 10, left: 10 }}>
+            <span className="badge-status badge-preventa" style={{ padding: "4px 8px", fontSize: "0.7rem", fontWeight: "bold" }}>PREVENTA</span>
+          </div>
+        )}
+        {salePrice && !isOutOfStock && product.badge !== "preventa" && (
           <div style={{ position: "absolute", top: 10, right: 10 }}>
             <span className="badge-status badge-sale" style={{ padding: "4px 8px", fontSize: "0.7rem", fontWeight: "bold" }}>OFERTA</span>
           </div>

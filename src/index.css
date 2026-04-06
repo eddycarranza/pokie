@@ -76,6 +76,7 @@ input, select, textarea { font-family: 'Courier New', Courier, monospace; }
 .badge-cancelado { background: #f8d7da; color: #842029; }
 .badge-new { background: var(--dark); color: white; }
 .badge-sale { background: var(--danger); color: white; }
+.badge-preventa { background: #fff3cd; color: #856404; }
 
 /* Toast */
 .toast-container {

@@ -269,7 +269,7 @@ function CatalogSection({ products, loading, onSelect, externalCat, onExternalCa
           {loading ? (
             <div style={{ textAlign: "center", padding: "4rem", color: "var(--gray)" }}>
               <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>🐱</div>
-              Cargando productos...
+              Cargando catálogo...
             </div>
           ) : activeCat !== "Todos" ? (
             filtered.length === 0 ? (
@@ -283,7 +283,7 @@ function CatalogSection({ products, loading, onSelect, externalCat, onExternalCa
             )
           ) : (
             grouped.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "4rem", color: "var(--gray)" }}>No hay productos aún.</div>
+              <div style={{ textAlign: "center", padding: "4rem", color: "var(--gray)" }}>No hay artículos en el catálogo aún.</div>
             ) : (
               grouped.map(({ cat: catName, items }) => (
                 <div key={catName} style={{ marginBottom: "3rem" }}>

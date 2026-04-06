@@ -8,7 +8,7 @@ import Logo from "../components/Logo";
 
 // ============ SANITIZACIÓN ============
 const sanitize = (val) => String(val).replace(/[<>'"`;]/g, "").replace(/javascript:/gi, "").trimStart();
-const sanitizeText = (val) => sanitize(val).slice(0, 300);
+const sanitizeText = (val) => sanitize(val).slice(0, 2000);
 const sanitizeShort = (val) => sanitize(val).slice(0, 100);
 const sanitizeNum = (val) => val.replace(/[^0-9.]/g, "").slice(0, 12);
 
@@ -241,7 +241,7 @@ function ProductForm({ initial, onSave, onCancel, isMobile }) {
         <div className="form-group">
           <label className="form-label">Etiqueta (Badge)</label>
           <select className="form-input" value={form.badge || ""} onChange={e => set("badge", e.target.value)}>
-            <option value="">Sin etiqueta</option><option value="new">Nuevo</option><option value="sale">Oferta</option>
+            <option value="">Sin etiqueta</option><option value="new">Nuevo</option><option value="sale">Oferta</option><option value="preventa">Preventa</option>
           </select>
         </div>
 
