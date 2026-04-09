@@ -59,8 +59,7 @@ export default function ProductModal({ product, onClose }) {
   const handleAdd = () => {
     if (availableSizes.length > 0 && !selectedSize) return alert("Por favor, selecciona una talla.");
     if (availableColors.length > 0 && !selectedColor) return alert("Por favor, selecciona un color.");
-    if (isOutOfStock) return;
-    addToCart(product, qty, selectedSize, selectedColor);
+    addToCart(product, qty, selectedSize, selectedColor, isOutOfStock);
     onClose();
   };
 
@@ -149,8 +148,7 @@ export default function ProductModal({ product, onClose }) {
                 </>
               )}
               <div style={{ position: "absolute", top: 12, left: 12, display: "flex", gap: 6 }}>
-                {isOutOfStock && <span style={{ background: "#e00", color: "white", padding: "5px 10px", borderRadius: 4, fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>AGOTADO</span>}
-                {product.badge === "preventa" && !isOutOfStock && <span style={{ background: "#ffc107", color: "#856404", padding: "5px 10px", borderRadius: 4, fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>PREVENTA</span>}
+                {product.badge === "preventa" && <span style={{ background: "#ffc107", color: "#856404", padding: "5px 10px", borderRadius: 4, fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>PREVENTA</span>}
                 {salePrice && !isOutOfStock && product.badge !== "preventa" && <span style={{ background: "#1a1a1a", color: "white", padding: "5px 10px", borderRadius: 4, fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>OFERTA</span>}
               </div>
             </div>
@@ -236,13 +234,13 @@ export default function ProductModal({ product, onClose }) {
               <div style={{ fontSize: "0.85rem", fontWeight: 600, marginBottom: 8, color: "#1a1a1a", fontFamily: "'Courier New', Courier, monospace" }}>Cantidad</div>
               <div style={{ display: "flex", alignItems: "center", border: "1px solid #d5d5d5", borderRadius: 8, overflow: "hidden", width: "fit-content" }}>
                 <button onClick={() => setQty(q => Math.max(1, q - 1))} style={{ width: 40, height: 42, border: "none", background: "#f5f5f5", cursor: "pointer", fontSize: "1.2rem", display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={e => e.currentTarget.style.background="#ebebeb"} onMouseLeave={e => e.currentTarget.style.background="#f5f5f5"}>&#x2212;</button>
-                <input type="number" value={qty} min={1} max={currentStock} onChange={e => setQty(Math.min(currentStock, Math.max(1, parseInt(e.target.value) || 1)))} style={{ width: 52, height: 42, border: "none", textAlign: "center", fontSize: "1rem", fontFamily: "'Courier New', Courier, monospace", outline: "none" }} />
-                <button onClick={() => setQty(q => Math.min(currentStock, q + 1))} disabled={qty >= currentStock} style={{ width: 40, height: 42, border: "none", background: qty >= currentStock ? "#f0f0f0" : "#f5f5f5", cursor: qty >= currentStock ? "not-allowed" : "pointer", fontSize: "1.2rem", display: "flex", alignItems: "center", justifyContent: "center", opacity: qty >= currentStock ? 0.4 : 1 }} onMouseEnter={e => { if(qty < currentStock) e.currentTarget.style.background="#ebebeb"; }} onMouseLeave={e => { e.currentTarget.style.background = qty >= currentStock ? "#f0f0f0" : "#f5f5f5"; }}>&#x2b;</button>
+                <input type="number" value={qty} min={1} max={isOutOfStock ? 99 : currentStock} onChange={e => setQty(Math.min(isOutOfStock ? 99 : currentStock, Math.max(1, parseInt(e.target.value) || 1)))} style={{ width: 52, height: 42, border: "none", textAlign: "center", fontSize: "1rem", fontFamily: "'Courier New', Courier, monospace", outline: "none" }} />
+                <button onClick={() => setQty(q => isOutOfStock ? q + 1 : Math.min(currentStock, q + 1))} disabled={!isOutOfStock && qty >= currentStock} style={{ width: 40, height: 42, border: "none", background: (!isOutOfStock && qty >= currentStock) ? "#f0f0f0" : "#f5f5f5", cursor: (!isOutOfStock && qty >= currentStock) ? "not-allowed" : "pointer", fontSize: "1.2rem", display: "flex", alignItems: "center", justifyContent: "center", opacity: (!isOutOfStock && qty >= currentStock) ? 0.4 : 1 }} onMouseEnter={e => { if(isOutOfStock || qty < currentStock) e.currentTarget.style.background="#ebebeb"; }} onMouseLeave={e => { e.currentTarget.style.background = (!isOutOfStock && qty >= currentStock) ? "#f0f0f0" : "#f5f5f5"; }}>&#x2b;</button>
               </div>
             </div>
 
             {/* Stock */}
-            <div style={{ fontSize: "0.85rem", color: isOutOfStock ? "#e00" : "#2a7a2a", display: "flex", justifyContent: "space-between" }}>
+            <div style={{ fontSize: "0.85rem", color: isOutOfStock ? "#c77800" : "#2a7a2a", display: "flex", justifyContent: "space-between" }}>
               <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <span style={{ width: 8, height: 8, borderRadius: "50%", background: "currentColor", display: "inline-block" }}></span>
                 {isOutOfStock ? "A pedido" : "En stock"}
@@ -250,16 +248,17 @@ export default function ProductModal({ product, onClose }) {
               {!isOutOfStock && <span style={{ color: "#aaa" }}>{currentStock} unidades disponibles</span>}
             </div>
 
-            {/* Button */}
-            {isOutOfStock ? (
-              <button disabled style={{ padding: "15px", borderRadius: 10, fontSize: "0.9rem", width: "100%", letterSpacing: "1.5px", textTransform: "uppercase", fontWeight: 700, background: "#d5d5d5", color: "#888", border: "none", cursor: "not-allowed", fontFamily: "'Courier New', Courier, monospace" }}>
-                AGOTADO
-              </button>
-            ) : (
-              <button onClick={handleAdd} style={{ padding: "15px", borderRadius: 10, fontSize: "0.9rem", width: "100%", letterSpacing: "1.5px", textTransform: "uppercase", fontWeight: 700, background: "#1a1a1a", color: "white", border: "none", cursor: "pointer", fontFamily: "'Courier New', Courier, monospace", transition: "all .2s" }} onMouseEnter={e => e.currentTarget.style.background="#333"} onMouseLeave={e => e.currentTarget.style.background="#1a1a1a"}>
-                AGREGAR AL CARRITO
-              </button>
+            {/* Aviso pedido especial */}
+            {isOutOfStock && (
+              <div style={{ background: "#fff8e6", border: "1px solid #ffd06a", borderRadius: 8, padding: "10px 14px", fontSize: "0.82rem", color: "#7a5500", fontFamily: "'Courier New', Courier, monospace", lineHeight: 1.6 }}>
+                ⚠️ Este producto se hace <strong>a pedido</strong>. Puedes comprarlo, pero ten en cuenta que el tiempo de entrega puede ser un poco mayor al habitual.
+              </div>
             )}
+
+            {/* Button */}
+            <button onClick={handleAdd} style={{ padding: "15px", borderRadius: 10, fontSize: "0.9rem", width: "100%", letterSpacing: "1.5px", textTransform: "uppercase", fontWeight: 700, background: "#1a1a1a", color: "white", border: "none", cursor: "pointer", fontFamily: "'Courier New', Courier, monospace", transition: "all .2s" }} onMouseEnter={e => e.currentTarget.style.background="#333"} onMouseLeave={e => e.currentTarget.style.background="#1a1a1a"}>
+              AGREGAR AL CARRITO
+            </button>
 
             {/* Nota de demora / MENSAJE PERSONALIZADO */}
             <div style={{ display: "flex", gap: 10, alignItems: "flex-start", background: "#f9f9f9", border: "1px solid #eee", borderRadius: 10, padding: "12px 14px" }}>

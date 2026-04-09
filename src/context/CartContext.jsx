@@ -10,18 +10,12 @@ export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
 
-  const addToCart = (product, qty = 1, size = "", color = "") => {
-    // Validar stock antes de agregar
-    if (product.stock <= 0) {
-      alert("Este producto está agotado.");
-      return;
-    }
-    
+  const addToCart = (product, qty = 1, size = "", color = "", isBackorder = false) => {
     const key = `${product.id}-${size}-${color}`;
     setCart(prev => {
       const existing = prev.find(i => i.key === key);
-      // Validar que no exceda el stock
-      if (existing && existing.qty + qty > product.stock) {
+      // Solo validar stock si HAY stock (no es backorder)
+      if (!isBackorder && existing && existing.qty + qty > product.stock) {
         alert(`Solo quedan ${product.stock} unidades en stock.`);
         return prev;
       }
@@ -32,7 +26,8 @@ export function CartProvider({ children }) {
         price: product.sale_price || product.price,
         emoji: product.emoji || "🛍️", 
         imageUrl: product.image_urls?.[0] || product.image_url || null, 
-        size, color, qty, stock: product.stock
+        size, color, qty, stock: product.stock,
+        isBackorder,
       }];
     });
     setIsOpen(true);
@@ -42,7 +37,7 @@ export function CartProvider({ children }) {
     if (newQty < 1) return; 
     setCart(prev => prev.map(i => {
       if (i.key === key) {
-        if (newQty > i.stock) {
+        if (!i.isBackorder && newQty > i.stock) {
           alert(`Solo quedan ${i.stock} unidades disponibles.`);
           return i;
         }
@@ -78,8 +73,11 @@ export function CartProvider({ children }) {
       if (i.size) details.push(`talla ${i.size}`);
       if (i.color) details.push(`color ${i.color}`);
       const detailsStr = details.length > 0 ? ` [${details.join(", ")}]` : "";
-      return `- ${i.name}${detailsStr} x${i.qty} ...s/.${(i.price * i.qty).toFixed(2)}`;
+      const backorderTag = i.isBackorder ? " ⚠️ (a pedido)" : "";
+      return `- ${i.name}${detailsStr}${backorderTag} x${i.qty} ...s/.${(i.price * i.qty).toFixed(2)}`;
     });
+
+    const hasBackorder = cart.some(i => i.isBackorder);
 
     const lines = [
       `Nuevo pedido 𝜗ৎ`,
@@ -98,7 +96,8 @@ export function CartProvider({ children }) {
       ``,
       `Total: S/.${total.toFixed(2)}`,
       ``,
-      `_*El pago del envío es adicional y a calcular*_`
+      `_*El pago del envío es adicional y a calcular*_`,
+      ...(hasBackorder ? [``, `⚠️ _Uno o más productos son a pedido y pueden tener un tiempo de entrega mayor al habitual._`] : []),
     ];
     
     const msg = encodeURIComponent(lines.join("\n"));

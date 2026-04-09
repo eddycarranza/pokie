@@ -105,6 +105,7 @@ export default function CartSidebar() {
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: "0.9rem", fontWeight: 600 }}>{item.name}</div>
                     <div style={{ fontSize: "0.8rem", color: "#777" }}>{[item.size, item.color].filter(Boolean).join(" | ")}</div>
+                    {item.isBackorder && <div style={{ fontSize: "0.72rem", color: "#c77800", fontWeight: 600, marginTop: 2 }}>⚠️ A pedido</div>}
                     <div style={{ display: "flex", alignItems: "center", border: "1px solid #ddd", borderRadius: 4, width: "fit-content", marginTop: 8 }}>
                       <button onClick={() => updateQuantity(item.key, item.qty - 1)} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 10px" }}>-</button>
                       <span style={{ padding: "0 8px", fontSize: "0.9rem" }}>{item.qty}</span>
@@ -120,6 +121,11 @@ export default function CartSidebar() {
             </div>
             {cart.length > 0 && (
               <div style={{ padding: "1.5rem", borderTop: "1px solid #eee" }}>
+                {cart.some(i => i.isBackorder) && (
+                  <div style={{ background: "#fff8e6", border: "1px solid #ffd06a", borderRadius: 8, padding: "10px 12px", fontSize: "0.8rem", color: "#7a5500", marginBottom: "1rem", lineHeight: 1.5 }}>
+                    ⚠️ Tienes productos <strong>a pedido</strong>. Los haremos especialmente para ti, por lo que el tiempo de entrega puede ser un poco mayor al habitual.
+                  </div>
+                )}
                 <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 600, marginBottom: "1.25rem" }}>
                   <span>Total</span><span>S/ {total.toFixed(2)}</span>
                 </div>

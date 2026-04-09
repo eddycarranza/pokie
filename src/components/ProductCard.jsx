@@ -52,12 +52,7 @@ export default function ProductCard({ product, onClick, variant = "grid" }) {
               {product.emoji || "👗"}
             </div>
           )}
-          {isOutOfStock && (
-            <div style={{ position: "absolute", top: 10, left: 10 }}>
-              <span className="badge-status badge-cancelado" style={{ padding: "4px 8px", fontSize: "0.7rem", fontWeight: "bold" }}>AGOTADO</span>
-            </div>
-          )}
-          {product.badge === "preventa" && !isOutOfStock && (
+          {product.badge === "preventa" && (
             <div style={{ position: "absolute", top: 10, left: 10 }}>
               <span className="badge-status badge-preventa" style={{ padding: "4px 8px", fontSize: "0.7rem", fontWeight: "bold" }}>PREVENTA</span>
             </div>
@@ -110,12 +105,7 @@ export default function ProductCard({ product, onClick, variant = "grid" }) {
             {product.emoji || "👗"}
           </div>
         )}
-        {isOutOfStock && (
-          <div style={{ position: "absolute", top: 10, left: 10 }}>
-            <span className="badge-status badge-cancelado" style={{ padding: "4px 8px", fontSize: "0.7rem", fontWeight: "bold" }}>AGOTADO</span>
-          </div>
-        )}
-        {product.badge === "preventa" && !isOutOfStock && (
+        {product.badge === "preventa" && (
           <div style={{ position: "absolute", top: 10, left: 10 }}>
             <span className="badge-status badge-preventa" style={{ padding: "4px 8px", fontSize: "0.7rem", fontWeight: "bold" }}>PREVENTA</span>
           </div>
