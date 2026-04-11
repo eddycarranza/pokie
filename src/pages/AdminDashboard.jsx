@@ -239,7 +239,7 @@ function ProductForm({ initial, onSave, onCancel, isMobile }) {
         <div className="form-group">
           <label className="form-label">Etiqueta (Badge)</label>
           <select className="form-input" value={form.badge || ""} onChange={e => set("badge", e.target.value)}>
-            <option value="">Sin etiqueta</option><option value="new">Nuevo</option><option value="sale">Oferta</option><option value="preventa">Preventa</option>
+            <option value="">Sin etiqueta</option><option value="new">Nuevo</option><option value="sale">Oferta</option><option value="preventa">Preventa</option><option value="destacado">Destacado</option><option value="descontinuado">Descontinuado</option>
           </select>
         </div>
 

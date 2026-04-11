@@ -134,7 +134,7 @@ function NewInCarousel({ items, onSelect }) {
     <div style={{ background: "white", padding: "4rem 2rem 3rem" }} className="new-in-section">
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <h2 className="serif" style={{ fontSize: "2rem", textAlign: "center", marginBottom: "2.5rem", fontWeight: 400, letterSpacing: ".04em" }}>
-          New in
+          Destacados
         </h2>
         <div style={{
           display: "grid",
@@ -368,12 +368,10 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const safeProducts = Array.isArray(products) ? products : [];
+  const safeProducts = Array.isArray(products) ? products.filter(p => p.badge !== "descontinuado") : [];
 
   const newInItems = safeProducts.length > 0
-    ? [...safeProducts].filter(p => p.stock > 0)
-        .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
-        .slice(0, 10)
+    ? safeProducts.filter(p => p.badge === "destacado")
     : [];
 
   return (

@@ -248,12 +248,6 @@ export default function ProductModal({ product, onClose }) {
               {!isOutOfStock && <span style={{ color: "#aaa" }}>{currentStock} unidades disponibles</span>}
             </div>
 
-            {/* Aviso pedido especial */}
-            {isOutOfStock && (
-              <div style={{ background: "#fff8e6", border: "1px solid #ffd06a", borderRadius: 8, padding: "10px 14px", fontSize: "0.82rem", color: "#7a5500", fontFamily: "'Courier New', Courier, monospace", lineHeight: 1.6 }}>
-                ⚠️ Este producto se hace <strong>a pedido</strong>. Puedes comprarlo, pero ten en cuenta que el tiempo de entrega puede ser un poco mayor al habitual.
-              </div>
-            )}
 
             {/* Button */}
             <button onClick={handleAdd} style={{ padding: "15px", borderRadius: 10, fontSize: "0.9rem", width: "100%", letterSpacing: "1.5px", textTransform: "uppercase", fontWeight: 700, background: "#1a1a1a", color: "white", border: "none", cursor: "pointer", fontFamily: "'Courier New', Courier, monospace", transition: "all .2s" }} onMouseEnter={e => e.currentTarget.style.background="#333"} onMouseLeave={e => e.currentTarget.style.background="#1a1a1a"}>
