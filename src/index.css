@@ -1,5 +1,12 @@
 /* src/index.css */
 
+@font-face {
+  font-family: 'FuturaNowText';
+  src: url('./futura-now-text-rg.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}
+
 :root {
   --pink: #f2a7c3;
   --pink-light: #fce8f1;
@@ -13,14 +20,18 @@
   --success: #4caf7d;
   --danger: #e05252;
   --warning: #f0a500;
+  --font: 'FuturaNowText', 'Futura', 'Century Gothic', sans-serif;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { overflow-x: hidden; max-width: 100vw; }
-body { font-family: 'Courier New', Courier, monospace; background: #ffffff; color: var(--dark); }
+body { font-family: var(--font); background: #ffffff; color: var(--dark); }
 a { text-decoration: none; color: inherit; }
-button { font-family: 'Courier New', Courier, monospace; cursor: pointer; }
-input, select, textarea { font-family: 'Courier New', Courier, monospace; }
+button { font-family: var(--font); cursor: pointer; }
+input, select, textarea { font-family: var(--font); }
+
+/* Headings y nombres de producto — negrita */
+h1, h2, h3, h4, h5, h6 { font-family: var(--font); font-weight: 700; }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
@@ -28,7 +39,7 @@ input, select, textarea { font-family: 'Courier New', Courier, monospace; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
 /* Utilities */
-.serif { font-family: 'Courier New', Courier, monospace; font-weight: 700; }
+.serif { font-family: var(--font); font-weight: 700; }
 .text-gray { color: var(--gray); }
 .text-pink { color: var(--pink-dark); }
 .text-danger { color: var(--danger); }
@@ -173,4 +184,4 @@ input, select, textarea { font-family: 'Courier New', Courier, monospace; }
   .hide-mobile { display: none !important; }
 }
 
-em, i { font-family: 'Courier New', Courier, monospace; font-style: italic; }
+em, i { font-family: var(--font); font-style: italic; }

@@ -104,7 +104,7 @@ export default function ProductModal({ product, onClose }) {
           justifyContent: "space-between",
           position: "sticky", top: 0, background: "white", zIndex: 10,
         }}>
-          <div style={{ fontSize: "0.82rem", color: "#888", fontFamily: "'Courier New', Courier, monospace", display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+          <div style={{ fontSize: "0.82rem", color: "#888", fontFamily: "var(--font)", display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
             <span style={{ cursor: "pointer", textDecoration: "underline" }} onClick={onClose}>Inicio</span>
             <span>/</span>
             <span style={{ cursor: "pointer", textDecoration: "underline" }} onClick={onClose}>{product.cat || "Catálogo"}</span>
@@ -174,7 +174,7 @@ export default function ProductModal({ product, onClose }) {
 
             {/* Descripción debajo de las fotos */}
             {product.description && (
-              <div style={{ marginTop: "0.5rem", fontSize: "0.9rem", lineHeight: 1.9, color: "#333", fontFamily: "'Courier New', Courier, monospace", whiteSpace: "pre-wrap", wordBreak: "break-word", overflowWrap: "break-word" }}>
+              <div style={{ marginTop: "0.5rem", fontSize: "0.9rem", lineHeight: 1.9, color: "#333", fontFamily: "var(--font)", whiteSpace: "pre-wrap", wordBreak: "break-word", overflowWrap: "break-word" }}>
                 {product.description}
               </div>
             )}
@@ -185,10 +185,10 @@ export default function ProductModal({ product, onClose }) {
 
             {/* Category + Name + Price */}
             <div>
-              <div style={{ fontSize: "0.75rem", color: "#aaa", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: 6, fontFamily: "'Courier New', Courier, monospace" }}>
+              <div style={{ fontSize: "0.75rem", color: "#aaa", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: 6, fontFamily: "var(--font)" }}>
                 {product.cat}
               </div>
-              <h1 style={{ fontFamily: "'Courier New', Courier, monospace", fontSize: "1.8rem", fontWeight: 700, margin: "0 0 1rem 0", lineHeight: 1.1, color: "#1a1a1a" }}>
+              <h1 style={{ fontFamily: "var(--font)", fontSize: "1.8rem", fontWeight: 700, margin: "0 0 1rem 0", lineHeight: 1.1, color: "#1a1a1a" }}>
                 {product.name}
               </h1>
               <div style={{ fontSize: "1.7rem", fontWeight: 700, color: "#1a1a1a" }}>
@@ -206,8 +206,8 @@ export default function ProductModal({ product, onClose }) {
             {/* Sizes */}
             {availableSizes.length > 0 && (
               <div>
-                <div style={{ fontSize: "0.85rem", fontWeight: 600, marginBottom: 8, color: "#1a1a1a", fontFamily: "'Courier New', Courier, monospace" }}>Talla</div>
-                <select value={selectedSize} onChange={e => setSelectedSize(e.target.value)} style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: "1px solid #d5d5d5", fontSize: "0.95rem", fontFamily: "'Courier New', Courier, monospace", background: "white", cursor: "pointer", outline: "none" }}>
+                <div style={{ fontSize: "0.85rem", fontWeight: 600, marginBottom: 8, color: "#1a1a1a", fontFamily: "var(--font)" }}>Talla</div>
+                <select value={selectedSize} onChange={e => setSelectedSize(e.target.value)} style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: "1px solid #d5d5d5", fontSize: "0.95rem", fontFamily: "var(--font)", background: "white", cursor: "pointer", outline: "none" }}>
                   <option value="">Seleccionar talla</option>
                   {availableSizes.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
@@ -217,7 +217,7 @@ export default function ProductModal({ product, onClose }) {
             {/* Colors */}
             {availableColors.length > 0 && (
               <div>
-                <div style={{ fontSize: "0.85rem", fontWeight: 600, marginBottom: 8, color: "#1a1a1a", fontFamily: "'Courier New', Courier, monospace" }}>
+                <div style={{ fontSize: "0.85rem", fontWeight: 600, marginBottom: 8, color: "#1a1a1a", fontFamily: "var(--font)" }}>
                   Color: {selectedColor ? <span style={{ fontWeight: 400, color: "#555" }}>{selectedColor}</span> : <span style={{ fontWeight: 400, color: "#aaa" }}>(Selecciona)</span>}
                 </div>
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -231,10 +231,10 @@ export default function ProductModal({ product, onClose }) {
 
             {/* Quantity */}
             <div>
-              <div style={{ fontSize: "0.85rem", fontWeight: 600, marginBottom: 8, color: "#1a1a1a", fontFamily: "'Courier New', Courier, monospace" }}>Cantidad</div>
+              <div style={{ fontSize: "0.85rem", fontWeight: 600, marginBottom: 8, color: "#1a1a1a", fontFamily: "var(--font)" }}>Cantidad</div>
               <div style={{ display: "flex", alignItems: "center", border: "1px solid #d5d5d5", borderRadius: 8, overflow: "hidden", width: "fit-content" }}>
                 <button onClick={() => setQty(q => Math.max(1, q - 1))} style={{ width: 40, height: 42, border: "none", background: "#f5f5f5", cursor: "pointer", fontSize: "1.2rem", display: "flex", alignItems: "center", justifyContent: "center" }} onMouseEnter={e => e.currentTarget.style.background="#ebebeb"} onMouseLeave={e => e.currentTarget.style.background="#f5f5f5"}>&#x2212;</button>
-                <input type="number" value={qty} min={1} max={isOutOfStock ? 99 : currentStock} onChange={e => setQty(Math.min(isOutOfStock ? 99 : currentStock, Math.max(1, parseInt(e.target.value) || 1)))} style={{ width: 52, height: 42, border: "none", textAlign: "center", fontSize: "1rem", fontFamily: "'Courier New', Courier, monospace", outline: "none" }} />
+                <input type="number" value={qty} min={1} max={isOutOfStock ? 99 : currentStock} onChange={e => setQty(Math.min(isOutOfStock ? 99 : currentStock, Math.max(1, parseInt(e.target.value) || 1)))} style={{ width: 52, height: 42, border: "none", textAlign: "center", fontSize: "1rem", fontFamily: "var(--font)", outline: "none" }} />
                 <button onClick={() => setQty(q => isOutOfStock ? q + 1 : Math.min(currentStock, q + 1))} disabled={!isOutOfStock && qty >= currentStock} style={{ width: 40, height: 42, border: "none", background: (!isOutOfStock && qty >= currentStock) ? "#f0f0f0" : "#f5f5f5", cursor: (!isOutOfStock && qty >= currentStock) ? "not-allowed" : "pointer", fontSize: "1.2rem", display: "flex", alignItems: "center", justifyContent: "center", opacity: (!isOutOfStock && qty >= currentStock) ? 0.4 : 1 }} onMouseEnter={e => { if(isOutOfStock || qty < currentStock) e.currentTarget.style.background="#ebebeb"; }} onMouseLeave={e => { e.currentTarget.style.background = (!isOutOfStock && qty >= currentStock) ? "#f0f0f0" : "#f5f5f5"; }}>&#x2b;</button>
               </div>
             </div>
@@ -250,14 +250,14 @@ export default function ProductModal({ product, onClose }) {
 
 
             {/* Button */}
-            <button onClick={handleAdd} style={{ padding: "15px", borderRadius: 10, fontSize: "0.9rem", width: "100%", letterSpacing: "1.5px", textTransform: "uppercase", fontWeight: 700, background: "#1a1a1a", color: "white", border: "none", cursor: "pointer", fontFamily: "'Courier New', Courier, monospace", transition: "all .2s" }} onMouseEnter={e => e.currentTarget.style.background="#333"} onMouseLeave={e => e.currentTarget.style.background="#1a1a1a"}>
+            <button onClick={handleAdd} style={{ padding: "15px", borderRadius: 10, fontSize: "0.9rem", width: "100%", letterSpacing: "1.5px", textTransform: "uppercase", fontWeight: 700, background: "#1a1a1a", color: "white", border: "none", cursor: "pointer", fontFamily: "var(--font)", transition: "all .2s" }} onMouseEnter={e => e.currentTarget.style.background="#333"} onMouseLeave={e => e.currentTarget.style.background="#1a1a1a"}>
               AGREGAR AL CARRITO
             </button>
 
             {/* Nota de demora / MENSAJE PERSONALIZADO */}
             <div style={{ display: "flex", gap: 10, alignItems: "flex-start", background: "#f9f9f9", border: "1px solid #eee", borderRadius: 10, padding: "12px 14px" }}>
               <span style={{ fontSize: "0.85rem", color: "#888", flexShrink: 0, marginTop: 1 }}>ⓘ</span>
-              <span style={{ fontSize: "0.82rem", color: "#555", lineHeight: 1.65, fontFamily: "'Courier New', Courier, monospace" }}>
+              <span style={{ fontSize: "0.82rem", color: "#555", lineHeight: 1.65, fontFamily: "var(--font)" }}>
                 {product.shipping_message || "todos los productos tienen de 7 a 21 días (aprox) de demora a partir de la compra, ya que cada producto está confeccionado con amor y dedicación desde cero (◕‿◕)"}
               </span>
             </div>

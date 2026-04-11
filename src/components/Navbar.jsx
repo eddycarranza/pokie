@@ -65,7 +65,7 @@ export default function Navbar({ onCatChange }) {
   };
 
   const linkBaseStyle = {
-    fontFamily: "'Courier New', Courier, monospace", fontSize: "0.8rem",
+    fontFamily: "var(--font)", fontSize: "0.8rem",
     fontWeight: 600, letterSpacing: ".1em", color: "var(--dark)",
     textDecoration: "none", textTransform: "uppercase", transition: "color .2s",
     padding: "0 10px", height: "100%", display: "flex", alignItems: "center"
@@ -96,7 +96,7 @@ export default function Navbar({ onCatChange }) {
             <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               <Link to="/" onClick={() => window.scrollTo(0, 0)} style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
                 <Logo size={28} />
-                <span style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--dark)", fontFamily: "'Courier New', Courier, monospace", letterSpacing: '-0.5px' }}>Pookiecat</span>
+                <span style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--dark)", fontFamily: "var(--font)", letterSpacing: '-0.5px' }}>Pookiecat</span>
               </Link>
             </div>
             <div style={{ flex: '0 0 60px', display: 'flex', justifyContent: 'flex-end' }}>
@@ -147,7 +147,7 @@ export default function Navbar({ onCatChange }) {
                       <button key={cat} onClick={() => handleCat(cat)} style={{
                         display: "block", width: "100%", textAlign: "left",
                         padding: "11px 20px", background: "none", border: "none", cursor: "pointer",
-                        fontFamily: "'Courier New', Courier, monospace", fontSize: "0.85rem",
+                        fontFamily: "var(--font)", fontSize: "0.85rem",
                         color: "var(--dark)", fontWeight: 400, transition: "background .15s",
                       }}
                         onMouseEnter={e => { e.currentTarget.style.background = "var(--pink-light)"; e.currentTarget.style.color = "var(--pink-dark)"; }}
@@ -163,7 +163,7 @@ export default function Navbar({ onCatChange }) {
             <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
               <Link to="/" onClick={() => window.scrollTo(0, 0)} style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
                 <Logo size={36} />
-                <span style={{ fontSize: "1.4rem", fontWeight: 700, color: "var(--dark)", fontFamily: "'Courier New', Courier, monospace", letterSpacing: '-0.5px' }}>Pookiecat</span>
+                <span style={{ fontSize: "1.4rem", fontWeight: 700, color: "var(--dark)", fontFamily: "var(--font)", letterSpacing: '-0.5px' }}>Pookiecat</span>
               </Link>
             </div>
 
@@ -186,7 +186,7 @@ export default function Navbar({ onCatChange }) {
                 background: "var(--dark)", color: "white", border: "none",
                 padding: "10px 20px", borderRadius: 999, cursor: "pointer",
                 display: "flex", alignItems: "center", gap: 8, fontSize: "0.85rem",
-                fontFamily: "'Courier New', Courier, monospace", fontWeight: 600,
+                fontFamily: "var(--font)", fontWeight: 600,
                 transition: "all .2s", marginLeft: 10
               }}
                 onMouseEnter={e => e.currentTarget.style.background = "var(--pink-dark)"}
@@ -219,7 +219,7 @@ export default function Navbar({ onCatChange }) {
                   width: "100%", padding: "14px 18px", borderRadius: 12, cursor: "pointer",
                   border: "1.5px solid var(--border)",
                   background: "white", color: "var(--dark)",
-                  fontFamily: "'Courier New', Courier, monospace",
+                  fontFamily: "var(--font)",
                   fontSize: "0.88rem", fontWeight: 400,
                   transition: "all .15s",
                 }}
@@ -241,12 +241,12 @@ export default function Navbar({ onCatChange }) {
             <a href="https://www.instagram.com/pookiecat.pe/" target="_blank" rel="noopener noreferrer"
               style={{ color: "var(--dark)", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, textDecoration: "none" }}>
               <IconInstagram />
-              <span style={{ fontSize: "0.65rem", color: "var(--gray)", fontFamily: "'Courier New', Courier, monospace" }}>Instagram</span>
+              <span style={{ fontSize: "0.65rem", color: "var(--gray)", fontFamily: "var(--font)" }}>Instagram</span>
             </a>
             <a href="https://www.tiktok.com/@pookiecat.pe" target="_blank" rel="noopener noreferrer"
               style={{ color: "var(--dark)", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, textDecoration: "none" }}>
               <IconTiktok />
-              <span style={{ fontSize: "0.65rem", color: "var(--gray)", fontFamily: "'Courier New', Courier, monospace" }}>TikTok</span>
+              <span style={{ fontSize: "0.65rem", color: "var(--gray)", fontFamily: "var(--font)" }}>TikTok</span>
             </a>
           </div>
         </div>

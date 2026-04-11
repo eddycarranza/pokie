@@ -61,7 +61,7 @@ function TagInput({ tags, onChange, placeholder }) {
       ))}
       <input 
         value={val} onChange={e => setVal(e.target.value)} onKeyDown={handleKeyDown} placeholder={tags.length ? "" : placeholder}
-        style={{ border: "none", outline: "none", fontSize: "0.85rem", flex: 1, minWidth: 80, fontFamily: "'Courier New', Courier, monospace", background: "transparent" }} 
+        style={{ border: "none", outline: "none", fontSize: "0.85rem", flex: 1, minWidth: 80, fontFamily: "var(--font)", background: "transparent" }} 
       />
       {val.trim() && (
         <button type="button" onClick={handleAdd} style={{ background: "var(--pink-dark)", color: "white", border: "none", borderRadius: "50%", width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, fontSize: "1.2rem", lineHeight: 1 }}>+</button>
@@ -122,7 +122,7 @@ function ImageUploader({ onUploaded }) {
 function ProductForm({ initial, onSave, onCancel, isMobile }) {
   const [form, setForm] = useState(() => {
     if (!initial) {
-      return { name: "", cat: "", price: "", salePrice: "", stock: 0, description: "", badge: "", imageUrls: [], sizes: [], colors: [], variants: [], shipping_message: "" };
+      return { name: "", cat: "", price: "", salePrice: "", stock: 0, description: "", badge: "", featured: false, imageUrls: [], sizes: [], colors: [], variants: [], shipping_message: "" };
     }
     let urls = [];
     if (initial.image_urls && initial.image_urls.length > 0) urls = initial.image_urls;
@@ -133,6 +133,7 @@ function ProductForm({ initial, onSave, onCancel, isMobile }) {
       ...initial, 
       imageUrls: urls, 
       stock: isNaN(initialStock) ? 0 : initialStock,
+      featured: initial.featured || false,
       sizes: initial.sizes || [],
       colors: initial.colors || [],
       variants: Array.isArray(initial.variants) ? initial.variants : [],
@@ -200,6 +201,7 @@ function ProductForm({ initial, onSave, onCancel, isMobile }) {
       salePrice: form.salePrice ? parseFloat(form.salePrice) : null,
       stock: totalStock,
       variants: form.variants,
+      featured: form.featured || false,
       shipping_message: form.shipping_message
     });
     setSaving(false);
@@ -239,8 +241,29 @@ function ProductForm({ initial, onSave, onCancel, isMobile }) {
         <div className="form-group">
           <label className="form-label">Etiqueta (Badge)</label>
           <select className="form-input" value={form.badge || ""} onChange={e => set("badge", e.target.value)}>
-            <option value="">Sin etiqueta</option><option value="new">Nuevo</option><option value="sale">Oferta</option><option value="preventa">Preventa</option><option value="destacado">Destacado</option><option value="descontinuado">Descontinuado</option>
+            <option value="">Sin etiqueta</option><option value="new">Nuevo</option><option value="sale">Oferta</option><option value="preventa">Preventa</option><option value="descontinuado">Descontinuado</option>
           </select>
+        </div>
+
+        <div className="form-group" style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <label className="form-label" style={{ margin: 0 }}>⭐ Destacado</label>
+          <div
+            onClick={() => set("featured", !form.featured)}
+            style={{
+              width: 44, height: 24, borderRadius: 999, cursor: "pointer", transition: "background .2s",
+              background: form.featured ? "#1a1a1a" : "#d5d5d5",
+              position: "relative", flexShrink: 0,
+            }}
+          >
+            <div style={{
+              position: "absolute", top: 3, left: form.featured ? 23 : 3,
+              width: 18, height: 18, borderRadius: "50%", background: "white",
+              transition: "left .2s", boxShadow: "0 1px 3px rgba(0,0,0,.3)",
+            }} />
+          </div>
+          <span style={{ fontSize: "0.8rem", color: "#888" }}>
+            {form.featured ? "Aparece en sección Destacados" : "No aparece en Destacados"}
+          </span>
         </div>
 
         <div className="form-group">
@@ -640,7 +663,8 @@ export default function AdminDashboard() {
       sizes: data.sizes || [], colors: data.colors || [], 
       image_urls: data.imageUrls || [], stock: data.stock || 0,
       variants: data.variants || [],
-      shipping_message: data.shipping_message || null
+      shipping_message: data.shipping_message || null,
+      featured: data.featured || false,
     };
     if (editing && editing !== "new") { await updateProduct(editing.id, supabaseData); showToast("Producto actualizado ✓"); }
     else { await addProduct(supabaseData); showToast("Producto agregado ✓"); }
@@ -759,7 +783,7 @@ export default function AdminDashboard() {
                     {["dia", "semana", "mes"].map(p => (
                       <button key={p} onClick={() => setChartPeriod(p)} style={{
                         padding: "4px 10px", borderRadius: 999, border: "1px solid var(--border)",
-                        background: chartPeriod === p ? "var(--dark)" : "white", color: chartPeriod === p ? "white" : "var(--gray)", fontSize: "0.72rem", cursor: "pointer", fontFamily: "'Courier New', Courier, monospace",
+                        background: chartPeriod === p ? "var(--dark)" : "white", color: chartPeriod === p ? "white" : "var(--gray)", fontSize: "0.72rem", cursor: "pointer", fontFamily: "var(--font)",
                       }}>{p}</button>
                     ))}
                   </div>

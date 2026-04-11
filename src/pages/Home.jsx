@@ -186,8 +186,8 @@ function NewInCarousel({ items, onSelect }) {
                 </div>
                 {/* Info debajo */}
                 <div style={{ textAlign: "center", marginTop: "0.75rem", width: "100%" }}>
-                  <div style={{ fontSize: "0.95rem", fontWeight: 500, fontFamily: "'Courier New', Courier, monospace", marginBottom: 4 }}>{p.name}</div>
-                  <div style={{ fontSize: "0.88rem", color: "#555", fontFamily: "'Courier New', Courier, monospace" }}>
+                  <div style={{ fontSize: "0.95rem", fontWeight: 500, fontFamily: "var(--font)", marginBottom: 4 }}>{p.name}</div>
+                  <div style={{ fontSize: "0.88rem", color: "#555", fontFamily: "var(--font)" }}>
                     {salePrice ? (
                       <>
                         <span style={{ textDecoration: "line-through", color: "#aaa", marginRight: 6 }}>S/ {Number(p.price).toFixed(2)}</span>
@@ -229,7 +229,7 @@ function CatalogSection({ products, loading, onSelect, externalCat, onExternalCa
     <div id="catalog" style={{ background: "white" }}>
       {/* Breadcrumb */}
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "1.2rem 2rem 0" }}>
-        <div style={{ fontSize: "0.82rem", color: "var(--gray)", fontFamily: "'Courier New', Courier, monospace" }}>
+        <div style={{ fontSize: "0.82rem", color: "var(--gray)", fontFamily: "var(--font)" }}>
           <span style={{ cursor: "pointer", textDecoration: "underline" }} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>Inicio</span>
           {" / "}
           <span>Productos</span>
@@ -241,7 +241,7 @@ function CatalogSection({ products, loading, onSelect, externalCat, onExternalCa
 
         {/* Sidebar izquierdo — igual que imagen 2 */}
         <div style={{ width: 160, flexShrink: 0, paddingTop: "0.5rem" }} className="catalog-sidebar">
-          <div style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".12em", color: "var(--gray)", marginBottom: "1rem", fontFamily: "'Courier New', Courier, monospace" }}>
+          <div style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".12em", color: "var(--gray)", marginBottom: "1rem", fontFamily: "var(--font)" }}>
             Categorias
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -249,7 +249,7 @@ function CatalogSection({ products, loading, onSelect, externalCat, onExternalCa
               <button key={c} onClick={() => setActiveCat(c)} style={{
                 display: "block", textAlign: "left", padding: "7px 0",
                 background: "none", border: "none", cursor: "pointer",
-                fontFamily: "'Courier New', Courier, monospace",
+                fontFamily: "var(--font)",
                 fontSize: "0.88rem",
                 color: c === activeCat ? "var(--dark)" : "var(--gray)",
                 fontWeight: c === activeCat ? 700 : 400,
@@ -290,7 +290,7 @@ function CatalogSection({ products, loading, onSelect, externalCat, onExternalCa
                   <h3 style={{
                     fontSize: "1rem", fontWeight: 700, marginBottom: "1rem",
                     paddingBottom: "0.5rem",
-                    fontFamily: "'Courier New', Courier, monospace", textTransform: "uppercase",
+                    fontFamily: "var(--font)", textTransform: "uppercase",
                     letterSpacing: ".08em", color: "var(--dark)",
                   }}>{catName}</h3>
                   <div className="catalog-grid">
@@ -312,7 +312,7 @@ function TrustBanner() {
   const sectionTitle = {
     fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.12em",
     textTransform: "uppercase", color: "#888",
-    fontFamily: "'Courier New', Courier, monospace",
+    fontFamily: "var(--font)",
     marginBottom: "0.75rem",
   };
   return (
@@ -329,7 +329,7 @@ function TrustBanner() {
               <div style={{ width: 40, height: 40, background: "#f5f5f5", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
               </div>
-              <span style={{ fontSize: "0.6rem", fontFamily: "'Courier New', Courier, monospace", textTransform: "uppercase", letterSpacing: "0.05em", color: "#888" }}>Transf.</span>
+              <span style={{ fontSize: "0.6rem", fontFamily: "var(--font)", textTransform: "uppercase", letterSpacing: "0.05em", color: "#888" }}>Transf.</span>
             </div>
           </div>
         </div>
@@ -344,7 +344,7 @@ function TrustBanner() {
               <div style={{ width: 40, height: 36, background: "#f5f5f5", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="#555"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zm-.5 1.5l1.96 2.5H17V9.5h2.5zM6 18c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm13 0c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/></svg>
               </div>
-              <span style={{ fontSize: "0.6rem", fontFamily: "'Courier New', Courier, monospace", textTransform: "uppercase", letterSpacing: "0.05em", color: "#888" }}>Express</span>
+              <span style={{ fontSize: "0.6rem", fontFamily: "var(--font)", textTransform: "uppercase", letterSpacing: "0.05em", color: "#888" }}>Express</span>
             </div>
           </div>
         </div>
@@ -371,7 +371,7 @@ export default function Home() {
   const safeProducts = Array.isArray(products) ? products.filter(p => p.badge !== "descontinuado") : [];
 
   const newInItems = safeProducts.length > 0
-    ? safeProducts.filter(p => p.badge === "destacado")
+    ? safeProducts.filter(p => p.featured)
     : [];
 
   return (
@@ -399,7 +399,7 @@ export default function Home() {
       <TrustBanner />
 
       <footer style={{ background: "var(--dark)", color: "white", textAlign: "center", padding: "2rem 1rem" }}>
-        <p style={{ fontSize: "0.85rem", opacity: 0.8, fontFamily: "'Courier New', Courier, monospace" }}>
+        <p style={{ fontSize: "0.85rem", opacity: 0.8, fontFamily: "var(--font)" }}>
           Envíos a todo el Perú · WhatsApp: 927 112 114 · pookiecat.pe
         </p>
       </footer>
