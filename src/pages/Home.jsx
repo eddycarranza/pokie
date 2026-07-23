@@ -191,7 +191,7 @@ function NewInCarousel({ items, onSelect }) {
                     {salePrice ? (
                       <>
                         <span style={{ textDecoration: "line-through", color: "#aaa", marginRight: 6 }}>S/ {Number(p.price).toFixed(2)}</span>
-                        <span style={{ color: "#e00" }}>S/ {Number(salePrice).toFixed(2)}</span>
+                        <span style={{ color: "var(--dark)" }}>S/ {Number(salePrice).toFixed(2)}</span>
                       </>
                     ) : `S/ ${Number(price).toFixed(2)}`}
                   </div>

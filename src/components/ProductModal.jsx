@@ -194,7 +194,7 @@ export default function ProductModal({ product, onClose }) {
               <div style={{ fontSize: "1.7rem", fontWeight: 700, color: "#1a1a1a" }}>
                 {salePrice ? (
                   <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-                    <span style={{ color: "#e00" }}>S/ {Number(salePrice).toFixed(2)}</span>
+                    <span style={{ color: "var(--dark)" }}>S/ {Number(salePrice).toFixed(2)}</span>
                     <span style={{ textDecoration: "line-through", color: "#aaa", fontSize: "1rem", fontWeight: 400 }}>S/ {Number(normalPrice).toFixed(2)}</span>
                   </div>
                 ) : (
