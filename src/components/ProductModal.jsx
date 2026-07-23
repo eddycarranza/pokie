@@ -148,8 +148,8 @@ export default function ProductModal({ product, onClose }) {
                 </>
               )}
               <div style={{ position: "absolute", top: 12, left: 12, display: "flex", gap: 6 }}>
-                {product.badge === "preventa" && <span style={{ background: "#fff3cd", color: "#856404", padding: "5px 14px", borderRadius: 20, fontSize: "0.9rem", fontWeight: 400, fontFamily: "var(--font-title)" }}>Preventa</span>}
-                {salePrice && !isOutOfStock && product.badge !== "preventa" && <span style={{ background: "#1a1a1a", color: "white", padding: "5px 10px", borderRadius: 4, fontSize: "0.78rem", fontWeight: 400, fontFamily: "var(--font-title)" }}>Oferta</span>}
+                {product.badge === "preventa" && <span style={{ background: "white", color: "var(--dark)", padding: "5px 14px", borderRadius: 20, fontSize: "0.9rem", fontWeight: 400, fontFamily: "var(--font-title)" }}>Preventa</span>}
+                {salePrice && !isOutOfStock && product.badge !== "preventa" && <span style={{ background: "#1a1a1a", color: "white", padding: "5px 14px", borderRadius: 20, fontSize: "0.9rem", fontWeight: 400, fontFamily: "var(--font-title)" }}>Oferta</span>}
               </div>
             </div>
 

@@ -94,8 +94,8 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-title); font-weight: 400; }
 .badge-entregado { background: #cfe2ff; color: #084298; }
 .badge-cancelado { background: #f8d7da; color: #842029; }
 .badge-new { background: var(--dark); color: white; }
-.badge-sale { background: var(--danger); color: white; }
-.badge-preventa { background: #fff3cd; color: #856404; }
+.badge-sale { background: var(--dark); color: white; }
+.badge-preventa { background: white; color: var(--dark); }
 
 /* Toast */
 .toast-container {

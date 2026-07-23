@@ -59,7 +59,7 @@ export default function ProductCard({ product, onClick, variant = "grid" }) {
           )}
           {salePrice && !isOutOfStock && product.badge !== "preventa" && (
             <div style={{ position: "absolute", top: 10, right: 10 }}>
-              <span className="badge-status badge-sale" style={{ padding: "4px 8px", fontSize: "0.75rem", fontWeight: 400, fontFamily: "var(--font-title)" }}>Oferta</span>
+              <span className="badge-status badge-sale" style={{ padding: "5px 12px", fontSize: "0.88rem", fontWeight: 400, fontFamily: "var(--font-title)", borderRadius: 20 }}>Oferta</span>
             </div>
           )}
         </div>
@@ -112,7 +112,7 @@ export default function ProductCard({ product, onClick, variant = "grid" }) {
         )}
         {salePrice && !isOutOfStock && product.badge !== "preventa" && (
           <div style={{ position: "absolute", top: 10, right: 10 }}>
-            <span className="badge-status badge-sale" style={{ padding: "4px 8px", fontSize: "0.75rem", fontWeight: 400, fontFamily: "var(--font-title)" }}>Oferta</span>
+            <span className="badge-status badge-sale" style={{ padding: "5px 12px", fontSize: "0.88rem", fontWeight: 400, fontFamily: "var(--font-title)", borderRadius: 20 }}>Oferta</span>
           </div>
         )}
       </div>
