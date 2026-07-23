@@ -69,7 +69,7 @@ export default function ProductCard({ product, onClick, variant = "grid" }) {
             {salePrice ? (
               <>
                 <span style={{ textDecoration: "line-through", color: "var(--gray)", fontSize: "0.8rem", marginRight: "6px" }}>S/ {Number(normalPrice).toFixed(2)}</span>
-                <span style={{ color: "var(--danger)" }}>S/ {Number(salePrice).toFixed(2)}</span>
+                <span style={{ color: "var(--dark)" }}>S/ {Number(salePrice).toFixed(2)}</span>
               </>
             ) : `S/ ${Number(effPrice).toFixed(2)}`}
           </div>
@@ -123,7 +123,7 @@ export default function ProductCard({ product, onClick, variant = "grid" }) {
           {salePrice ? (
             <>
               <span style={{ textDecoration: "line-through", color: "var(--gray)", fontSize: "0.82rem", marginRight: "6px" }}>S/ {Number(normalPrice).toFixed(2)}</span>
-              <span style={{ color: "var(--danger)" }}>S/ {Number(salePrice).toFixed(2)}</span>
+              <span style={{ color: "var(--dark)" }}>S/ {Number(salePrice).toFixed(2)}</span>
             </>
           ) : `S/ ${Number(effPrice).toFixed(2)}`}
         </div>
