@@ -54,12 +54,12 @@ export default function ProductCard({ product, onClick, variant = "grid" }) {
           )}
           {product.badge === "preventa" && (
             <div style={{ position: "absolute", top: 10, left: 10 }}>
-              <span className="badge-status badge-preventa" style={{ padding: "4px 8px", fontSize: "0.7rem", fontWeight: "bold" }}>PREVENTA</span>
+              <span className="badge-status badge-preventa" style={{ padding: "5px 12px", fontSize: "0.88rem", fontWeight: 400, fontFamily: "var(--font-title)", borderRadius: 20 }}>Preventa</span>
             </div>
           )}
           {salePrice && !isOutOfStock && product.badge !== "preventa" && (
             <div style={{ position: "absolute", top: 10, right: 10 }}>
-              <span className="badge-status badge-sale" style={{ padding: "4px 8px", fontSize: "0.7rem", fontWeight: "bold" }}>OFERTA</span>
+              <span className="badge-status badge-sale" style={{ padding: "4px 8px", fontSize: "0.75rem", fontWeight: 400, fontFamily: "var(--font-title)" }}>Oferta</span>
             </div>
           )}
         </div>
@@ -107,17 +107,17 @@ export default function ProductCard({ product, onClick, variant = "grid" }) {
         )}
         {product.badge === "preventa" && (
           <div style={{ position: "absolute", top: 10, left: 10 }}>
-            <span className="badge-status badge-preventa" style={{ padding: "4px 8px", fontSize: "0.7rem", fontWeight: "bold" }}>PREVENTA</span>
+            <span className="badge-status badge-preventa" style={{ padding: "5px 12px", fontSize: "0.88rem", fontWeight: 400, fontFamily: "var(--font-title)", borderRadius: 20 }}>Preventa</span>
           </div>
         )}
         {salePrice && !isOutOfStock && product.badge !== "preventa" && (
           <div style={{ position: "absolute", top: 10, right: 10 }}>
-            <span className="badge-status badge-sale" style={{ padding: "4px 8px", fontSize: "0.7rem", fontWeight: "bold" }}>OFERTA</span>
+            <span className="badge-status badge-sale" style={{ padding: "4px 8px", fontSize: "0.75rem", fontWeight: 400, fontFamily: "var(--font-title)" }}>Oferta</span>
           </div>
         )}
       </div>
       <div style={{ padding: "0.9rem", display: "flex", flexDirection: "column", flex: 1 }}>
-        <div style={{ fontSize: "0.7rem", color: "var(--gray)", marginBottom: "3px", textTransform: "uppercase", letterSpacing: "1px" }}>{product.cat}</div>
+        <div style={{ fontSize: "0.7rem", color: "var(--gray)", marginBottom: "3px", letterSpacing: "1px", fontFamily: "var(--font)" }}>{product.cat ? product.cat.charAt(0).toUpperCase() + product.cat.slice(1).toLowerCase() : ""}</div>
         <h3 className="serif" style={{ fontSize: "1rem", margin: "0 0 6px 0", lineHeight: 1.2 }}>{product.name}</h3>
         <div style={{ marginTop: "auto", fontWeight: 600, fontSize: "0.92rem" }}>
           {salePrice ? (

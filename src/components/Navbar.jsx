@@ -65,8 +65,8 @@ export default function Navbar({ onCatChange }) {
   };
 
   const linkBaseStyle = {
-    fontFamily: "var(--font)", fontSize: "0.8rem",
-    fontWeight: 600, letterSpacing: ".1em", color: "var(--dark)",
+    fontFamily: "var(--font-title)", fontSize: "0.85rem",
+    fontWeight: 400, letterSpacing: ".08em", color: "var(--dark)",
     textDecoration: "none", textTransform: "uppercase", transition: "color .2s",
     padding: "0 10px", height: "100%", display: "flex", alignItems: "center"
   };
@@ -96,7 +96,7 @@ export default function Navbar({ onCatChange }) {
             <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               <Link to="/" onClick={() => window.scrollTo(0, 0)} style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
                 <Logo size={28} />
-                <span style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--dark)", fontFamily: "var(--font)", letterSpacing: '-0.5px' }}>Pookiecat</span>
+                <span style={{ fontSize: "1.3rem", fontWeight: 400, color: "var(--dark)", fontFamily: "var(--font-title)", letterSpacing: "0.02em" }}>Pookiecat</span>
               </Link>
             </div>
             <div style={{ flex: '0 0 60px', display: 'flex', justifyContent: 'flex-end' }}>
@@ -147,7 +147,7 @@ export default function Navbar({ onCatChange }) {
                       <button key={cat} onClick={() => handleCat(cat)} style={{
                         display: "block", width: "100%", textAlign: "left",
                         padding: "11px 20px", background: "none", border: "none", cursor: "pointer",
-                        fontFamily: "var(--font)", fontSize: "0.85rem",
+                        fontFamily: "var(--font)", fontSize: "0.88rem",
                         color: "var(--dark)", fontWeight: 400, transition: "background .15s",
                       }}
                         onMouseEnter={e => { e.currentTarget.style.background = "var(--pink-light)"; e.currentTarget.style.color = "var(--pink-dark)"; }}
@@ -163,7 +163,7 @@ export default function Navbar({ onCatChange }) {
             <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
               <Link to="/" onClick={() => window.scrollTo(0, 0)} style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
                 <Logo size={36} />
-                <span style={{ fontSize: "1.4rem", fontWeight: 700, color: "var(--dark)", fontFamily: "var(--font)", letterSpacing: '-0.5px' }}>Pookiecat</span>
+                <span style={{ fontSize: "1.7rem", fontWeight: 400, color: "var(--dark)", fontFamily: "var(--font-title)", letterSpacing: "0.02em" }}>Pookiecat</span>
               </Link>
             </div>
 
@@ -186,7 +186,7 @@ export default function Navbar({ onCatChange }) {
                 background: "var(--dark)", color: "white", border: "none",
                 padding: "10px 20px", borderRadius: 999, cursor: "pointer",
                 display: "flex", alignItems: "center", gap: 8, fontSize: "0.85rem",
-                fontFamily: "var(--font)", fontWeight: 600,
+                fontFamily: "var(--font-title)", fontWeight: 400,
                 transition: "all .2s", marginLeft: 10
               }}
                 onMouseEnter={e => e.currentTarget.style.background = "var(--pink-dark)"}

@@ -1,6 +1,13 @@
 /* src/index.css */
 
 @font-face {
+  font-family: 'Anaktoria';
+  src: url('./Anaktoria.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
   font-family: 'FuturaNowText';
   src: url('./futura-now-text-rg.otf') format('opentype');
   font-weight: 400;
@@ -21,6 +28,7 @@
   --danger: #e05252;
   --warning: #f0a500;
   --font: 'FuturaNowText', 'Futura', 'Century Gothic', sans-serif;
+  --font-title: 'Anaktoria', 'Georgia', serif;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -31,7 +39,7 @@ button { font-family: var(--font); cursor: pointer; }
 input, select, textarea { font-family: var(--font); }
 
 /* Headings y nombres de producto — negrita */
-h1, h2, h3, h4, h5, h6 { font-family: var(--font); font-weight: 700; }
+h1, h2, h3, h4, h5, h6 { font-family: var(--font-title); font-weight: 400; }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }

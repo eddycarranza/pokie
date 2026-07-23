@@ -133,7 +133,7 @@ function NewInCarousel({ items, onSelect }) {
   return (
     <div style={{ background: "white", padding: "4rem 2rem 3rem" }} className="new-in-section">
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-        <h2 className="serif" style={{ fontSize: "2rem", textAlign: "center", marginBottom: "2.5rem", fontWeight: 400, letterSpacing: ".04em" }}>
+        <h2 style={{ fontSize: "3rem", textAlign: "center", marginBottom: "2.5rem", fontWeight: 700, letterSpacing: ".06em", fontFamily: "var(--font-title)", color: "rgba(26,26,26,0.8)" }}>
           Destacados
         </h2>
         <div style={{
@@ -241,7 +241,7 @@ function CatalogSection({ products, loading, onSelect, externalCat, onExternalCa
 
         {/* Sidebar izquierdo — igual que imagen 2 */}
         <div style={{ width: 160, flexShrink: 0, paddingTop: "0.5rem" }} className="catalog-sidebar">
-          <div style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".12em", color: "var(--gray)", marginBottom: "1rem", fontFamily: "var(--font)" }}>
+          <div style={{ fontSize: "0.75rem", fontWeight: 400, textTransform: "uppercase", letterSpacing: ".12em", color: "var(--gray)", marginBottom: "1rem", fontFamily: "var(--font-title)" }}>
             Categorias
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -288,11 +288,11 @@ function CatalogSection({ products, loading, onSelect, externalCat, onExternalCa
               grouped.map(({ cat: catName, items }) => (
                 <div key={catName} style={{ marginBottom: "3rem" }}>
                   <h3 style={{
-                    fontSize: "1rem", fontWeight: 700, marginBottom: "1rem",
+                    fontSize: "1rem", fontWeight: 400, marginBottom: "1rem",
                     paddingBottom: "0.5rem",
-                    fontFamily: "var(--font)", textTransform: "uppercase",
+                    fontFamily: "var(--font)", textTransform: "capitalize",
                     letterSpacing: ".08em", color: "var(--dark)",
-                  }}>{catName}</h3>
+                  }}>{catName.toUpperCase()}</h3>
                   <div className="catalog-grid">
                     {items.map(p => <ProductCard key={p.id} product={p} onClick={onSelect} variant="grid" />)}
                   </div>
@@ -325,12 +325,7 @@ function TrustBanner() {
           <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "center" }}>
             <img src={yapeLogo} alt="Yape" style={{ ...logoImg, height: 40, borderRadius: 10 }} onMouseEnter={e => e.currentTarget.style.opacity="0.75"} onMouseLeave={e => e.currentTarget.style.opacity="1"} />
             <img src={plinLogo} alt="Plin" style={{ ...logoImg, height: 40, borderRadius: 10 }} onMouseEnter={e => e.currentTarget.style.opacity="0.75"} onMouseLeave={e => e.currentTarget.style.opacity="1"} />
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: "pointer", transition: "opacity 0.2s", color: "#555" }} onMouseEnter={e => e.currentTarget.style.opacity="0.7"} onMouseLeave={e => e.currentTarget.style.opacity="1"}>
-              <div style={{ width: 40, height: 40, background: "#f5f5f5", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
-              </div>
-              <span style={{ fontSize: "0.6rem", fontFamily: "var(--font)", textTransform: "uppercase", letterSpacing: "0.05em", color: "#888" }}>Transf.</span>
-            </div>
+
           </div>
         </div>
 
@@ -340,12 +335,7 @@ function TrustBanner() {
           <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "center" }}>
             <img src={olvaLogo} alt="Olva Courier" style={{ ...logoImg, height: 36, borderRadius: 6 }} onMouseEnter={e => e.currentTarget.style.opacity="0.75"} onMouseLeave={e => e.currentTarget.style.opacity="1"} />
             <img src={shalomLogo} alt="Shalom" style={{ ...logoImg, height: 36 }} onMouseEnter={e => e.currentTarget.style.opacity="0.75"} onMouseLeave={e => e.currentTarget.style.opacity="1"} />
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: "pointer", transition: "opacity 0.2s", color: "#555" }} onMouseEnter={e => e.currentTarget.style.opacity="0.7"} onMouseLeave={e => e.currentTarget.style.opacity="1"}>
-              <div style={{ width: 40, height: 36, background: "#f5f5f5", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="#555"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zm-.5 1.5l1.96 2.5H17V9.5h2.5zM6 18c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm13 0c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/></svg>
-              </div>
-              <span style={{ fontSize: "0.6rem", fontFamily: "var(--font)", textTransform: "uppercase", letterSpacing: "0.05em", color: "#888" }}>Express</span>
-            </div>
+
           </div>
         </div>
 
